@@ -10,7 +10,7 @@ const navItems = [
   { title: 'Stationen', icon: 'mdi-ev-station', to: '/stations', disabled: false },
   { title: 'Sitzungen', icon: 'mdi-history', to: '/sessions', disabled: false },
   { title: 'Auswertungen', icon: 'mdi-chart-bar', to: '/analytics', disabled: false },
-  { title: 'Tarife', icon: 'mdi-currency-eur', to: '/tariffs', disabled: true }
+  { title: 'Tarife', icon: 'mdi-currency-eur', to: '/tariffs', disabled: false }
 ]
 </script>
 
