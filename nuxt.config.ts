@@ -158,8 +158,12 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
-    // Solo server: mai esposta al bundle client.
+    // Solo server: mai esposte al bundle client.
     ocmApiKey: '',
+    // Chiave per sigillare (firmare + cifrare) il cookie di sessione, vedi
+    // server/utils/auth-session.ts — nessuno store server-side (coerente col
+    // vincolo serverless già seguito da ADR-0002/0003).
+    sessionPassword: '',
     public: {
       appName: 'ChargeHub'
     }
