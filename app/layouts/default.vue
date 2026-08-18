@@ -7,7 +7,7 @@ const rail = ref(true)
 
 const navItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/', disabled: false },
-  { title: 'Stationen', icon: 'mdi-ev-station', to: '/stations', disabled: true },
+  { title: 'Stationen', icon: 'mdi-ev-station', to: '/stations', disabled: false },
   { title: 'Sitzungen', icon: 'mdi-history', to: '/sessions', disabled: true },
   { title: 'Auswertungen', icon: 'mdi-chart-bar', to: '/analytics', disabled: true },
   { title: 'Tarife', icon: 'mdi-currency-eur', to: '/tariffs', disabled: true }
