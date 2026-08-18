@@ -5,17 +5,15 @@ import { useSessions } from '~/modules/sessions'
 
 const props = defineProps<{ tariffs: Tariff[] }>()
 
+const { t } = useI18n()
+const { formatDateTime, formatCurrency } = useLocaleFormatters()
 const { sessions } = useSessions()
 
 const selectedSessionId = ref<string | null>(null)
 const overstayMinutes = ref(0)
 
 function formatSessionLabel(session: (typeof sessions.value)[number]): string {
-  const when = new Date(session.startedAt).toLocaleString('de-DE', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  })
-  return `${session.stationName} · ${when} · ${session.energyKwh} kWh`
+  return `${session.stationName} · ${formatDateTime(session.startedAt)} · ${session.energyKwh} kWh`
 }
 
 const sessionOptions = computed(() =>
@@ -50,7 +48,7 @@ const results = computed(() => {
           :items="sessionOptions"
           item-title="title"
           item-value="value"
-          label="Sitzung auswählen"
+          :label="t('tariffs.selectSession')"
           density="comfortable"
           hide-details
         />
@@ -60,7 +58,7 @@ const results = computed(() => {
           v-model.number="overstayMinutes"
           type="number"
           min="0"
-          label="Standzeit nach Ladeende (Min., optional)"
+          :label="t('tariffs.overstayMinutes')"
           density="comfortable"
           hide-details
         />
@@ -68,17 +66,17 @@ const results = computed(() => {
     </v-row>
 
     <p v-if="tariffs.length === 0" class="text-medium-emphasis mt-4 mb-0">
-      Lege zuerst mindestens einen Tarif an.
+      {{ t('tariffs.needTariff') }}
     </p>
     <p v-else-if="!selectedSession" class="text-medium-emphasis mt-4 mb-0">
-      Wähle eine Sitzung, um die Tarife zu vergleichen.
+      {{ t('tariffs.needSession') }}
     </p>
 
     <v-table v-else density="comfortable" class="mt-4">
       <thead>
         <tr>
-          <th scope="col">Tarif</th>
-          <th scope="col" class="text-right">Kosten</th>
+          <th scope="col">{{ t('tariffs.tariffColumn') }}</th>
+          <th scope="col" class="text-right">{{ t('tariffs.costColumn') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -88,7 +86,7 @@ const results = computed(() => {
           :class="{ 'font-weight-bold': index === 0 }"
         >
           <td>{{ result.tariffName }}</td>
-          <td class="text-right">{{ result.costEur.toFixed(2) }} €</td>
+          <td class="text-right">{{ formatCurrency(result.costEur) }}</td>
         </tr>
       </tbody>
     </v-table>

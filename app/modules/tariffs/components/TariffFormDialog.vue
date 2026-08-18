@@ -7,6 +7,8 @@ const emit = defineEmits<{
   save: [input: TariffInput]
 }>()
 
+const { t } = useI18n()
+
 function defaultForm(): TariffInput {
   return { name: '', pricePerKwh: 0, blockingFeePerMinute: 0, monthlyFeeEur: 0 }
 }
@@ -36,11 +38,17 @@ watch(
 const validation = computed(() => tariffInputSchema.safeParse(form.value))
 const isValid = computed(() => validation.value.success)
 
+/**
+ * Traduce in base al campo, non al testo del messaggio Zod: lo schema di
+ * dominio (`tariff.ts`) resta la sola fonte di verità sulla condizione di
+ * validità, ma il suo messaggio è interno/difensivo (il form valida già
+ * prima di poter salvare) — qui serve solo sapere "questo campo ha un
+ * problema", non ripetere il messaggio Zod parola per parola.
+ */
 function errorsFor(field: keyof TariffInput): string[] {
   if (validation.value.success) return []
-  return validation.value.error.issues
-    .filter((issue) => issue.path[0] === field)
-    .map((issue) => issue.message)
+  const hasIssue = validation.value.error.issues.some((issue) => issue.path[0] === field)
+  return hasIssue ? [t(`tariffs.validation.${field}`)] : []
 }
 
 function submit() {
@@ -53,12 +61,12 @@ function submit() {
 <template>
   <v-dialog v-model="isOpen" max-width="480">
     <v-card>
-      <v-card-title>{{ tariff ? 'Tarif bearbeiten' : 'Neuer Tarif' }}</v-card-title>
+      <v-card-title>{{ tariff ? t('tariffs.editTariff') : t('tariffs.newTariff') }}</v-card-title>
       <v-card-text>
         <v-form @submit.prevent="submit">
           <v-text-field
             v-model="form.name"
-            label="Name"
+            :label="t('tariffs.name')"
             :error-messages="errorsFor('name')"
             class="mb-2"
           />
@@ -67,7 +75,7 @@ function submit() {
             type="number"
             step="0.01"
             min="0"
-            label="Preis (€/kWh)"
+            :label="t('tariffs.pricePerKwh')"
             :error-messages="errorsFor('pricePerKwh')"
             class="mb-2"
           />
@@ -76,7 +84,7 @@ function submit() {
             type="number"
             step="0.01"
             min="0"
-            label="Blockiergebühr (€/Min)"
+            :label="t('tariffs.blockingFeePerMinute')"
             :error-messages="errorsFor('blockingFeePerMinute')"
             class="mb-2"
           />
@@ -85,16 +93,16 @@ function submit() {
             type="number"
             step="0.01"
             min="0"
-            label="Grundgebühr (€/Monat)"
+            :label="t('tariffs.monthlyFeeEur')"
             :error-messages="errorsFor('monthlyFeeEur')"
           />
         </v-form>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="isOpen = false">Abbrechen</v-btn>
+        <v-btn variant="text" @click="isOpen = false">{{ t('common.cancel') }}</v-btn>
         <v-btn color="primary" variant="flat" :disabled="!isValid" @click="submit">
-          Speichern
+          {{ t('common.save') }}
         </v-btn>
       </v-card-actions>
     </v-card>

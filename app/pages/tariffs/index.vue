@@ -14,9 +14,11 @@ import { useAuth } from '~/modules/auth'
  */
 definePageMeta({ middleware: 'auth' })
 
+const { t } = useI18n()
+
 useSeoMeta({
-  title: 'Tarife – ChargeHub',
-  description: 'Tarife verwalten und Kosten einer Ladesitzung vergleichen.'
+  title: t('tariffs.seoTitle'),
+  description: t('tariffs.seoDescription')
 })
 
 const tariffsStore = useTariffsStore()
@@ -47,7 +49,7 @@ function handleSave(input: TariffInput) {
 <template>
   <v-container class="py-8">
     <div class="d-flex flex-wrap align-center justify-space-between mb-4 ga-2">
-      <h1 class="text-h5">Tarife</h1>
+      <h1 class="text-h5">{{ t('tariffs.title') }}</h1>
       <v-btn
         v-if="isOperator"
         prepend-icon="mdi-plus"
@@ -55,13 +57,17 @@ function handleSave(input: TariffInput) {
         variant="flat"
         @click="openCreate"
       >
-        Neuer Tarif
+        {{ t('tariffs.newTariff') }}
       </v-btn>
     </div>
 
-    <v-alert v-if="!isOperator" type="info" variant="tonal" class="mb-4">
-      Nur lesend: nur die Rolle "operator" kann Tarife anlegen, bearbeiten oder löschen.
-    </v-alert>
+    <v-alert
+      v-if="!isOperator"
+      type="info"
+      variant="tonal"
+      class="mb-4"
+      :text="t('tariffs.readOnlyNotice')"
+    />
 
     <v-card class="mb-6">
       <v-card-text>
@@ -76,7 +82,7 @@ function handleSave(input: TariffInput) {
 
     <v-card>
       <v-card-item>
-        <v-card-title>Kostenrechner</v-card-title>
+        <v-card-title>{{ t('tariffs.calculatorTitle') }}</v-card-title>
       </v-card-item>
       <v-card-text>
         <TariffCalculator :tariffs="tariffsStore.tariffs" />
