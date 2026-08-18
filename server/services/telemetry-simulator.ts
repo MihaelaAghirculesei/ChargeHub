@@ -1,5 +1,8 @@
 import type { Station } from '#shared/schemas/station'
 import type { ChargePointTelemetry, StationTelemetry } from '#shared/schemas/telemetry'
+import { chargingPowerFraction, integrateEnergyKwh } from '~~/server/utils/charging-curve'
+import { round } from '~~/server/utils/number'
+import { hashString, mulberry32 } from '~~/server/utils/random'
 
 /**
  * Vercel è serverless (decisione bloccata, vedi ChargeHub.md §0): un'istanza
@@ -9,6 +12,11 @@ import type { ChargePointTelemetry, StationTelemetry } from '#shared/schemas/tel
  * di (seed del connettore, timestamp corrente): niente da persistere, ma i
  * valori restano continui e credibili perché derivano dallo stesso seed e
  * dal tempo reale che passa. Vedi docs/adr/0002-telemetry-simulation.md.
+ *
+ * Hash/PRNG e curva di potenza sono in `server/utils/` perché il
+ * simulatore di sessioni storiche (Giorno 12, `session-simulator.ts`) li
+ * riusa: stessa "forma" di ricarica plausibile, non due curve inventate
+ * separatamente.
  */
 
 /** Potenza (kW) usata per simulare connettori senza un PowerKW noto da OCM. */
@@ -27,28 +35,6 @@ interface ConnectorProfile {
   reliabilityRoll: number
 }
 
-/** Hash stringa → intero 32 bit, FNV-1a. Deterministico, nessuna dipendenza. */
-function hashString(value: string): number {
-  let hash = 2166136261
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index)
-    hash = Math.imul(hash, 16777619)
-  }
-  return hash >>> 0
-}
-
-/** PRNG Mulberry32: da un seed intero produce una sequenza deterministica in [0,1). */
-function mulberry32(seed: number): () => number {
-  let state = seed
-  return () => {
-    state |= 0
-    state = (state + 0x6d2b79f5) | 0
-    let t = Math.imul(state ^ (state >>> 15), 1 | state)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
 function deriveProfile(seedKey: string): ConnectorProfile {
   const random = mulberry32(hashString(seedKey))
   return {
@@ -58,49 +44,6 @@ function deriveProfile(seedKey: string): ConnectorProfile {
     phaseOffsetSeconds: Math.floor(random() * 100_000),
     reliabilityRoll: random()
   }
-}
-
-/**
- * Frazione della potenza massima in funzione dell'avanzamento (0..1) della
- * sessione: alta e quasi piatta fino all'80%, poi decresce più ripida
- * (curva di ricarica plausibile, non lineare fino alla fine).
- */
-function chargingPowerFraction(progress: number): number {
-  const clamped = Math.min(Math.max(progress, 0), 1)
-  if (clamped <= 0.8) {
-    return 1 - 0.3 * (clamped / 0.8)
-  }
-  return 0.7 - 0.55 * ((clamped - 0.8) / 0.2)
-}
-
-/**
- * Energia (kWh) accumulata integrando numericamente la curva di potenza tra
- * 0 e `elapsedSeconds` (integrazione trapezoidale, 60 campioni: economica e
- * evita di dover fidarsi di un integrale in forma chiusa scritto a mano).
- */
-function sessionEnergyKwh(
-  elapsedSeconds: number,
-  chargingDurationSeconds: number,
-  maxPowerKw: number
-): number {
-  const steps = 60
-  const stepSeconds = elapsedSeconds / steps
-  let energy = 0
-
-  for (let index = 0; index < steps; index += 1) {
-    const t1 = index * stepSeconds
-    const t2 = (index + 1) * stepSeconds
-    const p1 = maxPowerKw * chargingPowerFraction(t1 / chargingDurationSeconds)
-    const p2 = maxPowerKw * chargingPowerFraction(t2 / chargingDurationSeconds)
-    energy += ((p1 + p2) / 2) * (stepSeconds / 3600)
-  }
-
-  return energy
-}
-
-function round(value: number, decimals: number): number {
-  const factor = 10 ** decimals
-  return Math.round(value * factor) / factor
 }
 
 /** Percentuale del ciclo sotto la quale il roll di affidabilità causa un guasto. */
@@ -143,7 +86,7 @@ export function computeChargePointTelemetry(
       connectorId,
       status: 'Charging',
       powerKw: round(power, 1),
-      sessionEnergyKwh: round(sessionEnergyKwh(elapsed, duration, maxPowerKw), 2),
+      sessionEnergyKwh: round(integrateEnergyKwh(elapsed, duration, maxPowerKw), 2),
       sessionDurationSeconds: Math.floor(elapsed)
     }
   }
