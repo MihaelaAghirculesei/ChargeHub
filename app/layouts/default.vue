@@ -17,11 +17,7 @@ const navItems = [
 <template>
   <div>
     <v-app-bar :elevation="1" density="comfortable">
-      <v-app-bar-nav-icon
-        v-if="mobile"
-        aria-label="Navigation öffnen"
-        @click="drawer = !drawer"
-      />
+      <v-app-bar-nav-icon v-if="mobile" aria-label="Navigation öffnen" @click="drawer = !drawer" />
       <v-app-bar-title>ChargeHub</v-app-bar-title>
       <v-spacer />
       <v-btn

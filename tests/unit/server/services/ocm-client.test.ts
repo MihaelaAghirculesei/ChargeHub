@@ -10,8 +10,15 @@ vi.mock('ofetch', () => ({ ofetch: ofetchMock }))
 // ed errori, non il decorator di cache di Nitro (già testato a monte).
 vi.stubGlobal('defineCachedFunction', (fn: (...args: never[]) => unknown) => fn)
 
-const { fetchStations, fetchStationById, fetchReferenceData, normalizeConnector, normalizeStation, normalizeReferenceData, OcmClientError } =
-  await import('~~/server/services/ocm-client')
+const {
+  fetchStations,
+  fetchStationById,
+  fetchReferenceData,
+  normalizeConnector,
+  normalizeStation,
+  normalizeReferenceData,
+  OcmClientError
+} = await import('~~/server/services/ocm-client')
 
 function makePoi(overrides: Partial<OcmPoi> = {}): OcmPoi {
   return {
@@ -84,7 +91,11 @@ describe('normalizeConnector', () => {
 describe('normalizeStation', () => {
   it('applica i default quando nome, operatore e stato mancano', () => {
     const station = normalizeStation(
-      makePoi({ AddressInfo: { ...makePoi().AddressInfo, Title: null }, OperatorInfo: null, StatusType: null })
+      makePoi({
+        AddressInfo: { ...makePoi().AddressInfo, Title: null },
+        OperatorInfo: null,
+        StatusType: null
+      })
     )
 
     expect(station.name).toBe('Stazione senza nome')
@@ -97,9 +108,33 @@ describe('normalizeStation', () => {
     const station = normalizeStation(
       makePoi({
         Connections: [
-          { ID: 1, ConnectionTypeID: null, ConnectionType: null, StatusTypeID: null, Level: null, PowerKW: 11, Quantity: 1 },
-          { ID: 2, ConnectionTypeID: null, ConnectionType: null, StatusTypeID: null, Level: null, PowerKW: 50, Quantity: 1 },
-          { ID: 3, ConnectionTypeID: null, ConnectionType: null, StatusTypeID: null, Level: null, PowerKW: null, Quantity: 1 }
+          {
+            ID: 1,
+            ConnectionTypeID: null,
+            ConnectionType: null,
+            StatusTypeID: null,
+            Level: null,
+            PowerKW: 11,
+            Quantity: 1
+          },
+          {
+            ID: 2,
+            ConnectionTypeID: null,
+            ConnectionType: null,
+            StatusTypeID: null,
+            Level: null,
+            PowerKW: 50,
+            Quantity: 1
+          },
+          {
+            ID: 3,
+            ConnectionTypeID: null,
+            ConnectionType: null,
+            StatusTypeID: null,
+            Level: null,
+            PowerKW: null,
+            Quantity: 1
+          }
         ]
       })
     )
@@ -119,8 +154,24 @@ describe('normalizeStation', () => {
       makePoi({
         NumberOfPoints: null,
         Connections: [
-          { ID: 1, ConnectionTypeID: null, ConnectionType: null, StatusTypeID: null, Level: null, PowerKW: null, Quantity: 1 },
-          { ID: 2, ConnectionTypeID: null, ConnectionType: null, StatusTypeID: null, Level: null, PowerKW: null, Quantity: 1 }
+          {
+            ID: 1,
+            ConnectionTypeID: null,
+            ConnectionType: null,
+            StatusTypeID: null,
+            Level: null,
+            PowerKW: null,
+            Quantity: 1
+          },
+          {
+            ID: 2,
+            ConnectionTypeID: null,
+            ConnectionType: null,
+            StatusTypeID: null,
+            Level: null,
+            PowerKW: null,
+            Quantity: 1
+          }
         ]
       })
     )
@@ -201,11 +252,17 @@ describe('fetchStations', () => {
     ).rejects.toMatchObject({ code: 'network' })
   })
 
-  it('OcmClientError è un\'istanza di Error con name proprio', async () => {
+  it("OcmClientError è un'istanza di Error con name proprio", async () => {
     ofetchMock.mockRejectedValueOnce(new Error('ECONNRESET'))
 
     try {
-      await fetchStations({ latitude: 9, longitude: 10, radiusKm: 5, countryCode: 'NL', maxResults: 5 })
+      await fetchStations({
+        latitude: 9,
+        longitude: 10,
+        radiusKm: 5,
+        countryCode: 'NL',
+        maxResults: 5
+      })
       expect.unreachable()
     } catch (error) {
       expect(error).toBeInstanceOf(OcmClientError)

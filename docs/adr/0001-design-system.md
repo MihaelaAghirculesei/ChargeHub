@@ -21,14 +21,14 @@ prossimi giorni.
 ### 1. Palette semantica legata al dominio, non ai nomi Vuetify
 
 I quattro colori di stato di un punto di ricarica sono mappati sui ruoli
-semantici *esistenti* di Vuetify invece di introdurre colori custom ad-hoc:
+semantici _esistenti_ di Vuetify invece di introdurre colori custom ad-hoc:
 
-| Stato dominio | Ruolo Vuetify     | Perché                                                              |
-| -------------- | ----------------- | -------------------------------------------------------------------- |
-| Disponibile    | `success`         | Verde è già la convenzione universale per "ok, pronto all'uso".      |
-| In ricarica    | `info`            | Stato attivo/in corso, non un'azione riuscita né un errore.          |
-| Guasto         | `error`           | Riusa la semantica di errore invece di un rosso hardcoded a parte.   |
-| Offline        | `surface-variant` | Non è un errore né uno stato "attivo": è spento, quindi va desaturato invece che colorato. |
+| Stato dominio | Ruolo Vuetify     | Perché                                                                                     |
+| ------------- | ----------------- | ------------------------------------------------------------------------------------------ |
+| Disponibile   | `success`         | Verde è già la convenzione universale per "ok, pronto all'uso".                            |
+| In ricarica   | `info`            | Stato attivo/in corso, non un'azione riuscita né un errore.                                |
+| Guasto        | `error`           | Riusa la semantica di errore invece di un rosso hardcoded a parte.                         |
+| Offline       | `surface-variant` | Non è un errore né uno stato "attivo": è spento, quindi va desaturato invece che colorato. |
 
 Vantaggio pratico: qualunque componente Vuetify che accetta una `color` prop
 (`v-chip`, `v-icon`, `v-alert`, …) eredita automaticamente questa semantica
@@ -44,14 +44,14 @@ verificata con un piccolo script Node basato sulla formula di luminanza
 relativa WCAG 2.1 (`(L1+0.05)/(L2+0.05)`), non lasciata al calcolo automatico
 di Vuetify. Risultati (minimo richiesto: 4.5:1):
 
-| Coppia                       | Light   | Dark    |
-| ----------------------------- | ------- | ------- |
-| success / on-success          | 5.35:1  | 7.28:1  |
-| info / on-info                | 5.29:1  | 8.49:1  |
-| error / on-error              | 5.62:1  | 6.86:1  |
+| Coppia                               | Light  | Dark   |
+| ------------------------------------ | ------ | ------ |
+| success / on-success                 | 5.35:1 | 7.28:1 |
+| info / on-info                       | 5.29:1 | 8.49:1 |
+| error / on-error                     | 5.62:1 | 6.86:1 |
 | surface-variant / on-surface-variant | 6.52:1 | 7.02:1 |
-| primary / on-primary          | 6.34:1  | 7.51:1  |
-| secondary / on-secondary      | 6.15:1  | 8.77:1  |
+| primary / on-primary                 | 6.34:1 | 7.51:1 |
+| secondary / on-secondary             | 6.15:1 | 8.77:1 |
 
 Tutte le coppie hanno un margine reale sopra la soglia (non 4.51:1 "per un
 pelo"), per restare valide anche a piccoli aggiustamenti futuri della palette.
@@ -145,7 +145,7 @@ relativi interni al pacchetto `vuetify`). Alternative scartate:
 - **Patchare il modulo per emettere backslash Windows nativi** (`C:\Users\...`
   con `@use '...' as *;`): scartata dopo aver **causato** un bug più subdolo
   del bug originale — nelle stringhe SCSS un backslash seguito da cifre
-  esadecimali è una *unicode escape* CSS valida, quindi `\Desktop` veniva
+  esadecimali è una _unicode escape_ CSS valida, quindi `\Desktop` veniva
   silenziosamente riscritto in `Þsktop` (`\De` → U+00DE) invece di dare un
   errore di risoluzione. Prova del repo: durante lo sviluppo è comparso
   l'errore `The default namespace "UsersLGÞsktopProgetti privati\fhargeHub"`.

@@ -1,5 +1,10 @@
 import { ofetch } from 'ofetch'
-import { ocmPoiListSchema, ocmReferenceDataSchema, type OcmPoi, type OcmReferenceData } from '#shared/schemas/ocm'
+import {
+  ocmPoiListSchema,
+  ocmReferenceDataSchema,
+  type OcmPoi,
+  type OcmReferenceData
+} from '#shared/schemas/ocm'
 import type { Connector, ReferenceData, ReferenceEntry, Station } from '#shared/schemas/station'
 
 const OCM_BASE_URL = 'https://api.openchargemap.io/v3'
@@ -26,7 +31,10 @@ export class OcmClientError extends Error {
  * dove ritentare non cambierebbe l'esito. Non chiama mai un endpoint di
  * scrittura: OCM è un database reale della community.
  */
-async function ocmGet<T>(path: string, query: Record<string, string | number | undefined>): Promise<T> {
+async function ocmGet<T>(
+  path: string,
+  query: Record<string, string | number | undefined>
+): Promise<T> {
   const apiKey = useRuntimeConfig().ocmApiKey
   let attempt = 0
 
@@ -49,7 +57,11 @@ async function ocmGet<T>(path: string, query: Record<string, string | number | u
       throw new OcmClientError('Timeout nella richiesta a Open Charge Map.', 'timeout', error)
     }
     if (isFetchError(error) && typeof error.statusCode === 'number') {
-      throw new OcmClientError(`Open Charge Map ha risposto con stato ${error.statusCode}.`, 'upstream_error', error)
+      throw new OcmClientError(
+        `Open Charge Map ha risposto con stato ${error.statusCode}.`,
+        'upstream_error',
+        error
+      )
     }
     throw new OcmClientError('Impossibile raggiungere Open Charge Map.', 'network', error)
   }
@@ -72,7 +84,9 @@ export function normalizeConnector(raw: NonNullable<OcmPoi['Connections']>[numbe
 
 export function normalizeStation(raw: OcmPoi): Station {
   const connectors = (raw.Connections ?? []).map(normalizeConnector)
-  const powerValues = connectors.map((connector) => connector.powerKw).filter((power) => power !== null)
+  const powerValues = connectors
+    .map((connector) => connector.powerKw)
+    .filter((power) => power !== null)
 
   return {
     id: raw.ID,
@@ -140,7 +154,11 @@ async function fetchStationsUncached(filters: StationsFilters): Promise<Station[
 
   const parsed = ocmPoiListSchema.safeParse(raw)
   if (!parsed.success) {
-    throw new OcmClientError('Risposta di Open Charge Map in un formato inatteso.', 'invalid_response', parsed.error)
+    throw new OcmClientError(
+      'Risposta di Open Charge Map in un formato inatteso.',
+      'invalid_response',
+      parsed.error
+    )
   }
 
   return parsed.data.map(normalizeStation)
@@ -151,7 +169,11 @@ async function fetchStationByIdUncached(id: number): Promise<Station | null> {
 
   const parsed = ocmPoiListSchema.safeParse(raw)
   if (!parsed.success) {
-    throw new OcmClientError('Risposta di Open Charge Map in un formato inatteso.', 'invalid_response', parsed.error)
+    throw new OcmClientError(
+      'Risposta di Open Charge Map in un formato inatteso.',
+      'invalid_response',
+      parsed.error
+    )
   }
 
   const [station] = parsed.data
@@ -163,7 +185,11 @@ async function fetchReferenceDataUncached(countryCode: string): Promise<Referenc
 
   const parsed = ocmReferenceDataSchema.safeParse(raw)
   if (!parsed.success) {
-    throw new OcmClientError('Risposta di Open Charge Map in un formato inatteso.', 'invalid_response', parsed.error)
+    throw new OcmClientError(
+      'Risposta di Open Charge Map in un formato inatteso.',
+      'invalid_response',
+      parsed.error
+    )
   }
 
   return normalizeReferenceData(parsed.data)

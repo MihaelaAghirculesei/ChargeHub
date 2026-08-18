@@ -25,14 +25,14 @@ L'app valida la configurazione al boot: senza una `NUXT_OCM_API_KEY` valida in `
 
 ## Script
 
-| Comando | Descrizione |
-|---|---|
-| `pnpm dev` | Dev server |
-| `pnpm build` | Build di produzione |
-| `pnpm lint` / `pnpm lint:fix` | ESLint |
-| `pnpm format` / `pnpm format:check` | Prettier |
-| `pnpm typecheck` | Type check TypeScript strict |
-| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest |
+| Comando                                                | Descrizione                  |
+| ------------------------------------------------------ | ---------------------------- |
+| `pnpm dev`                                             | Dev server                   |
+| `pnpm build`                                           | Build di produzione          |
+| `pnpm lint` / `pnpm lint:fix`                          | ESLint                       |
+| `pnpm format` / `pnpm format:check`                    | Prettier                     |
+| `pnpm typecheck`                                       | Type check TypeScript strict |
+| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest                       |
 
 ## Stato del progetto
 

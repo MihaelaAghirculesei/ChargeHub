@@ -6,7 +6,9 @@ const paramsSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const parsedParams = await getValidatedRouterParams(event, (params) => paramsSchema.safeParse(params))
+  const parsedParams = await getValidatedRouterParams(event, (params) =>
+    paramsSchema.safeParse(params)
+  )
 
   if (!parsedParams.success) {
     throw createError({

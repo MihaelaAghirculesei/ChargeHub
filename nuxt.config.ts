@@ -69,7 +69,12 @@ const windowsSassImporter = {
   },
   load(canonicalUrl: URL) {
     const ext = extname(canonicalUrl.pathname)
-    const syntax = ext === '.sass' ? ('indented' as const) : ext === '.css' ? ('css' as const) : ('scss' as const)
+    const syntax =
+      ext === '.sass'
+        ? ('indented' as const)
+        : ext === '.css'
+          ? ('css' as const)
+          : ('scss' as const)
     return { contents: readFileSync(canonicalUrl, 'utf8'), syntax }
   }
 }

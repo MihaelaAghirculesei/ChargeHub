@@ -24,7 +24,17 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { lat, lon, radius, countrycode, maxresults, connectiontypeid, operatorid, statustypeid, minpowerkw } = parsedQuery.data
+  const {
+    lat,
+    lon,
+    radius,
+    countrycode,
+    maxresults,
+    connectiontypeid,
+    operatorid,
+    statustypeid,
+    minpowerkw
+  } = parsedQuery.data
 
   try {
     return await fetchStations({

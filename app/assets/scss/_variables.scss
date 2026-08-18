@@ -5,22 +5,8 @@
 @use 'vuetify/settings' with (
   // Font-stack di sistema: nessun webfont da scaricare, zero FOUT/CLS,
   // coerente sia su Windows/macOS/Linux che sui browser mobili.
-  $body-font-family: (
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
-    Arial,
-    sans-serif
-  ),
-  $heading-font-family: (
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
-    Arial,
-    sans-serif
-  ),
+  $body-font-family: (-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif),
+  $heading-font-family: (-apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif),
   // Baseline a 4px, in linea con lo spacer di default di Vuetify: reso esplicito
   // qui perché è la base su cui ragionano tutte le utility "pa-*"/"ma-*".
   $spacer: 4px,
