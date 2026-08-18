@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Tariff } from '~/modules/tariffs/domain/tariff'
 
-defineProps<{ tariffs: Tariff[] }>()
+withDefaults(defineProps<{ tariffs: Tariff[]; readonly?: boolean }>(), { readonly: false })
 const emit = defineEmits<{ edit: [tariff: Tariff]; remove: [id: string] }>()
 </script>
 
@@ -13,7 +13,7 @@ const emit = defineEmits<{ edit: [tariff: Tariff]; remove: [id: string] }>()
         <th scope="col" class="text-right">€/kWh</th>
         <th scope="col" class="text-right">Blockiergebühr €/Min</th>
         <th scope="col" class="text-right">Grundgebühr €/Monat</th>
-        <th scope="col"><span class="visually-hidden">Aktionen</span></th>
+        <th v-if="!readonly" scope="col"><span class="visually-hidden">Aktionen</span></th>
       </tr>
     </thead>
     <tbody>
@@ -22,7 +22,7 @@ const emit = defineEmits<{ edit: [tariff: Tariff]; remove: [id: string] }>()
         <td class="text-right">{{ tariff.pricePerKwh.toFixed(2) }}</td>
         <td class="text-right">{{ tariff.blockingFeePerMinute.toFixed(2) }}</td>
         <td class="text-right">{{ tariff.monthlyFeeEur.toFixed(2) }}</td>
-        <td class="text-right text-no-wrap">
+        <td v-if="!readonly" class="text-right text-no-wrap">
           <v-btn
             icon="mdi-pencil"
             variant="text"
@@ -40,7 +40,9 @@ const emit = defineEmits<{ edit: [tariff: Tariff]; remove: [id: string] }>()
         </td>
       </tr>
       <tr v-if="tariffs.length === 0">
-        <td colspan="5" class="text-medium-emphasis">Noch keine Tarife angelegt.</td>
+        <td :colspan="readonly ? 4 : 5" class="text-medium-emphasis">
+          Noch keine Tarife angelegt.
+        </td>
       </tr>
     </tbody>
   </v-table>

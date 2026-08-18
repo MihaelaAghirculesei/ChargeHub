@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import { useAuth } from '~/modules/auth'
+
 const { mobile } = useDisplay()
 const { isDark, toggleTheme } = useAppTheme()
+const { user, isLoggedIn, logout } = useAuth()
 
 const drawer = ref(!mobile.value)
 const rail = ref(true)
+
+async function handleLogout() {
+  await logout()
+  await navigateTo('/')
+}
 
 const navItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/', disabled: false },
@@ -20,6 +28,13 @@ const navItems = [
       <v-app-bar-nav-icon v-if="mobile" aria-label="Navigation öffnen" @click="drawer = !drawer" />
       <v-app-bar-title>ChargeHub</v-app-bar-title>
       <v-spacer />
+      <template v-if="isLoggedIn">
+        <v-chip class="mr-2" size="small" variant="tonal" prepend-icon="mdi-account">
+          {{ user?.username }} · {{ user?.role }}
+        </v-chip>
+        <v-btn variant="text" prepend-icon="mdi-logout" @click="handleLogout">Abmelden</v-btn>
+      </template>
+      <v-btn v-else variant="text" prepend-icon="mdi-login" to="/login">Anmelden</v-btn>
       <v-btn
         :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
         variant="text"

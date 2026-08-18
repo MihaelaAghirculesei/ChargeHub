@@ -4,6 +4,15 @@ import TariffFormDialog from '~/modules/tariffs/components/TariffFormDialog.vue'
 import TariffsTable from '~/modules/tariffs/components/TariffsTable.vue'
 import type { Tariff, TariffInput } from '~/modules/tariffs'
 import { useTariffsStore } from '~/modules/tariffs'
+import { useAuth } from '~/modules/auth'
+
+/**
+ * "operator" può gestire tariffe, "viewer" no (piano, Giorno 16): l'intera
+ * rotta richiede solo di essere autenticati (`middleware: 'auth'`), la
+ * distinzione tra i due ruoli è nella UI qui sotto (`isOperator`), non nel
+ * middleware — un viewer può guardare tariffe e calcolatore, non modificarli.
+ */
+definePageMeta({ middleware: 'auth' })
 
 useSeoMeta({
   title: 'Tarife – ChargeHub',
@@ -11,6 +20,7 @@ useSeoMeta({
 })
 
 const tariffsStore = useTariffsStore()
+const { isOperator } = useAuth()
 
 const dialogOpen = ref(false)
 const editingTariff = ref<Tariff | null>(null)
@@ -38,15 +48,26 @@ function handleSave(input: TariffInput) {
   <v-container class="py-8">
     <div class="d-flex flex-wrap align-center justify-space-between mb-4 ga-2">
       <h1 class="text-h5">Tarife</h1>
-      <v-btn prepend-icon="mdi-plus" color="primary" variant="flat" @click="openCreate">
+      <v-btn
+        v-if="isOperator"
+        prepend-icon="mdi-plus"
+        color="primary"
+        variant="flat"
+        @click="openCreate"
+      >
         Neuer Tarif
       </v-btn>
     </div>
+
+    <v-alert v-if="!isOperator" type="info" variant="tonal" class="mb-4">
+      Nur lesend: nur die Rolle "operator" kann Tarife anlegen, bearbeiten oder löschen.
+    </v-alert>
 
     <v-card class="mb-6">
       <v-card-text>
         <TariffsTable
           :tariffs="tariffsStore.tariffs"
+          :readonly="!isOperator"
           @edit="openEdit"
           @remove="tariffsStore.remove"
         />
