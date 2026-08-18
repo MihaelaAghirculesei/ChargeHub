@@ -10,12 +10,15 @@ useSeoMeta({
   description: 'Energie pro Tag, Statusverteilung und Auslastung nach Stunde.'
 })
 
+const { t } = useI18n()
+
+useSeoMeta({
+  title: t('analytics.seoTitle'),
+  description: t('analytics.seoDescription')
+})
+
 const period = ref<AnalyticsPeriodDays>(30)
-const periodOptions: { title: string; value: AnalyticsPeriodDays }[] = [
-  { title: '7 Tage', value: 7 },
-  { title: '30 Tage', value: 30 },
-  { title: '90 Tage', value: 90 }
-]
+const periodOptions: AnalyticsPeriodDays[] = [7, 30, 90]
 
 const { analytics, pending, error } = useAnalytics(period)
 </script>
@@ -23,20 +26,15 @@ const { analytics, pending, error } = useAnalytics(period)
 <template>
   <v-container class="py-8">
     <div class="d-flex flex-wrap align-center justify-space-between mb-4 ga-2">
-      <h1 class="text-h5">Auswertungen</h1>
+      <h1 class="text-h5">{{ t('analytics.title') }}</h1>
       <v-btn-toggle v-model="period" mandatory density="comfortable" color="primary">
-        <v-btn v-for="option in periodOptions" :key="option.value" :value="option.value">
-          {{ option.title }}
+        <v-btn v-for="option in periodOptions" :key="option" :value="option">
+          {{ t('analytics.periodDays', { count: option }) }}
         </v-btn>
       </v-btn-toggle>
     </div>
 
-    <v-alert
-      v-if="error"
-      type="error"
-      class="mb-4"
-      text="Auswertungen konnten nicht geladen werden."
-    />
+    <v-alert v-if="error" type="error" class="mb-4" :text="t('analytics.loadError')" />
 
     <v-row v-if="pending && !analytics">
       <v-col cols="12" md="6"><v-skeleton-loader type="card" /></v-col>
@@ -48,7 +46,7 @@ const { analytics, pending, error } = useAnalytics(period)
       <v-col cols="12" md="6">
         <v-card>
           <v-card-item>
-            <v-card-title>kWh pro Tag</v-card-title>
+            <v-card-title>{{ t('analytics.energyByDayTitle') }}</v-card-title>
           </v-card-item>
           <v-card-text>
             <EnergyByDayChart :data="analytics.energyByDay" />
@@ -59,7 +57,7 @@ const { analytics, pending, error } = useAnalytics(period)
       <v-col cols="12" md="6">
         <v-card>
           <v-card-item>
-            <v-card-title>Statusverteilung</v-card-title>
+            <v-card-title>{{ t('analytics.statusDistributionTitle') }}</v-card-title>
           </v-card-item>
           <v-card-text>
             <StatusDistributionChart :data="analytics.statusDistribution" />
@@ -70,7 +68,7 @@ const { analytics, pending, error } = useAnalytics(period)
       <v-col cols="12">
         <v-card>
           <v-card-item>
-            <v-card-title>Auslastung nach Stunde</v-card-title>
+            <v-card-title>{{ t('analytics.utilizationByHourTitle') }}</v-card-title>
           </v-card-item>
           <v-card-text>
             <UtilizationByHourChart :data="analytics.utilizationByHour" />

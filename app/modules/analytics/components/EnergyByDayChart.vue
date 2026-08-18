@@ -8,14 +8,16 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend)
 
 const props = defineProps<{ data: DailyEnergyPoint[] }>()
 
+const { t } = useI18n()
 const { colorFor } = useChartThemeColors()
+const { formatDate } = useLocaleFormatters()
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+function formatAxisDate(iso: string): string {
+  return formatDate(iso, { day: '2-digit', month: '2-digit' })
 }
 
 const chartData = computed(() => ({
-  labels: props.data.map((point) => formatDate(point.date)),
+  labels: props.data.map((point) => formatAxisDate(point.date)),
   datasets: [
     {
       label: 'kWh',
@@ -49,12 +51,12 @@ const chartOptions = {
       StatusDistributionChart.vue per il dettaglio.
     -->
     <v-expansion-panels class="mt-2">
-      <v-expansion-panel title="Als Tabelle anzeigen" eager>
+      <v-expansion-panel :title="t('analytics.showAsTable')" eager>
         <template #text>
           <v-table density="compact">
             <thead>
               <tr>
-                <th scope="col">Datum</th>
+                <th scope="col">{{ t('analytics.dateColumn') }}</th>
                 <th scope="col" class="text-right">kWh</th>
               </tr>
             </thead>

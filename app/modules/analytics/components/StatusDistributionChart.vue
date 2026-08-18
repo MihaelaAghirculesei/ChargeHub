@@ -8,13 +8,11 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 
 const props = defineProps<{ data: StatusDistributionPoint[] }>()
 
+const { t } = useI18n()
 const { colorFor } = useChartThemeColors()
 
-const STATUS_LABELS: Record<StatusDistributionPoint['status'], string> = {
-  Available: 'Verfügbar',
-  Charging: 'Lädt',
-  Faulted: 'Gestört',
-  Offline: 'Offline'
+function statusLabel(status: StatusDistributionPoint['status']): string {
+  return t(`chargePointStatus.${status}`)
 }
 
 /** Stessi ruoli semantici della palette di dominio, docs/adr/0001-design-system.md. */
@@ -26,7 +24,7 @@ const STATUS_COLOR_KEYS: Record<StatusDistributionPoint['status'], string> = {
 }
 
 const chartData = computed(() => ({
-  labels: props.data.map((point) => STATUS_LABELS[point.status]),
+  labels: props.data.map((point) => statusLabel(point.status)),
   datasets: [
     {
       data: props.data.map((point) => point.count),
@@ -57,18 +55,18 @@ const chartOptions = { responsive: true, maintainAspectRatio: false }
       vanifica il punto di averla — verificato con un curl sull'HTML grezzo.
     -->
     <v-expansion-panels class="mt-2">
-      <v-expansion-panel title="Als Tabelle anzeigen" eager>
+      <v-expansion-panel :title="t('analytics.showAsTable')" eager>
         <template #text>
           <v-table density="compact">
             <thead>
               <tr>
-                <th scope="col">Status</th>
-                <th scope="col" class="text-right">Anzahl</th>
+                <th scope="col">{{ t('analytics.statusColumn') }}</th>
+                <th scope="col" class="text-right">{{ t('analytics.countColumn') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="point in data" :key="point.status">
-                <td>{{ STATUS_LABELS[point.status] }}</td>
+                <td>{{ statusLabel(point.status) }}</td>
                 <td class="text-right">{{ point.count }}</td>
               </tr>
             </tbody>

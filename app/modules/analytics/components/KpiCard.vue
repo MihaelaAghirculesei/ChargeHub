@@ -16,6 +16,9 @@ const props = defineProps<{
   series: number[]
 }>()
 
+const { t } = useI18n()
+const { formatNumber } = useLocaleFormatters()
+
 const trendColor = computed<'success' | 'error' | 'grey'>(() => {
   if (props.trendPercent === 0) return 'grey'
   const isGood = props.higherIsBetter ? props.trendPercent > 0 : props.trendPercent < 0
@@ -28,13 +31,13 @@ const trendIcon = computed(() => {
 })
 
 const trendLabel = computed(() => {
-  if (props.trendPercent === 0) return 'unverändert (7 Tage)'
+  if (props.trendPercent === 0) return t('dashboard.trendUnchanged')
   const sign = props.trendPercent > 0 ? '+' : ''
-  return `${sign}${props.trendPercent.toFixed(1)}% (7 Tage)`
+  return t('dashboard.trendWindow', { value: `${sign}${props.trendPercent.toFixed(1)}` })
 })
 
 const formattedValue = computed(() => {
-  const formatted = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 }).format(props.value)
+  const formatted = formatNumber(props.value, { maximumFractionDigits: 1 })
   return props.unit ? `${formatted} ${props.unit}` : formatted
 })
 </script>

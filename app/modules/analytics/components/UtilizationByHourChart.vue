@@ -16,13 +16,14 @@ ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip,
 
 const props = defineProps<{ data: HourlyUtilizationPoint[] }>()
 
+const { t } = useI18n()
 const { colorFor } = useChartThemeColors()
 
 const chartData = computed(() => ({
   labels: props.data.map((point) => `${point.hour}:00`),
   datasets: [
     {
-      label: 'Auslastung %',
+      label: t('analytics.utilizationColumn'),
       data: props.data.map((point) => point.utilizationPercent),
       borderColor: colorFor('info'),
       backgroundColor: colorFor('info'),
@@ -55,13 +56,13 @@ const chartOptions = {
       StatusDistributionChart.vue per il dettaglio.
     -->
     <v-expansion-panels class="mt-2">
-      <v-expansion-panel title="Als Tabelle anzeigen" eager>
+      <v-expansion-panel :title="t('analytics.showAsTable')" eager>
         <template #text>
           <v-table density="compact">
             <thead>
               <tr>
-                <th scope="col">Stunde</th>
-                <th scope="col" class="text-right">Auslastung %</th>
+                <th scope="col">{{ t('analytics.hourColumn') }}</th>
+                <th scope="col" class="text-right">{{ t('analytics.utilizationColumn') }}</th>
               </tr>
             </thead>
             <tbody>
