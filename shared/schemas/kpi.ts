@@ -1,0 +1,18 @@
+/**
+ * KPI aggregato per la dashboard (Giorno 13), dato non-OCM: composto da
+ * registro stazioni (Giorno 3-9) + telemetria simulata (Giorno 10-11) +
+ * sessioni sintetiche (Giorno 12), non un nuovo simulatore. Vedi
+ * server/services/kpi-aggregator.ts.
+ */
+export interface KpiSeries {
+  key: string
+  label: string
+  value: number
+  unit: string
+  /** Variazione percentuale tra 7 giorni fa e oggi. */
+  trendPercent: number
+  /** Un trend positivo è una buona notizia per questo KPI? (falso per "guasti": più guasti non è mai un bene). */
+  higherIsBetter: boolean
+  /** Una cifra per giorno, gli ultimi 7 giorni (oggi per ultima). */
+  series: number[]
+}
