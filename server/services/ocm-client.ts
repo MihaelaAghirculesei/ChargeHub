@@ -98,7 +98,8 @@ export function normalizeStation(raw: OcmPoi): Station {
       line2: raw.AddressInfo.AddressLine2 ?? null,
       town: raw.AddressInfo.Town ?? null,
       postcode: raw.AddressInfo.Postcode ?? null,
-      country: raw.AddressInfo.Country?.Title ?? null
+      country: raw.AddressInfo.Country?.Title ?? null,
+      accessComments: raw.AddressInfo.AccessComments ?? null
     },
     latitude: raw.AddressInfo.Latitude,
     longitude: raw.AddressInfo.Longitude,
@@ -107,7 +108,8 @@ export function normalizeStation(raw: OcmPoi): Station {
     numberOfPoints: raw.NumberOfPoints ?? connectors.length,
     operationalStatus: raw.StatusType?.Title ?? 'Sconosciuto',
     isOperational: raw.StatusType?.IsOperational ?? null,
-    lastVerified: raw.DateLastVerified ?? null
+    lastVerified: raw.DateLastVerified ?? null,
+    usageType: raw.UsageType?.Title ?? null
   }
 }
 

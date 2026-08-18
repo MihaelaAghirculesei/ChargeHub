@@ -25,7 +25,9 @@ export const stationAddressSchema = z.object({
   line2: z.string().nullable(),
   town: z.string().nullable(),
   postcode: z.string().nullable(),
-  country: z.string().nullable()
+  country: z.string().nullable(),
+  /** Note libere di chi ha censito la stazione — vedi shared/schemas/ocm.ts. */
+  accessComments: z.string().nullable()
 })
 
 export const stationSchema = z.object({
@@ -41,7 +43,9 @@ export const stationSchema = z.object({
   numberOfPoints: z.number(),
   operationalStatus: z.string(),
   isOperational: z.boolean().nullable(),
-  lastVerified: z.string().nullable()
+  lastVerified: z.string().nullable(),
+  /** "Public"/"Public - Membership Required"/... — vedi shared/schemas/ocm.ts. */
+  usageType: z.string().nullable()
 })
 
 export const stationListSchema = z.array(stationSchema)

@@ -29,7 +29,11 @@ const ocmAddressInfoSchema = z.object({
   Postcode: z.string().nullable().optional(),
   Country: ocmCountrySchema.nullable().optional(),
   Latitude: z.number(),
-  Longitude: z.number()
+  Longitude: z.number(),
+  // Note libere di chi ha censito la stazione — spesso l'unica indicazione
+  // di orari/accesso che OCM offre davvero (es. "durchgehend nutzbar"):
+  // non esiste un campo "OpeningTimes" strutturato nell'API.
+  AccessComments: z.string().nullable().optional()
 })
 
 const ocmOperatorInfoSchema = z.object({
@@ -64,6 +68,9 @@ export const ocmPoiSchema = z.object({
   AddressInfo: ocmAddressInfoSchema,
   OperatorInfo: ocmOperatorInfoSchema.nullable().optional(),
   StatusType: ocmStatusTypeSchema.nullable().optional(),
+  // Tipo di accesso ("Public", "Public - Membership Required", "Private - ..."):
+  // il proxy più vicino a "orari/chi può usarla" che OCM offra davvero.
+  UsageType: ocmRefEntrySchema.nullable().optional(),
   Connections: z.array(ocmConnectionSchema).nullable().optional(),
   NumberOfPoints: z.number().nullable().optional(),
   DateLastVerified: z.string().nullable().optional()

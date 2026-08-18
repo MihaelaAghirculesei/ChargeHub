@@ -37,6 +37,7 @@ function makePoi(overrides: Partial<OcmPoi> = {}): OcmPoi {
     },
     OperatorInfo: { ID: 10, Title: 'Enel X' },
     StatusType: { ID: 50, Title: 'Operational', IsOperational: true },
+    UsageType: { ID: 1, Title: 'Public' },
     Connections: [],
     NumberOfPoints: 1,
     DateLastVerified: '2024-01-01T00:00:00Z',
@@ -147,6 +148,20 @@ describe('normalizeStation', () => {
     const station = normalizeStation(makePoi({ Connections: [] }))
 
     expect(station.maxPowerKw).toBeNull()
+  })
+
+  it('passa attraverso usageType e le note di accesso, default null se assenti', () => {
+    const withData = normalizeStation(makePoi())
+    expect(withData.usageType).toBe('Public')
+
+    const withoutData = normalizeStation(
+      makePoi({
+        UsageType: null,
+        AddressInfo: { ...makePoi().AddressInfo, AccessComments: null }
+      })
+    )
+    expect(withoutData.usageType).toBeNull()
+    expect(withoutData.address.accessComments).toBeNull()
   })
 
   it('usa il numero di connettori quando NumberOfPoints manca', () => {
