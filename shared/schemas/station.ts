@@ -66,3 +66,17 @@ export type StationAddress = z.infer<typeof stationAddressSchema>
 export type Station = z.infer<typeof stationSchema>
 export type ReferenceEntry = z.infer<typeof referenceEntrySchema>
 export type ReferenceData = z.infer<typeof referenceDataSchema>
+
+/**
+ * Colonne su cui `GET /api/stations` sa ordinare. OCM non pagina/ordina la
+ * sua ricerca geografica: il BFF lo fa lui sopra il risultato già cachato
+ * (vedi server/utils/paginate.ts), quindi l'elenco è vincolato ai campi che
+ * quel livello sa leggere da `Station` — non è un contratto di OCM.
+ */
+export type StationSortKey = 'name' | 'operator' | 'town' | 'maxPowerKw' | 'operationalStatus'
+
+/** Risposta paginata di `GET /api/stations`: non è dati OCM, non serve Zod. */
+export interface StationsPage {
+  items: Station[]
+  total: number
+}
