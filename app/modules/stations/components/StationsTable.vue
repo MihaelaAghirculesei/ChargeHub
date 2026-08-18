@@ -40,12 +40,16 @@ function onUpdateOptions(options: StationsTableUpdate) {
  * Hover riga ↔ marker (Giorno 8): la riga scrive nello store al passaggio
  * del mouse, e si evidenzia anche quando è la mappa a impostare l'hover —
  * stessa `hoveredStationId` in entrambe le direzioni, vedi StationsMap.vue.
+ * Click naviga al dettaglio (Giorno 9) — senza, il popup della mappa
+ * resterebbe l'unico modo di raggiungerlo.
  */
 function rowProps({ item }: { item: (typeof stations.value)[number] }) {
   return {
     onMouseenter: () => filtersStore.hover(item.id),
     onMouseleave: () => filtersStore.hover(null),
-    class: filtersStore.hoveredStationId === item.id ? 'bg-surface-variant' : undefined
+    onClick: () => navigateTo(`/stations/${item.id}`),
+    class: filtersStore.hoveredStationId === item.id ? 'bg-surface-variant' : undefined,
+    style: 'cursor: pointer'
   }
 }
 </script>
