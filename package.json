@@ -22,6 +22,7 @@
     "@pinia/nuxt": "^1.0.2",
     "@vueuse/nuxt": "^14.4.0",
     "nuxt": "^4.5.2",
+    "ofetch": "^1.5.1",
     "pinia": "^4.0.3",
     "vue": "^3.5.41",
     "vue-router": "^5.2.0",
