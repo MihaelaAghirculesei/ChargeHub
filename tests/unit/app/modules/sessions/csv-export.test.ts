@@ -20,16 +20,28 @@ function makeSession(overrides: Partial<ChargingSession> = {}): ChargingSession 
   }
 }
 
+const HEADERS = [
+  'Station',
+  'Anschluss',
+  'Start',
+  'Ende',
+  'Dauer (min)',
+  'Energie (kWh)',
+  'Ø Leistung (kW)',
+  'Spitzenleistung (kW)',
+  'Kosten (€)'
+]
+
 describe('sessionsToCsv', () => {
-  it("include l'intestazione anche con nessuna sessione", () => {
-    const csv = sessionsToCsv([])
+  it("include l'intestazione (passata dal chiamante) anche con nessuna sessione", () => {
+    const csv = sessionsToCsv([], HEADERS)
     expect(csv).toBe(
       'Station,Anschluss,Start,Ende,Dauer (min),Energie (kWh),Ø Leistung (kW),Spitzenleistung (kW),Kosten (€)'
     )
   })
 
   it('serializza una riga per sessione, nello stesso ordine delle colonne', () => {
-    const csv = sessionsToCsv([makeSession()])
+    const csv = sessionsToCsv([makeSession()], HEADERS)
     const lines = csv.split('\r\n')
     expect(lines).toHaveLength(2)
     expect(lines[1]).toBe(
@@ -38,7 +50,7 @@ describe('sessionsToCsv', () => {
   })
 
   it('mette tra virgolette i campi che contengono una virgola, riscrivendo le virgolette interne', () => {
-    const csv = sessionsToCsv([makeSession({ stationName: 'Parkhaus, Ebene 2 "Nord"' })])
+    const csv = sessionsToCsv([makeSession({ stationName: 'Parkhaus, Ebene 2 "Nord"' })], HEADERS)
     const lines = csv.split('\r\n')
     expect(lines[1]).toContain('"Parkhaus, Ebene 2 ""Nord"""')
   })
