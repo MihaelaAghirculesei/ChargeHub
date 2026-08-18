@@ -11,11 +11,22 @@ export interface StationFilters {
   radiusKm: number
   countryCode: string
   maxResults: number
+  search?: string
   connectionTypeId?: number
   operatorId?: number
   statusTypeId?: number
   minPowerKw?: number
 }
+
+/**
+ * Le chiavi di `StationFilters` che la barra filtri del Giorno 6 espone e
+ * che finiscono nell'URL (query param condivisibile). `latitude`/`longitude`/
+ * `radiusKm`/`countryCode`/`maxResults` restano fuori: sono criteri di
+ * ricerca geografica/interni senza ancora una UI per cambiarli (arriva con
+ * la mappa, Giorno 7) — vedi `app/modules/stations/filters-url.ts`.
+ */
+export type StationFilterKey =
+  'search' | 'connectionTypeId' | 'operatorId' | 'statusTypeId' | 'minPowerKw'
 
 /**
  * Stato della tabella (`v-data-table-server`), non della ricerca: cambiare

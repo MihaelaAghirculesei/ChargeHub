@@ -1,5 +1,5 @@
 import { FetchError } from 'ofetch'
-import type { Station, StationsPage } from '#shared/schemas/station'
+import type { ReferenceData, Station, StationsPage } from '#shared/schemas/station'
 import type { StationFilters, StationsTableOptions } from '~/modules/stations/types'
 
 interface StationsQuery {
@@ -8,6 +8,7 @@ interface StationsQuery {
   radius: number
   countrycode: string
   maxresults: number
+  search?: string
   connectiontypeid?: number
   operatorid?: number
   statustypeid?: number
@@ -25,6 +26,7 @@ function toQuery(filters: StationFilters, table: StationsTableOptions): Stations
     radius: filters.radiusKm,
     countrycode: filters.countryCode,
     maxresults: filters.maxResults,
+    search: filters.search,
     connectiontypeid: filters.connectionTypeId,
     operatorid: filters.operatorId,
     statustypeid: filters.statusTypeId,
@@ -59,5 +61,10 @@ export const stationRepository = {
       if (error instanceof FetchError && error.statusCode === 404) return null
       throw error
     }
+  },
+
+  /** Tabelle di lookup (tipi di connettore, operatori, stati) per i dropdown della barra filtri. */
+  referenceData(countryCode: string): Promise<ReferenceData> {
+    return $fetch<ReferenceData>('/api/reference-data', { query: { countrycode: countryCode } })
   }
 }

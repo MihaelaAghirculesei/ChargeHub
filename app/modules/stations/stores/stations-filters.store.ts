@@ -1,3 +1,4 @@
+import { filtersToQuery, parseFiltersFromQuery } from '~/modules/stations/filters-url'
 import type { StationFilters, StationsTableOptions } from '~/modules/stations/types'
 
 const FILTERS_COOKIE_NAME = 'chargehub-station-filters'
@@ -38,10 +39,28 @@ function useFiltersCookie() {
  * tabella ad ogni sessione è il comportamento giusto, non un difetto) e mai
  * la lista delle stazioni, che è dominio e va sempre rifetchata (vedi
  * `useStationsStore`).
+ *
+ * I filtri della barra (Giorno 6: ricerca testuale, tipo connettore,
+ * operatore, stato, potenza minima) sincronizzano anche con i query param
+ * dell'URL, così una ricerca è condivisibile via link — quelli hanno
+ * priorità sul cookie al primo caricamento (un link condiviso deve
+ * ricostruire la vista di chi lo apre, non quella salvata nel suo browser).
+ * La sync è a senso unico (le nostre modifiche scrivono su URL+cookie): non
+ * c'è un watcher che legga l'URL dopo il mount, per evitare un ping-pong
+ * reattivo URL→filtri→URL. Vuol dire che avanti/indietro del browser non
+ * naviga la cronologia dei filtri all'interno della pagina — solo un
+ * refresh o un nuovo caricamento la rilegge, che è esattamente il criterio
+ * "Fatto quando" del piano (copi l'URL, lo apri altrove, stessa vista).
  */
 export const useStationsFiltersStore = defineStore('stations-filters', () => {
+  const route = useRoute()
+  const router = useRouter()
   const filtersCookie = useFiltersCookie()
-  const filters = ref<StationFilters>(filtersCookie.value)
+
+  const filters = ref<StationFilters>({
+    ...filtersCookie.value,
+    ...parseFiltersFromQuery(route.query)
+  })
   const tableOptions = ref<StationsTableOptions>(defaultTableOptions())
   const selectedStationId = ref<number | null>(null)
 
@@ -49,6 +68,7 @@ export const useStationsFiltersStore = defineStore('stations-filters', () => {
     filters,
     (value) => {
       filtersCookie.value = value
+      router.replace({ query: { ...route.query, ...filtersToQuery(value) } })
     },
     { deep: true }
   )

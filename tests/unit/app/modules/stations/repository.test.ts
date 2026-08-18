@@ -1,7 +1,7 @@
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 import { createError, getQuery } from 'h3'
 import { describe, expect, it } from 'vitest'
-import type { Station, StationsPage } from '#shared/schemas/station'
+import type { ReferenceData, Station, StationsPage } from '#shared/schemas/station'
 import { stationRepository } from '~/modules/stations/repository'
 import type { StationFilters, StationsTableOptions } from '~/modules/stations/types'
 
@@ -11,6 +11,7 @@ const filters: StationFilters = {
   radiusKm: 25,
   countryCode: 'DE',
   maxResults: 100,
+  search: 'Rathaus',
   connectionTypeId: 25,
   minPowerKw: 11
 }
@@ -38,6 +39,7 @@ describe('stationRepository.list', () => {
       radius: '25',
       countrycode: 'DE',
       maxresults: '100',
+      search: 'Rathaus',
       connectiontypeid: '25',
       minpowerkw: '11',
       page: '2',
@@ -79,5 +81,23 @@ describe('stationRepository.getById', () => {
     registerEndpoint('/api/stations/42', () => station)
 
     await expect(stationRepository.getById(42)).resolves.toEqual(station)
+  })
+})
+
+describe('stationRepository.referenceData', () => {
+  it('passa il countryCode come query param e restituisce le tabelle di lookup', async () => {
+    let capturedQuery: Record<string, unknown> = {}
+    const referenceData: ReferenceData = {
+      connectionTypes: [{ id: 25, title: 'Type 2' }],
+      operators: [{ id: 5, title: 'Enel X' }],
+      statusTypes: [{ id: 50, title: 'Operational', isOperational: true }]
+    }
+    registerEndpoint('/api/reference-data', (event) => {
+      capturedQuery = getQuery(event)
+      return referenceData
+    })
+
+    await expect(stationRepository.referenceData('DE')).resolves.toEqual(referenceData)
+    expect(capturedQuery).toMatchObject({ countrycode: 'DE' })
   })
 })

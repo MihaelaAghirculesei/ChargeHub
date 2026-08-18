@@ -1,6 +1,16 @@
+import { flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { nextTick } from 'vue'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
+
+// L'ambiente "nuxt" riusa un singolo router (e un singolo Pinia, resettato
+// sotto) per tutto il file: senza pulizia, i query param impostati da un
+// test rimarrebbero nell'URL del test successivo.
+afterEach(async () => {
+  const router = useRouter()
+  await router.replace({ query: {} })
+})
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -15,6 +25,16 @@ describe('useStationsFiltersStore', () => {
     expect(store.selectedStationId).toBeNull()
   })
 
+  it('al caricamento legge i filtri dalla query URL, se presente', async () => {
+    const router = useRouter()
+    await router.replace({ query: { search: 'Rathaus', minpowerkw: '22' } })
+
+    const store = useStationsFiltersStore()
+
+    expect(store.filters.search).toBe('Rathaus')
+    expect(store.filters.minPowerKw).toBe(22)
+  })
+
   it('setFilters fa merge parziale senza toccare i campi non passati', () => {
     const store = useStationsFiltersStore()
 
@@ -22,6 +42,18 @@ describe('useStationsFiltersStore', () => {
 
     expect(store.filters.minPowerKw).toBe(22)
     expect(store.filters.countryCode).toBe('DE')
+  })
+
+  it('setFilters aggiorna anche i query param della route (URL condivisibile)', async () => {
+    const store = useStationsFiltersStore()
+
+    store.setFilters({ search: 'Stadtwerke', operatorId: 5 })
+    await nextTick()
+    await flushPromises()
+
+    const route = useRoute()
+    expect(route.query.search).toBe('Stadtwerke')
+    expect(route.query.operatorid).toBe('5')
   })
 
   it('setFilters riporta la tabella a pagina 1', () => {
