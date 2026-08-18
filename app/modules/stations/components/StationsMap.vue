@@ -8,7 +8,9 @@ import type {
   MapGeoJSONFeature,
   Popup
 } from 'maplibre-gl'
+import { haversineDistanceKm } from '~/modules/stations/geo'
 import { useStations } from '~/modules/stations/composables/useStations'
+import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
 /**
  * Import statico solo dei tipi (erasi a build time) e del CSS — il pacchetto
@@ -17,16 +19,19 @@ import { useStations } from '~/modules/stations/composables/useStations'
  * `<ClientOnly>` nel template, non l'import.
  */
 const { stations } = useStations()
+const filtersStore = useStationsFiltersStore()
 const theme = useTheme()
 
 const mapContainer = ref<HTMLDivElement | null>(null)
 let map: MapLibreMap | null = null
 let popup: Popup | null = null
+let hoveredFeatureId: number | undefined
 
 const SOURCE_ID = 'stations'
 const CLUSTERS_LAYER = 'stations-clusters'
 const CLUSTER_COUNT_LAYER = 'stations-cluster-count'
 const POINTS_LAYER = 'stations-points'
+const MAX_RADIUS_KM = 100
 
 interface StationFeatureProperties {
   id: number
@@ -96,6 +101,33 @@ function statusColorExpression(): ExpressionSpecification {
   ]
 }
 
+/** Il marker in hover (dalla mappa stessa o dalla riga corrispondente in tabella) è più grande. */
+function radiusExpression(): ExpressionSpecification {
+  return ['case', ['boolean', ['feature-state', 'hover'], false], 11, 8]
+}
+
+/**
+ * Deriva un'area di ricerca (centro + raggio) dal viewport corrente:
+ * OCM non ha una ricerca per bounding box, solo per raggio, quindi il
+ * raggio è la distanza dal centro all'angolo nord-est, con un tetto di
+ * 100km (lo stesso limite reale di OCM/dello schema di `/api/stations`).
+ */
+function updateFiltersFromViewport(mapInstance: MapLibreMap) {
+  const center = mapInstance.getCenter()
+  const bounds = mapInstance.getBounds()
+  const northEast = bounds.getNorthEast()
+  const radiusKm = haversineDistanceKm(
+    { latitude: center.lat, longitude: center.lng },
+    { latitude: northEast.lat, longitude: northEast.lng }
+  )
+
+  filtersStore.setFilters({
+    latitude: center.lat,
+    longitude: center.lng,
+    radiusKm: Math.min(Math.max(Math.round(radiusKm), 1), MAX_RADIUS_KM)
+  })
+}
+
 async function initMap() {
   if (!mapContainer.value) return
   const maplibregl = await import('maplibre-gl')
@@ -117,12 +149,22 @@ async function initMap() {
       },
       layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
     },
-    center: [10.79, 52.42],
+    center: [filtersStore.filters.longitude, filtersStore.filters.latitude],
     zoom: 10
   })
   map = mapInstance
 
   mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+
+  // Debounced apposta ("Fatto quando: non parte una richiesta a ogni pixel
+  // di spostamento"): `moveend` da solo già scatta solo a gesto concluso,
+  // ma una sequenza rapida di piccoli pan/zoom produce comunque più
+  // `moveend` ravvicinati — questo li raccoglie in un solo aggiornamento.
+  const debouncedUpdateFromViewport = useDebounceFn(
+    () => updateFiltersFromViewport(mapInstance),
+    400
+  )
+  mapInstance.on('moveend', debouncedUpdateFromViewport)
 
   mapInstance.on('load', () => {
     mapInstance.addSource(SOURCE_ID, {
@@ -164,7 +206,7 @@ async function initMap() {
         // (isOperational true/false/sconosciuto), non un mapping di ogni
         // possibile stringa operationalStatus.
         'circle-color': statusColorExpression(),
-        'circle-radius': 8,
+        'circle-radius': radiusExpression(),
         'circle-stroke-width': 2,
         'circle-stroke-color': '#ffffff'
       }
@@ -192,11 +234,22 @@ async function initMap() {
         .addTo(mapInstance)
     })
 
-    mapInstance.on('mouseenter', POINTS_LAYER, () => {
+    // Hover mappa → riga tabella: `mousemove` invece di `mouseenter` perché
+    // un layer non emette "mouseenter" per-feature, solo per-layer — questo
+    // pattern (variabile con l'ultimo id in hover) è quello standard di
+    // MapLibre per simulare hover per singola feature.
+    mapInstance.on('mousemove', POINTS_LAYER, (event) => {
       mapInstance.getCanvas().style.cursor = 'pointer'
+      const feature = event.features?.[0]
+      const id = typeof feature?.id === 'number' ? feature.id : undefined
+      if (id === hoveredFeatureId) return
+      hoveredFeatureId = id
+      filtersStore.hover(id ?? null)
     })
     mapInstance.on('mouseleave', POINTS_LAYER, () => {
       mapInstance.getCanvas().style.cursor = ''
+      hoveredFeatureId = undefined
+      filtersStore.hover(null)
     })
   })
 }
@@ -205,6 +258,22 @@ watch(stations, (value) => {
   const source = map?.getSource(SOURCE_ID) as GeoJSONSource | undefined
   source?.setData(toGeoJson(value))
 })
+
+// Hover tabella → marker mappa (l'altra direzione della sync richiesta dal
+// Giorno 8): `feature-state` invece di ricostruire lo style, è il modo
+// pensato da MapLibre per un'evidenziazione che cambia spesso.
+watch(
+  () => filtersStore.hoveredStationId,
+  (id, previousId) => {
+    if (!map) return
+    if (previousId !== null) {
+      map.setFeatureState({ source: SOURCE_ID, id: previousId }, { hover: false })
+    }
+    if (id !== null) {
+      map.setFeatureState({ source: SOURCE_ID, id }, { hover: true })
+    }
+  }
+)
 
 // I colori delle stazioni/cluster sono presi dal tema al momento della
 // creazione dei layer: al cambio light/dark vanno riapplicati a mano,
