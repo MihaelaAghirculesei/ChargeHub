@@ -35,6 +35,17 @@ describe('useStationsFiltersStore', () => {
     expect(store.filters.minPowerKw).toBe(22)
   })
 
+  it('regressione: un campo assente dall’URL non sovrascrive con undefined il default/cookie', () => {
+    // `parseFiltersFromQuery` restituisce sempre tutte le chiavi (undefined
+    // per quelle assenti) — uno spread diretto nello store cancellerebbe
+    // radiusKm/latitude/longitude ogni volta che l'URL non li contiene.
+    const store = useStationsFiltersStore()
+
+    expect(store.filters.latitude).toBe(52.42)
+    expect(store.filters.longitude).toBe(10.79)
+    expect(store.filters.radiusKm).toBe(25)
+  })
+
   it('setFilters fa merge parziale senza toccare i campi non passati', () => {
     const store = useStationsFiltersStore()
 
@@ -99,5 +110,46 @@ describe('useStationsFiltersStore', () => {
 
     store.select(null)
     expect(store.selectedStationId).toBeNull()
+  })
+
+  it('hover imposta e azzera la stazione in hover, indipendente dalla selezione', () => {
+    const store = useStationsFiltersStore()
+
+    store.select(101)
+    store.hover(202)
+
+    expect(store.hoveredStationId).toBe(202)
+    expect(store.selectedStationId).toBe(101)
+
+    store.hover(null)
+    expect(store.hoveredStationId).toBeNull()
+    expect(store.selectedStationId).toBe(101)
+  })
+
+  it('parte con viewMode "split" di default', () => {
+    const store = useStationsFiltersStore()
+
+    expect(store.viewMode).toBe('split')
+  })
+
+  it('setViewMode cambia la modalità', () => {
+    const store = useStationsFiltersStore()
+
+    store.setViewMode('map')
+
+    expect(store.viewMode).toBe('map')
+  })
+
+  it('sposta la mappa (lat/lon/radius) aggiorna anche la query URL', async () => {
+    const store = useStationsFiltersStore()
+
+    store.setFilters({ latitude: 48.14, longitude: 11.58, radiusKm: 10 })
+    await nextTick()
+    await flushPromises()
+
+    const route = useRoute()
+    expect(route.query.lat).toBe('48.14')
+    expect(route.query.lon).toBe('11.58')
+    expect(route.query.radius).toBe('10')
   })
 })

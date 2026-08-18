@@ -19,14 +19,23 @@ export interface StationFilters {
 }
 
 /**
- * Le chiavi di `StationFilters` che la barra filtri del Giorno 6 espone e
- * che finiscono nell'URL (query param condivisibile). `latitude`/`longitude`/
- * `radiusKm`/`countryCode`/`maxResults` restano fuori: sono criteri di
- * ricerca geografica/interni senza ancora una UI per cambiarli (arriva con
- * la mappa, Giorno 7) — vedi `app/modules/stations/filters-url.ts`.
+ * Le chiavi di `StationFilters` che finiscono nell'URL (query param
+ * condivisibile). `latitude`/`longitude`/`radiusKm` sono qui dal Giorno 8:
+ * spostare la mappa è ora un modo di cambiare la ricerca, non solo la barra
+ * filtri del Giorno 6 — vedi `app/modules/stations/filters-url.ts`.
+ * `countryCode`/`maxResults` restano fuori: il primo non ha ancora una UI,
+ * il secondo è un dettaglio interno (quanti risultati cachare), non un
+ * criterio di ricerca che un utente percepisce.
  */
 export type StationFilterKey =
-  'search' | 'connectionTypeId' | 'operatorId' | 'statusTypeId' | 'minPowerKw'
+  | 'latitude'
+  | 'longitude'
+  | 'radiusKm'
+  | 'search'
+  | 'connectionTypeId'
+  | 'operatorId'
+  | 'statusTypeId'
+  | 'minPowerKw'
 
 /**
  * Stato della tabella (`v-data-table-server`), non della ricerca: cambiare
@@ -39,5 +48,12 @@ export interface StationsTableOptions {
   sortBy?: StationSortKey
   sortOrder?: 'asc' | 'desc'
 }
+
+/**
+ * Come mostrare mappa e lista sul Giorno 8: una delle due, o entrambe
+ * affiancate. Stato di UI puro, persistito ("con la scelta ricordata") ma
+ * separato dai filtri di ricerca — cambiare vista non cambia i risultati.
+ */
+export type StationsViewMode = 'map' | 'list' | 'split'
 
 export type { StationSortKey }
