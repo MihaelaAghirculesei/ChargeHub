@@ -7,10 +7,11 @@ beforeEach(() => {
 })
 
 describe('useStationsFiltersStore', () => {
-  it('parte con i filtri di default e nessuna selezione', () => {
+  it('parte con i filtri e lo stato tabella di default, nessuna selezione', () => {
     const store = useStationsFiltersStore()
 
-    expect(store.filters).toMatchObject({ countryCode: 'DE', radiusKm: 25, maxResults: 50 })
+    expect(store.filters).toMatchObject({ countryCode: 'DE', radiusKm: 25, maxResults: 100 })
+    expect(store.tableOptions).toEqual({ page: 1, itemsPerPage: 10 })
     expect(store.selectedStationId).toBeNull()
   })
 
@@ -23,14 +24,39 @@ describe('useStationsFiltersStore', () => {
     expect(store.filters.countryCode).toBe('DE')
   })
 
-  it('resetFilters riporta ai default e cancella i filtri opzionali', () => {
+  it('setFilters riporta la tabella a pagina 1', () => {
+    const store = useStationsFiltersStore()
+
+    store.setTableOptions({ page: 3 })
+    store.setFilters({ minPowerKw: 22 })
+
+    expect(store.tableOptions.page).toBe(1)
+  })
+
+  it('resetFilters riporta filtri e tabella ai default', () => {
     const store = useStationsFiltersStore()
 
     store.setFilters({ minPowerKw: 22, operatorId: 5 })
+    store.setTableOptions({ page: 4, sortBy: 'name', sortOrder: 'desc' })
     store.resetFilters()
 
     expect(store.filters.minPowerKw).toBeUndefined()
     expect(store.filters.operatorId).toBeUndefined()
+    expect(store.tableOptions).toEqual({ page: 1, itemsPerPage: 10 })
+  })
+
+  it('setTableOptions fa merge parziale', () => {
+    const store = useStationsFiltersStore()
+
+    store.setTableOptions({ page: 2 })
+    store.setTableOptions({ sortBy: 'operator', sortOrder: 'asc' })
+
+    expect(store.tableOptions).toEqual({
+      page: 2,
+      itemsPerPage: 10,
+      sortBy: 'operator',
+      sortOrder: 'asc'
+    })
   })
 
   it('select imposta e azzera la stazione selezionata', () => {

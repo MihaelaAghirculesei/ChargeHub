@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Station } from '#shared/schemas/station'
-import type { StationFilters } from '~/modules/stations/types'
+import type { StationFilters, StationsTableOptions } from '~/modules/stations/types'
 
 const { listMock, getByIdMock } = vi.hoisted(() => ({
   listMock: vi.fn(),
@@ -18,8 +18,10 @@ const filters: StationFilters = {
   longitude: 10.79,
   radiusKm: 25,
   countryCode: 'DE',
-  maxResults: 50
+  maxResults: 100
 }
+
+const table: StationsTableOptions = { page: 1, itemsPerPage: 10 }
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -28,16 +30,17 @@ beforeEach(() => {
 })
 
 describe('useStationsStore', () => {
-  it('list delega al repository e mantiene lo stato in sync', async () => {
+  it('list delega al repository e mantiene stazioni/totale in sync', async () => {
     const stations = [{ id: 1 }, { id: 2 }] as Station[]
-    listMock.mockResolvedValueOnce(stations)
+    listMock.mockResolvedValueOnce({ items: stations, total: 23 })
 
     const store = useStationsStore()
-    const result = await store.list(filters)
+    const result = await store.list(filters, table)
 
-    expect(listMock).toHaveBeenCalledWith(filters)
-    expect(result).toEqual(stations)
+    expect(listMock).toHaveBeenCalledWith(filters, table)
+    expect(result).toEqual({ items: stations, total: 23 })
     expect(store.stations).toEqual(stations)
+    expect(store.total).toBe(23)
   })
 
   it('getById delega al repository senza toccare lo stato della lista', async () => {
@@ -50,5 +53,6 @@ describe('useStationsStore', () => {
     expect(getByIdMock).toHaveBeenCalledWith(42)
     expect(result).toBe(station)
     expect(store.stations).toEqual([])
+    expect(store.total).toBe(0)
   })
 })

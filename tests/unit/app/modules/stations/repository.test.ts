@@ -1,48 +1,59 @@
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 import { createError, getQuery } from 'h3'
 import { describe, expect, it } from 'vitest'
-import type { Station } from '#shared/schemas/station'
+import type { Station, StationsPage } from '#shared/schemas/station'
 import { stationRepository } from '~/modules/stations/repository'
-import type { StationFilters } from '~/modules/stations/types'
+import type { StationFilters, StationsTableOptions } from '~/modules/stations/types'
 
 const filters: StationFilters = {
   latitude: 52.42,
   longitude: 10.79,
   radiusKm: 25,
   countryCode: 'DE',
-  maxResults: 50,
+  maxResults: 100,
   connectionTypeId: 25,
   minPowerKw: 11
 }
 
+const table: StationsTableOptions = {
+  page: 2,
+  itemsPerPage: 10,
+  sortBy: 'name',
+  sortOrder: 'desc'
+}
+
 describe('stationRepository.list', () => {
-  it('traduce i filtri di dominio nei query param di /api/stations', async () => {
+  it('traduce filtri e stato tabella nei query param di /api/stations', async () => {
     let capturedQuery: Record<string, unknown> = {}
     registerEndpoint('/api/stations', (event) => {
       capturedQuery = getQuery(event)
-      return []
+      return { items: [], total: 0 }
     })
 
-    await stationRepository.list(filters)
+    await stationRepository.list(filters, table)
 
     expect(capturedQuery).toMatchObject({
       lat: '52.42',
       lon: '10.79',
       radius: '25',
       countrycode: 'DE',
-      maxresults: '50',
+      maxresults: '100',
       connectiontypeid: '25',
-      minpowerkw: '11'
+      minpowerkw: '11',
+      page: '2',
+      itemsperpage: '10',
+      sortby: 'name',
+      sortorder: 'desc'
     })
     expect(capturedQuery.operatorid).toBeUndefined()
     expect(capturedQuery.statustypeid).toBeUndefined()
   })
 
-  it('restituisce le stazioni normalizzate ricevute dal BFF', async () => {
-    const stations = [{ id: 1 }] as Station[]
-    registerEndpoint('/api/stations', () => stations)
+  it('restituisce la pagina (items + total) così come arriva dal BFF', async () => {
+    const page: StationsPage = { items: [{ id: 1 } as Station], total: 1 }
+    registerEndpoint('/api/stations', () => page)
 
-    await expect(stationRepository.list(filters)).resolves.toEqual(stations)
+    await expect(stationRepository.list(filters, table)).resolves.toEqual(page)
   })
 })
 

@@ -1,6 +1,6 @@
 import { FetchError } from 'ofetch'
-import type { Station } from '#shared/schemas/station'
-import type { StationFilters } from '~/modules/stations/types'
+import type { Station, StationsPage } from '#shared/schemas/station'
+import type { StationFilters, StationsTableOptions } from '~/modules/stations/types'
 
 interface StationsQuery {
   lat: number
@@ -12,9 +12,13 @@ interface StationsQuery {
   operatorid?: number
   statustypeid?: number
   minpowerkw?: number
+  page: number
+  itemsperpage: number
+  sortby?: string
+  sortorder?: 'asc' | 'desc'
 }
 
-function toQuery(filters: StationFilters): StationsQuery {
+function toQuery(filters: StationFilters, table: StationsTableOptions): StationsQuery {
   return {
     lat: filters.latitude,
     lon: filters.longitude,
@@ -24,19 +28,23 @@ function toQuery(filters: StationFilters): StationsQuery {
     connectiontypeid: filters.connectionTypeId,
     operatorid: filters.operatorId,
     statustypeid: filters.statusTypeId,
-    minpowerkw: filters.minPowerKw
+    minpowerkw: filters.minPowerKw,
+    page: table.page,
+    itemsperpage: table.itemsPerPage,
+    sortby: table.sortBy,
+    sortorder: table.sortOrder
   }
 }
 
 /**
  * Unico punto del codice client che sa che le stazioni vivono dietro
  * `/api/stations`: store e composable parlano solo di `StationFilters`/
- * `Station`, mai di query string o di `$fetch`. Cambiare rotta o forma della
- * richiesta tocca solo questo file.
+ * `StationsTableOptions`/`Station`, mai di query string o di `$fetch`.
+ * Cambiare rotta o forma della richiesta tocca solo questo file.
  */
 export const stationRepository = {
-  list(filters: StationFilters): Promise<Station[]> {
-    return $fetch<Station[]>('/api/stations', { query: toQuery(filters) })
+  list(filters: StationFilters, table: StationsTableOptions): Promise<StationsPage> {
+    return $fetch<StationsPage>('/api/stations', { query: toQuery(filters, table) })
   },
 
   /**
