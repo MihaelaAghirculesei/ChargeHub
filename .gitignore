@@ -13,6 +13,9 @@ node_modules
 logs
 *.log
 
+# Report di coverage generati da `vitest --coverage`
+coverage
+
 # Misc
 .DS_Store
 .fleet
