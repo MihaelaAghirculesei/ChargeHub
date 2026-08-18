@@ -4,9 +4,11 @@ import SessionsTable from '~/modules/sessions/components/SessionsTable.vue'
 import { downloadCsv, sessionsToCsv } from '~/modules/sessions/csv-export'
 import { useSessions } from '~/modules/sessions'
 
+const { t } = useI18n()
+
 useSeoMeta({
-  title: 'Sitzungen – ChargeHub',
-  description: 'Ladesitzungen: Dauer, Energie, Leistung und Kosten pro Sitzung.'
+  title: t('sessions.seoTitle'),
+  description: t('sessions.seoDescription')
 })
 
 const { sessions, pending, error } = useSessions()
@@ -25,7 +27,18 @@ const filteredSessions = computed(() =>
 )
 
 function exportCsv() {
-  const csv = sessionsToCsv(filteredSessions.value)
+  const headers = [
+    t('sessions.csv.station'),
+    t('sessions.csv.connector'),
+    t('sessions.csv.start'),
+    t('sessions.csv.end'),
+    t('sessions.csv.durationMin'),
+    t('sessions.csv.energyKwh'),
+    t('sessions.csv.averagePowerKw'),
+    t('sessions.csv.peakPowerKw'),
+    t('sessions.csv.costEur')
+  ]
+  const csv = sessionsToCsv(filteredSessions.value, headers)
   const today = new Date().toISOString().slice(0, 10)
   downloadCsv(csv, `chargehub-sitzungen-${today}.csv`)
 }
@@ -34,14 +47,14 @@ function exportCsv() {
 <template>
   <v-container class="py-8">
     <div class="d-flex flex-wrap align-center justify-space-between mb-4 ga-2">
-      <h1 class="text-h5">Sitzungen</h1>
+      <h1 class="text-h5">{{ t('sessions.title') }}</h1>
       <v-btn
         prepend-icon="mdi-download"
         variant="tonal"
         :disabled="filteredSessions.length === 0"
         @click="exportCsv"
       >
-        CSV exportieren
+        {{ t('sessions.exportCsv') }}
       </v-btn>
     </div>
 
@@ -52,17 +65,12 @@ function exportCsv() {
       :sessions="sessions"
     />
 
-    <v-alert
-      v-if="error"
-      type="error"
-      class="mb-4"
-      text="Sitzungen konnten nicht geladen werden."
-    />
+    <v-alert v-if="error" type="error" class="mb-4" :text="t('sessions.loadError')" />
 
     <SessionsTable :sessions="filteredSessions" :loading="pending" />
 
     <p class="text-caption text-medium-emphasis mt-2 mb-0">
-      {{ filteredSessions.length }} von {{ sessions.length }} Sitzungen
+      {{ t('sessions.countSummary', { shown: filteredSessions.length, total: sessions.length }) }}
     </p>
   </v-container>
 </template>

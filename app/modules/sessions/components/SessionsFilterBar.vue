@@ -9,6 +9,8 @@ import type { ChargingSession } from '#shared/schemas/session'
  */
 const props = defineProps<{ sessions: ChargingSession[] }>()
 
+const { t } = useI18n()
+
 const stationId = defineModel<number | null>('stationId', { default: null })
 const from = defineModel<string | null>('from', { default: null })
 const to = defineModel<string | null>('to', { default: null })
@@ -38,7 +40,7 @@ function reset() {
         :items="stationOptions"
         item-title="title"
         item-value="value"
-        label="Station"
+        :label="t('sessions.filters.station')"
         clearable
         density="comfortable"
         hide-details
@@ -48,7 +50,7 @@ function reset() {
       <v-text-field
         v-model="from"
         type="date"
-        label="Von"
+        :label="t('sessions.filters.from')"
         density="comfortable"
         clearable
         hide-details
@@ -58,14 +60,14 @@ function reset() {
       <v-text-field
         v-model="to"
         type="date"
-        label="Bis"
+        :label="t('sessions.filters.to')"
         density="comfortable"
         clearable
         hide-details
       />
     </v-col>
     <v-col cols="12" sm="2" class="d-flex align-center">
-      <v-btn variant="text" @click="reset">Zurücksetzen</v-btn>
+      <v-btn variant="text" @click="reset">{{ t('sessions.filters.reset') }}</v-btn>
     </v-col>
   </v-row>
 </template>

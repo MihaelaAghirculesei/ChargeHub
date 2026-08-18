@@ -3,6 +3,9 @@ import type { ChargingSession } from '#shared/schemas/session'
 
 const props = defineProps<{ sessions: ChargingSession[]; loading?: boolean }>()
 
+const { t } = useI18n()
+const { formatDateTime, formatCurrency } = useLocaleFormatters()
+
 /**
  * `v-data-table-virtual`, non `-server`: le sessioni sono già tutte in
  * memoria (nessuna paginazione server, vedi `server/api/sessions.get.ts`) —
@@ -15,16 +18,16 @@ const props = defineProps<{ sessions: ChargingSession[]; loading?: boolean }>()
  * supportati su `v-slot`, `vue/valid-v-slot`) — pre-formattare evita lo
  * scontro con il linter e tiene il componente tabella "muto".
  */
-const headers = [
-  { title: 'Station', key: 'stationName' },
-  { title: 'Anschluss', key: 'connectorType' },
-  { title: 'Start', key: 'start' },
-  { title: 'Dauer', key: 'duration', align: 'end' as const },
-  { title: 'Energie', key: 'energy', align: 'end' as const },
-  { title: 'Ø Leistung', key: 'averagePower', align: 'end' as const },
-  { title: 'Spitze', key: 'peakPower', align: 'end' as const },
-  { title: 'Kosten', key: 'cost', align: 'end' as const }
-]
+const headers = computed(() => [
+  { title: t('sessions.table.station'), key: 'stationName' },
+  { title: t('sessions.table.connector'), key: 'connectorType' },
+  { title: t('sessions.table.start'), key: 'start' },
+  { title: t('sessions.table.duration'), key: 'duration', align: 'end' as const },
+  { title: t('sessions.table.energy'), key: 'energy', align: 'end' as const },
+  { title: t('sessions.table.averagePower'), key: 'averagePower', align: 'end' as const },
+  { title: t('sessions.table.peakPower'), key: 'peakPower', align: 'end' as const },
+  { title: t('sessions.table.cost'), key: 'cost', align: 'end' as const }
+])
 
 interface SessionRow {
   id: string
@@ -38,10 +41,6 @@ interface SessionRow {
   cost: string
 }
 
-function formatDateTime(value: string): string {
-  return new Date(value).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' })
-}
-
 const rows = computed<SessionRow[]>(() =>
   props.sessions.map((session) => ({
     id: session.id,
@@ -52,7 +51,7 @@ const rows = computed<SessionRow[]>(() =>
     energy: `${session.energyKwh} kWh`,
     averagePower: `${session.averagePowerKw} kW`,
     peakPower: `${session.peakPowerKw} kW`,
-    cost: `${session.costEur.toFixed(2)} €`
+    cost: formatCurrency(session.costEur)
   }))
 )
 </script>
@@ -67,7 +66,7 @@ const rows = computed<SessionRow[]>(() =>
     fixed-header
   >
     <template #no-data>
-      <p class="text-medium-emphasis pa-4 mb-0">Keine Sitzungen für diese Filter gefunden.</p>
+      <p class="text-medium-emphasis pa-4 mb-0">{{ t('sessions.noResults') }}</p>
     </template>
   </v-data-table-virtual>
 </template>
