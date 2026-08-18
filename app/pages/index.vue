@@ -1,64 +1,37 @@
 <script setup lang="ts">
-interface StatusSample {
-  label: string
-  color: 'success' | 'info' | 'error' | 'surface-variant'
-  icon: string
-}
+import KpiCard from '~/modules/analytics/components/KpiCard.vue'
+import { useKpis } from '~/modules/analytics'
 
-// Colore semantico legato al dominio, non ai nomi Vuetify di default:
-// success = disponibile, info = in ricarica, error = guasto,
-// surface-variant = offline. Icona + testo sempre presenti: lo stato non è
-// mai comunicato dal solo colore.
-const statusSamples: StatusSample[] = [
-  { label: 'Verfügbar', color: 'success', icon: 'mdi-check-circle' },
-  { label: 'Lädt', color: 'info', icon: 'mdi-lightning-bolt' },
-  { label: 'Störung', color: 'error', icon: 'mdi-alert-circle' },
-  { label: 'Offline', color: 'surface-variant', icon: 'mdi-power-plug-off' }
-]
+useSeoMeta({
+  title: 'Dashboard – ChargeHub',
+  description: 'Überblick über Stationen, Ladepunkte, Nutzung und Energie der letzten 7 Tage.'
+})
+
+const { kpis, pending, error } = useKpis()
 </script>
 
 <template>
   <v-container class="py-8">
-    <v-row>
-      <v-col cols="12" md="8" lg="6">
-        <h1 class="text-h5 mb-1">Design-System-Vorschau</h1>
-        <p class="text-body-2 text-medium-emphasis mb-6">
-          Semantische Statusfarben, Layout und Dark Mode aus Tag 2. Die eigentliche Stationsliste
-          folgt in einem späteren Schritt.
-        </p>
+    <h1 class="text-h5 mb-4">Dashboard</h1>
 
-        <v-card class="mb-6">
-          <v-card-item>
-            <v-card-title>Ladepunkt-Status</v-card-title>
-          </v-card-item>
-          <v-card-text class="d-flex flex-wrap ga-2">
-            <v-chip
-              v-for="status in statusSamples"
-              :key="status.label"
-              :color="status.color"
-              :prepend-icon="status.icon"
-              variant="flat"
-            >
-              {{ status.label }}
-            </v-chip>
-          </v-card-text>
-        </v-card>
+    <v-alert v-if="error" type="error" class="mb-4" text="KPIs konnten nicht geladen werden." />
 
-        <v-card>
-          <v-card-item>
-            <v-card-title>Typografie</v-card-title>
-          </v-card-item>
-          <v-card-text>
-            <p class="text-h6 mb-1">Überschrift (h6)</p>
-            <p class="text-body-1 mb-1">
-              Fließtext (body-1) mit dem System-Font-Stack aus
-              <code>_variables.scss</code>.
-            </p>
-            <p class="text-caption text-medium-emphasis mb-0">
-              Caption-Text für sekundäre Informationen.
-            </p>
-          </v-card-text>
-        </v-card>
+    <v-row v-if="pending && kpis.length === 0">
+      <v-col v-for="n in 6" :key="n" cols="12" sm="6" md="4">
+        <v-skeleton-loader type="card" />
+      </v-col>
+    </v-row>
+
+    <v-row v-else>
+      <v-col v-for="item in kpis" :key="item.key" cols="12" sm="6" md="4">
+        <KpiCard
+          :label="item.label"
+          :value="item.value"
+          :unit="item.unit"
+          :trend-percent="item.trendPercent"
+          :higher-is-better="item.higherIsBetter"
+          :series="item.series"
+        />
       </v-col>
     </v-row>
   </v-container>
