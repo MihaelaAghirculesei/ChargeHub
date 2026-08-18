@@ -2,8 +2,10 @@
 import StationStatusChip from '~/modules/stations/components/StationStatusChip.vue'
 import { useStations } from '~/modules/stations/composables/useStations'
 import type { StationsTableUpdate } from '~/modules/stations/composables/useStations'
+import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
 const { stations, total, pending, error, refresh, updateOptions } = useStations()
+const filtersStore = useStationsFiltersStore()
 
 // Skeleton solo al primo caricamento (nessun dato ancora in mano): per un
 // refetch di pagina/ordinamento basta il loading inline di v-data-table,
@@ -33,6 +35,19 @@ function formatPower(maxPowerKw: number | null): string {
 function onUpdateOptions(options: StationsTableUpdate) {
   updateOptions(options)
 }
+
+/**
+ * Hover riga ↔ marker (Giorno 8): la riga scrive nello store al passaggio
+ * del mouse, e si evidenzia anche quando è la mappa a impostare l'hover —
+ * stessa `hoveredStationId` in entrambe le direzioni, vedi StationsMap.vue.
+ */
+function rowProps({ item }: { item: (typeof stations.value)[number] }) {
+  return {
+    onMouseenter: () => filtersStore.hover(item.id),
+    onMouseleave: () => filtersStore.hover(null),
+    class: filtersStore.hoveredStationId === item.id ? 'bg-surface-variant' : undefined
+  }
+}
 </script>
 
 <template>
@@ -61,6 +76,7 @@ function onUpdateOptions(options: StationsTableUpdate) {
     :loading="pending"
     items-per-page-text="Zeilen pro Seite"
     density="comfortable"
+    :row-props="rowProps"
     @update:options="onUpdateOptions"
   >
     <template #[`item.town`]="{ item }">
