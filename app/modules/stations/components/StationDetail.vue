@@ -1,9 +1,40 @@
 <script setup lang="ts">
-import type { Station } from '#shared/schemas/station'
+import type { Connector, Station } from '#shared/schemas/station'
+import type { ChargePointTelemetry } from '#shared/schemas/telemetry'
+import ChargePointStatusChip from '~/modules/stations/components/ChargePointStatusChip.vue'
 import StationMiniMap from '~/modules/stations/components/StationMiniMap.vue'
 import StationStatusChip from '~/modules/stations/components/StationStatusChip.vue'
+import TelemetryConnectionIndicator from '~/modules/stations/components/TelemetryConnectionIndicator.vue'
+import { useLiveTelemetry } from '~/modules/stations/composables/useLiveTelemetry'
 
-defineProps<{ station: Station }>()
+const props = defineProps<{ station: Station }>()
+
+const { telemetry, status: connectionStatus } = useLiveTelemetry(() => [props.station.id])
+
+const liveByConnectorId = computed(() => {
+  const map = new Map<number, ChargePointTelemetry>()
+  for (const connectorTelemetry of telemetry.value[0]?.connectors ?? []) {
+    map.set(connectorTelemetry.connectorId, connectorTelemetry)
+  }
+  return map
+})
+
+interface ConnectorWithTelemetry {
+  connector: Connector
+  live: ChargePointTelemetry | undefined
+}
+
+const connectorsWithTelemetry = computed<ConnectorWithTelemetry[]>(() =>
+  props.station.connectors.map((connector) => ({
+    connector,
+    live: liveByConnectorId.value.get(connector.id)
+  }))
+)
+
+function chargingPowerPercent(entry: ConnectorWithTelemetry): number {
+  if (!entry.live || entry.live.powerKw === null || !entry.connector.powerKw) return 0
+  return Math.min(100, (entry.live.powerKw / entry.connector.powerKw) * 100)
+}
 
 function formatPower(powerKw: number | null): string {
   return powerKw === null ? 'Unbekannt' : `${powerKw} kW`
@@ -65,15 +96,33 @@ function formatDate(value: string | null): string {
 
       <v-card>
         <v-card-item>
-          <v-card-title class="text-subtitle-1">Anschlüsse</v-card-title>
+          <v-card-title class="d-flex align-center justify-space-between">
+            <span class="text-subtitle-1">Anschlüsse</span>
+            <TelemetryConnectionIndicator :status="connectionStatus" />
+          </v-card-title>
         </v-card-item>
         <v-list lines="two">
-          <v-list-item v-for="connector in station.connectors" :key="connector.id">
-            <v-list-item-title>{{ connector.type }}</v-list-item-title>
+          <v-list-item v-for="entry in connectorsWithTelemetry" :key="entry.connector.id">
+            <v-list-item-title class="d-flex align-center flex-wrap ga-2">
+              {{ entry.connector.type }}
+              <ChargePointStatusChip v-if="entry.live" :status="entry.live.status" />
+            </v-list-item-title>
             <v-list-item-subtitle>
-              {{ connector.level ?? 'Unbekannt' }} &middot;
-              {{ formatPower(connector.powerKw) }} &middot; {{ connector.quantity }}x
+              {{ entry.connector.level ?? 'Unbekannt' }} &middot;
+              {{ formatPower(entry.connector.powerKw) }} &middot; {{ entry.connector.quantity }}x
             </v-list-item-subtitle>
+            <template v-if="entry.live?.status === 'Charging'">
+              <v-progress-linear
+                :model-value="chargingPowerPercent(entry)"
+                color="info"
+                height="6"
+                rounded
+                class="mt-2"
+              />
+              <p class="text-caption text-medium-emphasis mt-1 mb-0">
+                {{ entry.live.powerKw }} kW &middot; {{ entry.live.sessionEnergyKwh }} kWh
+              </p>
+            </template>
           </v-list-item>
           <v-list-item v-if="station.connectors.length === 0">
             <v-list-item-title class="text-medium-emphasis">
