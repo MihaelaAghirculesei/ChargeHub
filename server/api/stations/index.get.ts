@@ -27,6 +27,9 @@ const querySchema = z.object({
   operatorid: z.coerce.number().int().positive().optional(),
   statustypeid: z.coerce.number().int().positive().optional(),
   minpowerkw: z.coerce.number().positive().optional(),
+  // Filtro nostro, non di OCM: non tocca il fetch/la cache verso OCM, si
+  // applica dopo, sul risultato già cachato — vedi fuori dallo schema.
+  search: z.string().trim().min(1).optional(),
   page: z.coerce.number().int().positive().default(1),
   itemsperpage: z.coerce.number().int().positive().max(100).default(10),
   sortby: z.enum(['name', 'operator', 'town', 'maxPowerKw', 'operationalStatus']).optional(),
@@ -54,6 +57,7 @@ export default defineEventHandler(async (event) => {
     operatorid,
     statustypeid,
     minpowerkw,
+    search,
     page,
     itemsperpage,
     sortby,
@@ -73,8 +77,14 @@ export default defineEventHandler(async (event) => {
       minPowerKw: minpowerkw
     })
 
+    const filtered = search
+      ? stations.filter((station) =>
+          matchesText([station.name, station.operator, station.address.town], search)
+        )
+      : stations
+
     return paginate(
-      stations,
+      filtered,
       { page, itemsPerPage: itemsperpage, sortBy: sortby, sortOrder: sortorder },
       sortby ? sortAccessors[sortby] : undefined
     )
