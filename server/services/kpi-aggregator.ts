@@ -1,58 +1,18 @@
 import type { ChargingSession } from '#shared/schemas/session'
 import type { KpiSeries } from '#shared/schemas/kpi'
 import type { Station } from '#shared/schemas/station'
-import { computeStationTelemetry } from '~~/server/services/telemetry-simulator'
+import { countByStatus, dayKey, lastNDays } from '~~/server/utils/telemetry-aggregation'
 import { round } from '~~/server/utils/number'
 
 /**
  * Compone dati già esistenti (registro stazioni, telemetria simulata,
  * sessioni sintetiche) in KPI con trend/sparkline — non un nuovo simulatore.
  * Lo storico a 7 giorni per i KPI "live" (disponibili/in ricarica/guasti/
- * utilizzo) sfrutta il fatto che `computeStationTelemetry` è una funzione
- * pura di (stazione, istante): campionare lo stesso istante nei 7 giorni
- * passati produce uno storico plausibile senza dover persistere nulla,
- * stesso principio del simulatore stesso (ADR-0002).
+ * utilizzo) sfrutta `server/utils/telemetry-aggregation.ts` (stessa logica
+ * di campionamento riusata dai grafici del Giorno 14).
  */
 
 const TREND_DAYS = 7
-const DAY_MS = 24 * 60 * 60 * 1000
-
-interface StatusCounts {
-  available: number
-  charging: number
-  faulted: number
-  offline: number
-  total: number
-}
-
-function countByStatus(stations: Station[], at: Date): StatusCounts {
-  const counts: StatusCounts = { available: 0, charging: 0, faulted: 0, offline: 0, total: 0 }
-
-  for (const station of stations) {
-    const telemetry = computeStationTelemetry(station, at)
-    for (const connector of telemetry.connectors) {
-      counts.total += 1
-      if (connector.status === 'Available') counts.available += 1
-      else if (connector.status === 'Charging') counts.charging += 1
-      else if (connector.status === 'Faulted') counts.faulted += 1
-      else counts.offline += 1
-    }
-  }
-
-  return counts
-}
-
-function lastNDays(days: number, now: Date): Date[] {
-  const dates: Date[] = []
-  for (let i = days - 1; i >= 0; i -= 1) {
-    dates.push(new Date(now.getTime() - i * DAY_MS))
-  }
-  return dates
-}
-
-function dayKey(iso: string): string {
-  return iso.slice(0, 10)
-}
 
 function trendPercent(series: number[]): number {
   const first = series[0]
