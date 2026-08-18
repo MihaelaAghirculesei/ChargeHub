@@ -11,6 +11,7 @@ Dashboard per la gestione di infrastruttura di ricarica elettrica. Progetto port
 - **Mappa:** MapLibre GL JS + OpenStreetMap
 - **Grafici:** Chart.js (`vue-chartjs`)
 - **Test:** Vitest + `@nuxt/test-utils` + Playwright
+- **i18n:** `@nuxtjs/i18n`, tedesco (default) + inglese, routing localizzato (`/de/...`, `/en/...`)
 - **Dati:** registro stazioni reale da [Open Charge Map](https://openchargemap.org/), telemetria simulata lato server (vedi `docs/adr/`)
 
 ## Setup
