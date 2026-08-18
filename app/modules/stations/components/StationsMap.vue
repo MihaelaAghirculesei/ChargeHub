@@ -21,6 +21,8 @@ import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filt
 const { stations } = useStations()
 const filtersStore = useStationsFiltersStore()
 const theme = useTheme()
+const { t } = useI18n()
+const localePath = useLocalePath()
 
 const mapContainer = ref<HTMLDivElement | null>(null)
 let map: MapLibreMap | null = null
@@ -84,7 +86,7 @@ function popupHtml(feature: MapGeoJSONFeature): string {
     <div class="stations-map-popup">
       <p class="text-body-2 font-weight-medium mb-1">${escapeHtml(properties.name)}</p>
       <p class="text-caption text-medium-emphasis mb-1">${escapeHtml(properties.operator)} &middot; ${escapeHtml(properties.operationalStatus)}</p>
-      <a href="/stations/${properties.id}" class="text-caption">Details ansehen</a>
+      <a href="${escapeHtml(localePath(`/stations/${properties.id}`))}" class="text-caption">${escapeHtml(t('stations.popupDetails'))}</a>
     </div>
   `
 }
@@ -303,7 +305,7 @@ onBeforeUnmount(() => {
       ref="mapContainer"
       class="stations-map"
       role="application"
-      aria-label="Kartenansicht der Stationen"
+      :aria-label="t('stations.mapAriaLabel')"
     />
     <template #fallback>
       <v-skeleton-loader type="image" height="400" />

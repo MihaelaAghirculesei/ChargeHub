@@ -11,6 +11,7 @@ import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
  */
 const props = defineProps<{ latitude: number; longitude: number }>()
 
+const { t } = useI18n()
 const mapContainer = ref<HTMLDivElement | null>(null)
 const theme = useTheme()
 let map: MapLibreMap | null = null
@@ -63,7 +64,7 @@ onBeforeUnmount(() => {
       ref="mapContainer"
       class="station-mini-map"
       role="img"
-      aria-label="Standort der Station auf der Karte"
+      :aria-label="t('stations.miniMapAriaLabel')"
     />
     <template #fallback>
       <v-skeleton-loader type="image" height="220" />

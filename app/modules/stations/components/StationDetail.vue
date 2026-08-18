@@ -9,6 +9,8 @@ import { useLiveTelemetry } from '~/modules/stations/composables/useLiveTelemetr
 
 const props = defineProps<{ station: Station }>()
 
+const { t } = useI18n()
+const { formatDate: formatLocaleDate } = useLocaleFormatters()
 const { telemetry, status: connectionStatus } = useLiveTelemetry(() => [props.station.id])
 
 const liveByConnectorId = computed(() => {
@@ -37,16 +39,12 @@ function chargingPowerPercent(entry: ConnectorWithTelemetry): number {
 }
 
 function formatPower(powerKw: number | null): string {
-  return powerKw === null ? 'Unbekannt' : `${powerKw} kW`
+  return powerKw === null ? t('common.unknown') : `${powerKw} kW`
 }
 
 function formatDate(value: string | null): string {
-  if (!value) return 'Unbekannt'
-  return new Date(value).toLocaleDateString('de-DE', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
+  if (!value) return t('common.unknown')
+  return formatLocaleDate(value, { year: 'numeric', month: 'long', day: 'numeric' })
 }
 </script>
 
@@ -65,17 +63,19 @@ function formatDate(value: string | null): string {
               :label="station.operationalStatus"
             />
             <span class="text-caption text-medium-emphasis">
-              Zuletzt geprüft: {{ formatDate(station.lastVerified) }}
+              {{ t('stations.detail.lastVerified', { date: formatDate(station.lastVerified) }) }}
             </span>
           </div>
 
-          <h2 class="text-subtitle-1 font-weight-medium mb-1">Adresse</h2>
+          <h2 class="text-subtitle-1 font-weight-medium mb-1">
+            {{ t('stations.detail.address') }}
+          </h2>
           <p class="text-body-2 mb-4">
             <template v-if="station.address.line1">{{ station.address.line1 }}<br /></template>
             <template v-if="station.address.line2">{{ station.address.line2 }}<br /></template>
             {{
               [station.address.postcode, station.address.town].filter(Boolean).join(' ') ||
-              'Unbekannt'
+              t('common.unknown')
             }}<br />
             <template v-if="station.address.country">{{ station.address.country }}</template>
           </p>
@@ -86,8 +86,8 @@ function formatDate(value: string | null): string {
             censito la stazione (AccessComments, spesso — non sempre —
             informazioni sugli orari). Vedi docs/PROGRESS.md, Giorno 9.
           -->
-          <h2 class="text-subtitle-1 font-weight-medium mb-1">Zugang</h2>
-          <p class="text-body-2 mb-0">{{ station.usageType ?? 'Unbekannt' }}</p>
+          <h2 class="text-subtitle-1 font-weight-medium mb-1">{{ t('stations.detail.access') }}</h2>
+          <p class="text-body-2 mb-0">{{ station.usageType ?? t('common.unknown') }}</p>
           <p v-if="station.address.accessComments" class="text-body-2 text-medium-emphasis">
             {{ station.address.accessComments }}
           </p>
@@ -97,7 +97,7 @@ function formatDate(value: string | null): string {
       <v-card>
         <v-card-item>
           <v-card-title class="d-flex align-center justify-space-between">
-            <span class="text-subtitle-1">Anschlüsse</span>
+            <span class="text-subtitle-1">{{ t('stations.detail.connectorsTitle') }}</span>
             <TelemetryConnectionIndicator :status="connectionStatus" />
           </v-card-title>
         </v-card-item>
@@ -108,7 +108,7 @@ function formatDate(value: string | null): string {
               <ChargePointStatusChip v-if="entry.live" :status="entry.live.status" />
             </v-list-item-title>
             <v-list-item-subtitle>
-              {{ entry.connector.level ?? 'Unbekannt' }} &middot;
+              {{ entry.connector.level ?? t('common.unknown') }} &middot;
               {{ formatPower(entry.connector.powerKw) }} &middot; {{ entry.connector.quantity }}x
             </v-list-item-subtitle>
             <template v-if="entry.live?.status === 'Charging'">
@@ -126,7 +126,7 @@ function formatDate(value: string | null): string {
           </v-list-item>
           <v-list-item v-if="station.connectors.length === 0">
             <v-list-item-title class="text-medium-emphasis">
-              Keine Anschlussdaten verfügbar
+              {{ t('stations.detail.noConnectors') }}
             </v-list-item-title>
           </v-list-item>
         </v-list>

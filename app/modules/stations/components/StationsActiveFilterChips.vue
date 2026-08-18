@@ -3,6 +3,7 @@ import { useStationReferenceData } from '~/modules/stations/composables/useStati
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 import type { StationFilterKey } from '~/modules/stations/types'
 
+const { t } = useI18n()
 const filtersStore = useStationsFiltersStore()
 // Stessa chiave di useAsyncData della barra filtri: niente richiesta in più,
 // solo il valore già cachato.
@@ -21,7 +22,12 @@ const chips = computed<ActiveFilterChip[]>(() => {
   const filters = filtersStore.filters
   const list: ActiveFilterChip[] = []
 
-  if (filters.search) list.push({ key: 'search', label: `Suche: ${filters.search}` })
+  if (filters.search) {
+    list.push({
+      key: 'search',
+      label: t('stations.activeFilters.search', { value: filters.search })
+    })
+  }
   if (filters.connectionTypeId !== undefined) {
     list.push({
       key: 'connectionTypeId',
@@ -41,7 +47,10 @@ const chips = computed<ActiveFilterChip[]>(() => {
     })
   }
   if (filters.minPowerKw !== undefined) {
-    list.push({ key: 'minPowerKw', label: `≥ ${filters.minPowerKw} kW` })
+    list.push({
+      key: 'minPowerKw',
+      label: t('stations.activeFilters.minPower', { value: filters.minPowerKw })
+    })
   }
 
   return list
@@ -73,7 +82,7 @@ function remove(key: StationFilterKey) {
       size="small"
       data-testid="clear-all-filters"
       @click="filtersStore.resetFilters()"
-      >Alle löschen</v-btn
+      >{{ t('stations.activeFilters.clearAll') }}</v-btn
     >
   </div>
 </template>

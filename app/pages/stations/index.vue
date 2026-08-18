@@ -6,15 +6,17 @@ import StationsTable from '~/modules/stations/components/StationsTable.vue'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 import type { StationsViewMode } from '~/modules/stations/types'
 
+const { t } = useI18n()
+
 definePageMeta({ title: 'Stationen' })
 
 const filtersStore = useStationsFiltersStore()
 
-const viewModeOptions: { value: StationsViewMode; icon: string; label: string }[] = [
-  { value: 'map', icon: 'mdi-map', label: 'Karte' },
-  { value: 'list', icon: 'mdi-format-list-bulleted', label: 'Liste' },
-  { value: 'split', icon: 'mdi-view-split-vertical', label: 'Geteilt' }
-]
+const viewModeOptions = computed<{ value: StationsViewMode; icon: string; label: string }[]>(() => [
+  { value: 'map', icon: 'mdi-map', label: t('stations.viewMode.map') },
+  { value: 'list', icon: 'mdi-format-list-bulleted', label: t('stations.viewMode.list') },
+  { value: 'split', icon: 'mdi-view-split-vertical', label: t('stations.viewMode.split') }
+])
 
 function onViewModeChange(value: unknown) {
   if (value === 'map' || value === 'list' || value === 'split') filtersStore.setViewMode(value)
@@ -24,7 +26,7 @@ function onViewModeChange(value: unknown) {
 <template>
   <v-container class="py-8" fluid>
     <div class="d-flex flex-wrap align-center justify-space-between mb-4 ga-2">
-      <h1 class="text-h5">Stationen</h1>
+      <h1 class="text-h5">{{ t('stations.title') }}</h1>
       <v-btn-toggle
         :model-value="filtersStore.viewMode"
         density="comfortable"

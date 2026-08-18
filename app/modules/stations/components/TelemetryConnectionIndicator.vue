@@ -8,20 +8,18 @@ import type { TelemetryConnectionStatus } from '~/modules/stations/telemetry/tra
  */
 const props = defineProps<{ status: TelemetryConnectionStatus }>()
 
-const STATUS_META: Record<
-  TelemetryConnectionStatus,
-  { color: string; icon: string; label: string }
-> = {
-  live: { color: 'success', icon: 'mdi-circle-medium', label: 'Live' },
-  reconnecting: {
-    color: 'warning',
-    icon: 'mdi-progress-clock',
-    label: 'Verbindung wird wiederhergestellt'
-  },
-  offline: { color: 'error', icon: 'mdi-wifi-off', label: 'Offline' }
+const { t } = useI18n()
+
+const STATUS_META: Record<TelemetryConnectionStatus, { color: string; icon: string }> = {
+  live: { color: 'success', icon: 'mdi-circle-medium' },
+  reconnecting: { color: 'warning', icon: 'mdi-progress-clock' },
+  offline: { color: 'error', icon: 'mdi-wifi-off' }
 }
 
-const meta = computed(() => STATUS_META[props.status])
+const meta = computed(() => ({
+  ...STATUS_META[props.status],
+  label: t(`telemetryConnection.${props.status}`)
+}))
 </script>
 
 <template>

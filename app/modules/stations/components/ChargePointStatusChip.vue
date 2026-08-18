@@ -8,14 +8,19 @@ import type { ChargePointStatus } from '#shared/schemas/telemetry'
  */
 const props = defineProps<{ status: ChargePointStatus }>()
 
-const STATUS_META: Record<ChargePointStatus, { color: string; icon: string; label: string }> = {
-  Available: { color: 'success', icon: 'mdi-check-circle', label: 'Verfügbar' },
-  Charging: { color: 'info', icon: 'mdi-battery-charging-high', label: 'Lädt' },
-  Faulted: { color: 'error', icon: 'mdi-alert-circle', label: 'Gestört' },
-  Offline: { color: 'surface-variant', icon: 'mdi-power-plug-off', label: 'Offline' }
+const { t } = useI18n()
+
+const STATUS_META: Record<ChargePointStatus, { color: string; icon: string }> = {
+  Available: { color: 'success', icon: 'mdi-check-circle' },
+  Charging: { color: 'info', icon: 'mdi-battery-charging-high' },
+  Faulted: { color: 'error', icon: 'mdi-alert-circle' },
+  Offline: { color: 'surface-variant', icon: 'mdi-power-plug-off' }
 }
 
-const meta = computed(() => STATUS_META[props.status])
+const meta = computed(() => ({
+  ...STATUS_META[props.status],
+  label: t(`chargePointStatus.${props.status}`)
+}))
 </script>
 
 <template>

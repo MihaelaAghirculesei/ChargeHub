@@ -4,6 +4,7 @@ import { useStations } from '~/modules/stations/composables/useStations'
 import type { StationsTableUpdate } from '~/modules/stations/composables/useStations'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
+const { t } = useI18n()
 const { stations, total, pending, error, refresh, updateOptions } = useStations()
 const filtersStore = useStationsFiltersStore()
 
@@ -13,14 +14,14 @@ const filtersStore = useStationsFiltersStore()
 // salto visivo peggiore del semplice spinner.
 const isFirstLoad = computed(() => pending.value && stations.value.length === 0)
 
-const headers = [
-  { title: 'Name', key: 'name' },
-  { title: 'Betreiber', key: 'operator' },
-  { title: 'Stadt', key: 'town' },
-  { title: 'Anschlüsse', key: 'connectors', sortable: false },
-  { title: 'Max. Leistung', key: 'maxPowerKw', align: 'end' as const },
-  { title: 'Status', key: 'operationalStatus' }
-]
+const headers = computed(() => [
+  { title: t('stations.table.name'), key: 'name' },
+  { title: t('stations.table.operator'), key: 'operator' },
+  { title: t('stations.table.town'), key: 'town' },
+  { title: t('stations.table.connectors'), key: 'connectors', sortable: false },
+  { title: t('stations.table.maxPower'), key: 'maxPowerKw', align: 'end' as const },
+  { title: t('stations.table.status'), key: 'operationalStatus' }
+])
 
 function connectorSummary(station: (typeof stations.value)[number]): string {
   if (station.connectors.length === 0) return '–'
@@ -43,11 +44,13 @@ function onUpdateOptions(options: StationsTableUpdate) {
  * Click naviga al dettaglio (Giorno 9) — senza, il popup della mappa
  * resterebbe l'unico modo di raggiungerlo.
  */
+const localePath = useLocalePath()
+
 function rowProps({ item }: { item: (typeof stations.value)[number] }) {
   return {
     onMouseenter: () => filtersStore.hover(item.id),
     onMouseleave: () => filtersStore.hover(null),
-    onClick: () => navigateTo(`/stations/${item.id}`),
+    onClick: () => navigateTo(localePath(`/stations/${item.id}`)),
     class: filtersStore.hoveredStationId === item.id ? 'bg-surface-variant' : undefined,
     style: 'cursor: pointer'
   }
@@ -56,9 +59,9 @@ function rowProps({ item }: { item: (typeof stations.value)[number] }) {
 
 <template>
   <v-alert v-if="error" type="error" variant="tonal" class="mb-4" data-testid="stations-error">
-    <template #text> Die Stationen konnten nicht geladen werden. </template>
+    <template #text> {{ t('stations.loadError') }} </template>
     <template #append>
-      <v-btn variant="text" color="error" @click="refresh()">Erneut versuchen</v-btn>
+      <v-btn variant="text" color="error" @click="refresh()">{{ t('common.retry') }}</v-btn>
     </template>
   </v-alert>
 
@@ -67,18 +70,23 @@ function rowProps({ item }: { item: (typeof stations.value)[number] }) {
   <v-empty-state
     v-else-if="!pending && stations.length === 0"
     icon="mdi-ev-station"
-    title="Keine Stationen gefunden"
-    text="Für die aktuellen Filter gibt es keine Ergebnisse. Versuche es mit einem größeren Radius oder anderen Filtern."
+    :title="t('stations.empty.title')"
+    :text="t('stations.empty.text')"
     data-testid="stations-empty"
   />
 
+  <!--
+    Nessun `items-per-page-text`: senza override, Vuetify lo prende da
+    `$vuetify.dataTable.itemsPerPageText` (locale de/en mergeti in
+    `i18n/locales/`, Giorno 17) — un valore scritto qui a mano resterebbe
+    nella lingua sbagliata quando si passa a `en`.
+  -->
   <v-data-table-server
     v-else
     :headers="headers"
     :items="stations"
     :items-length="total"
     :loading="pending"
-    items-per-page-text="Zeilen pro Seite"
     density="comfortable"
     :row-props="rowProps"
     @update:options="onUpdateOptions"

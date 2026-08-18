@@ -3,12 +3,13 @@ import StationDetail from '~/modules/stations/components/StationDetail.vue'
 import { useStation } from '~/modules/stations/composables/useStation'
 
 const route = useRoute()
+const { t } = useI18n()
 
 const rawId = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 const parsedId = Number(rawId)
 
 if (!Number.isInteger(parsedId) || parsedId <= 0) {
-  throw createError({ statusCode: 404, statusMessage: 'Stazione non trovata.', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: t('stations.notFound'), fatal: true })
 }
 
 // `await` qui (non `lazy`) è quello che fa arrivare il contenuto già
@@ -21,12 +22,12 @@ const { station, error: fetchError } = await useStation(parsedId)
 if (fetchError.value) {
   throw createError({
     statusCode: 502,
-    statusMessage: 'Impossibile recuperare la stazione dal registro Open Charge Map.',
+    statusMessage: t('stations.fetchError'),
     fatal: true
   })
 }
 if (!station.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Stazione non trovata.', fatal: true })
+  throw createError({ statusCode: 404, statusMessage: t('stations.notFound'), fatal: true })
 }
 
 // Da qui in poi `station.value` è verificato non-null: fissato in una

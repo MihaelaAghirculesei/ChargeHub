@@ -2,6 +2,7 @@
 import { useStationReferenceData } from '~/modules/stations/composables/useStationReferenceData'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
+const { t } = useI18n()
 const filtersStore = useStationsFiltersStore()
 const { data: referenceData, pending: referenceDataPending } = useStationReferenceData()
 
@@ -51,7 +52,7 @@ const minPowerKw = computed<number | null>({
     <v-col cols="12" md="4">
       <v-text-field
         v-model="searchInput"
-        label="Suche (Name, Betreiber, Stadt)"
+        :label="t('stations.filters.search')"
         prepend-inner-icon="mdi-magnify"
         clearable
         hide-details
@@ -63,7 +64,7 @@ const minPowerKw = computed<number | null>({
         v-model="connectionTypeId"
         :items="connectorTypeItems"
         :loading="referenceDataPending"
-        label="Anschlusstyp"
+        :label="t('stations.filters.connectionType')"
         clearable
         hide-details
         density="comfortable"
@@ -74,7 +75,7 @@ const minPowerKw = computed<number | null>({
         v-model="operatorId"
         :items="operatorItems"
         :loading="referenceDataPending"
-        label="Betreiber"
+        :label="t('stations.filters.operator')"
         clearable
         hide-details
         density="comfortable"
@@ -85,7 +86,7 @@ const minPowerKw = computed<number | null>({
         v-model="statusTypeId"
         :items="statusItems"
         :loading="referenceDataPending"
-        label="Status"
+        :label="t('stations.filters.status')"
         clearable
         hide-details
         density="comfortable"
@@ -96,7 +97,7 @@ const minPowerKw = computed<number | null>({
         v-model.number="minPowerKw"
         type="number"
         min="0"
-        label="Min. Leistung (kW)"
+        :label="t('stations.filters.minPower')"
         clearable
         hide-details
         density="comfortable"
