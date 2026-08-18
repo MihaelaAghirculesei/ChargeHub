@@ -179,11 +179,21 @@ export default defineNuxtConfig({
   },
   i18n: {
     locales: [
-      { code: 'de', language: 'de-DE', name: 'Deutsch' },
-      { code: 'en', language: 'en-US', name: 'English' }
+      { code: 'de', language: 'de-DE', name: 'Deutsch', file: 'de.ts' },
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.ts' }
     ],
+    langDir: 'locales',
     defaultLocale: 'de',
-    strategy: 'prefix_except_default'
+    // Routing sempre prefissato per entrambe le lingue (/de/..., /en/...),
+    // come richiesto dal piano — non "de senza prefisso, en con" di
+    // prefix_except_default.
+    strategy: 'prefix',
+    // Niente redirect automatico in base all'Accept-Language del browser: il
+    // tedesco resta il default deterministico ("Tedesco come lingua di
+    // default", piano) finché l'utente non sceglie esplicitamente
+    // dall'interfaccia — non a un rilevamento che varia da un browser
+    // all'altro (e non è affatto deterministico in un ambiente di test).
+    detectBrowserLanguage: false
   },
   eslint: {
     config: {

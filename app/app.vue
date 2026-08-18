@@ -1,3 +1,13 @@
+<script setup lang="ts">
+/**
+ * `<html lang>` non è gestito da solo: senza, resta assente dall'HTML
+ * qualunque sia la lingua attiva (verificato con un `curl` grezzo) — un
+ * problema di accessibilità reale (screen reader/pronuncia), non solo SEO.
+ */
+const { locale } = useI18n()
+useHead({ htmlAttrs: { lang: locale } })
+</script>
+
 <template>
   <v-app>
     <NuxtRouteAnnouncer />
