@@ -22,3 +22,6 @@ logs
 .env
 .env.*
 !.env.example
+
+# Note personali di avanzamento, non per il repo pubblico
+docs/PROGRESS.md
