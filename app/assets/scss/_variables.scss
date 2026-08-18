@@ -1,0 +1,30 @@
+// Override dei token SASS interni di Vuetify.
+// Caricato come `configFile` da `vuetify-nuxt-module` (vedi nuxt.config.ts),
+// quindi ogni override qui si applica prima che i componenti Vuetify vengano generati.
+// Documentato in docs/adr/0001-design-system.md.
+@use 'vuetify/settings' with (
+  // Font-stack di sistema: nessun webfont da scaricare, zero FOUT/CLS,
+  // coerente sia su Windows/macOS/Linux che sui browser mobili.
+  $body-font-family: (
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif
+  ),
+  $heading-font-family: (
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif
+  ),
+  // Baseline a 4px, in linea con lo spacer di default di Vuetify: reso esplicito
+  // qui perché è la base su cui ragionano tutte le utility "pa-*"/"ma-*".
+  $spacer: 4px,
+  // Card e chip più arrotondate: linguaggio visivo più morbido per una dashboard,
+  // ma non "pillola" (mantiene una gerarchia visiva chiara rispetto a `pill`/`circle`).
+  $border-radius-root: 10px
+);
