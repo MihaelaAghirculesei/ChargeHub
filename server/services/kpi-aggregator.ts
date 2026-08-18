@@ -23,13 +23,12 @@ function trendPercent(series: number[]): number {
 
 function kpi(
   key: string,
-  label: string,
   value: number,
   unit: string,
   higherIsBetter: boolean,
   series: number[]
 ): KpiSeries {
-  return { key, label, value, unit, trendPercent: trendPercent(series), higherIsBetter, series }
+  return { key, value, unit, trendPercent: trendPercent(series), higherIsBetter, series }
 }
 
 export function computeKpis(
@@ -63,11 +62,11 @@ export function computeKpis(
   const energySeries = days.map((day) => energyByDay.get(dayKey(day.toISOString())) ?? 0)
 
   return [
-    kpi('stations', 'Stationen gesamt', stations.length, '', true, stationsSeries),
-    kpi('available', 'Verfügbare Punkte', current.available, '', true, availableSeries),
-    kpi('charging', 'In Ladung', current.charging, '', true, chargingSeries),
-    kpi('faulted', 'Gestört', current.faulted, '', false, faultedSeries),
-    kpi('energyToday', 'kWh heute', energySeries.at(-1) ?? 0, 'kWh', true, energySeries),
-    kpi('utilization', 'Auslastung', utilizationSeries.at(-1) ?? 0, '%', true, utilizationSeries)
+    kpi('stations', stations.length, '', true, stationsSeries),
+    kpi('available', current.available, '', true, availableSeries),
+    kpi('charging', current.charging, '', true, chargingSeries),
+    kpi('faulted', current.faulted, '', false, faultedSeries),
+    kpi('energyToday', energySeries.at(-1) ?? 0, 'kWh', true, energySeries),
+    kpi('utilization', utilizationSeries.at(-1) ?? 0, '%', true, utilizationSeries)
   ]
 }
