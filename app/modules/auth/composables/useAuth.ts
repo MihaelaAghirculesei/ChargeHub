@@ -1,6 +1,13 @@
 import { useAuthUser } from '~/modules/auth/composables/useAuthUser'
 import { authRepository } from '~/modules/auth/repository'
 
+/**
+ * Punto di ingresso pubblico per l'autenticazione (login mock, Giorno 16).
+ * `user` è lo stato condiviso di `useAuthUser()` (sincronizzato con la
+ * sessione server via il plugin `auth-session.ts`, non riletto qui) —
+ * `login`/`logout` lo scrivono, il resto dell'app lo legge tramite
+ * `isLoggedIn`/`isOperator`, mai chiamando `authRepository` direttamente.
+ */
 export function useAuth() {
   const user = useAuthUser()
 
