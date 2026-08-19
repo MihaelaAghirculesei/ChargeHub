@@ -7,6 +7,14 @@ export default defineVitestConfig({
     // `tests/e2e` sono spec Playwright (Giorno 18): stesso pattern `*.spec.ts`
     // dei test unitari, ma vanno eseguiti solo con `pnpm test:e2e`.
     exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+    // Il default (10s) si è mostrato marginale (Giorno 23) sotto il carico
+    // di una macchina con più build/server/browser aperti in parallelo:
+    // `setupNuxt()` (l'inizializzazione dell'ambiente "nuxt" per file di
+    // test) è finita in hook-timeout in modo intermittente, non
+    // deterministico — stesso identico codice, esiti diversi tra un run e
+    // l'altro. Non un fix per stanotte soltanto: un runner CI più lento
+    // può avere lo stesso margine stretto.
+    hookTimeout: 30_000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
