@@ -87,8 +87,13 @@ export default defineNuxtConfig({
   // Skip link + prefers-reduced-motion (Giorno 18): stili globali non legati
   // alle variabili Sass di Vuetify, quindi un CSS a parte da quello in
   // vuetify.moduleOptions.styles.configFile. mdi-subset.css (Giorno 24):
-  // vedi il commento su vuetifyOptions.icons qui sotto.
-  css: ['~/assets/css/accessibility.css', '~/assets/css/mdi-subset.css'],
+  // vedi il commento su vuetifyOptions.icons qui sotto. layout-shift-fix.css
+  // (Giorno 25): vedi il commento nel file stesso.
+  css: [
+    '~/assets/css/accessibility.css',
+    '~/assets/css/mdi-subset.css',
+    '~/assets/css/layout-shift-fix.css'
+  ],
   /**
    * Default globali (Giorno 24): ogni pagina imposta già il proprio titolo
    * via `useSeoMeta` (convenzione dal Giorno 1, "Nome pagina – ChargeHub"),
@@ -208,6 +213,41 @@ export default defineNuxtConfig({
           importers: [windowsSassImporter]
         }
       }
+    },
+    /**
+     * `cssCodeSplit: false` (Giorno 25, gate Lighthouse Performance su
+     * /de/stations/47109): il default di Vite genera un file CSS per
+     * componente Vuetify (VBtn, VCard, VList, VRow, ... 10 file da 300 B a
+     * 4 kB ciascuno su questa sola pagina, ~15 kB totali) — ottimo per il
+     * caching granulare, ma ogni file è una richiesta HTTP separata con un
+     * costo fisso non trascurabile nella simulazione mobile di Lighthouse
+     * (throttling "Slow 4G", ~150ms di round-trip stimato a richiesta).
+     * Un solo CSS consolidato invece di 10+ non cambia in pratica i byte
+     * totali (quei componenti servono comunque quasi ovunque nell'app) ma
+     * elimina le richieste separate.
+     */
+    build: {
+      cssCodeSplit: false,
+      rollupOptions: {
+        output: {
+          /**
+           * Solo `vuetify` in un chunk unico, non tutto (Giorno 25, stesso
+           * gate Lighthouse): Vuetify genera ~15-20 file JS separati da
+           * poche centinaia di byte a poche decine di kB per componente
+           * (VBtn, VCard, VList, ...), usati su quasi ogni pagina di
+           * quest'app — stesso ragionamento di `cssCodeSplit` qui sopra,
+           * ogni file è un round-trip a parte nella simulazione mobile di
+           * Lighthouse. `maplibre-gl` e Chart.js restano ESCLUSI e in
+           * chunk separati/lazy (richiesto esplicitamente dal piano,
+           * Giorno 21): entrano solo dietro import dinamico reale (mappa
+           * al click, grafici sulla pagina analytics), non hanno senso nel
+           * bundle "sempre caricato".
+           */
+          manualChunks(id) {
+            if (id.includes('node_modules/vuetify/')) return 'vuetify'
+          }
+        }
+      }
     }
   },
   runtimeConfig: {
@@ -288,5 +328,22 @@ export default defineNuxtConfig({
     '/en/login': { prerender: true },
     '/de': { ssr: false },
     '/en': { ssr: false }
+  },
+  /**
+   * `compressPublicAssets: true` (Giorno 25, gate Lighthouse Performance su
+   * /de/stations/47109): senza, `node .output/server/index.mjs` — lo stesso
+   * comando usato dal job Lighthouse in CI — non comprime nulla, verificato
+   * con `curl -H "Accept-Encoding: gzip, br"`: nessun `Content-Encoding`,
+   * byte grezzi identici al Content-Length. Il piano richiede esplicitamente
+   * "bundle iniziale sotto i 300 kB gzip" — 884 kB di JS+CSS critico
+   * trasferiti SENZA compressione (misurato con l'audit "network-requests"
+   * di Lighthouse) rendevano quel target irraggiungibile a prescindere da
+   * quanto altro si tagliasse. Pre-comprime gzip+brotli in fase di build
+   * gli asset statici in `.output/public` (JS/CSS/font, non l'HTML
+   * renderizzato per richiesta); Nitro serve la variante compressa quando
+   * il client la accetta.
+   */
+  nitro: {
+    compressPublicAssets: true
   }
 })

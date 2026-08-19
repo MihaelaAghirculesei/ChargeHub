@@ -1,0 +1,30 @@
+/*
+ * Riserva l'altezza della `v-app-bar` PRIMA che il layout system di
+ * Vuetify la applichi via JS (Giorno 25, gate Lighthouse CLS su
+ * /de/stations/47109): misurato con un vero `PerformanceObserver` in
+ * Playwright (non solo l'audit Lighthouse), il primo layout shift della
+ * pagina è `.v-container` che salta da `y:0, height:100%viewport` a
+ * `y:56px` — Vuetify applica `--v-layout-top`/`padding-top` su `.v-main`
+ * solo dopo l'hydration (`useLayout`, non calcolato in SSR anche se il
+ * valore è deterministico da `density`), mai durante il render iniziale.
+ * Stesso identico valore (56px) applicato due volte — qui subito, poi da
+ * Vuetify — quindi zero differenza visiva, solo l'intervallo "non ancora
+ * spostato" eliminato.
+ *
+ * 56px = altezza di `<v-app-bar density="comfortable">` in
+ * app/layouts/default.vue, verificata misurando `.v-app-bar` con
+ * `getBoundingClientRect()` in un browser reale. Se quella `density`
+ * cambia, questo valore va aggiornato insieme (48px per "compact", 64px
+ * per il default) — non riletto automaticamente da Vuetify.
+ *
+ * `!important` necessario, non solo `.v-main { padding-top: 56px }`
+ * (primo tentativo, verificato NON avere alcun effetto misurabile): la
+ * vera regola di Vuetify è `padding-top: var(--v-layout-top)` in un
+ * chunk CSS separato (`VMain.*.css`, non `entry.css`), stessa specificità
+ * della mia — a parità di specificità vince l'ultima nel cascade, non la
+ * mia. `!important` la batte a prescindere dall'ordine di caricamento dei
+ * due file, senza dover dipendere da quale chunk arriva per ultimo.
+ */
+.v-main {
+  padding-top: 56px !important;
+}
