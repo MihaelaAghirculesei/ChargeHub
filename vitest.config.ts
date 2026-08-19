@@ -10,7 +10,19 @@ export default defineVitestConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      exclude: ['**/.nuxt/**', '**/tests/e2e/**']
+      exclude: ['**/.nuxt/**', '**/tests/e2e/**'],
+      // Soglia del piano (Giorno 19: "Target >= 80%"), applicata per
+      // davvero (Giorno 22, gate CI) — non solo un numero nel report che
+      // nessuno controlla. Stato reale al Giorno 21: 91.82%/93.19%
+      // statements/lines, 82.57%/89.79% branch/funzioni — soglie fissate
+      // sotto quei valori per lasciare margine, non al minimo esatto di
+      // oggi.
+      thresholds: {
+        statements: 80,
+        lines: 80,
+        functions: 80,
+        branches: 75
+      }
     }
   }
 })
