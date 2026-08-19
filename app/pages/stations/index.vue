@@ -8,7 +8,7 @@ import type { StationsViewMode } from '~/modules/stations/types'
 
 const { t } = useI18n()
 
-definePageMeta({ title: 'Stationen' })
+useSeoMeta({ title: t('stations.seoTitle') })
 
 const filtersStore = useStationsFiltersStore()
 
