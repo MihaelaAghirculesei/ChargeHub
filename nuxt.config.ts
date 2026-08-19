@@ -88,6 +88,39 @@ export default defineNuxtConfig({
   // alle variabili Sass di Vuetify, quindi un CSS a parte da quello in
   // vuetify.moduleOptions.styles.configFile.
   css: ['~/assets/css/accessibility.css'],
+  /**
+   * Default globali (Giorno 24): ogni pagina imposta già il proprio titolo
+   * via `useSeoMeta` (convenzione dal Giorno 1, "Nome pagina – ChargeHub"),
+   * quindi nessun `titleTemplate` qui — si sommerebbe al suffisso già
+   * scritto a mano in ogni pagina. `title`/`ogTitle`/`description` restano
+   * come fallback per l'unico caso senza `useSeoMeta` proprio: l'error page
+   * quando `error.vue` stesso non ha ancora fatto in tempo a impostarli
+   * (percorsi di errore molto precoci, prima dell'idratazione).
+   */
+  app: {
+    head: {
+      title: 'ChargeHub',
+      link: [
+        // SVG prima del .ico: i browser che lo supportano lo preferiscono,
+        // gli altri cadono da soli sul .ico servito per convenzione da
+        // /favicon.ico anche senza un link esplicito.
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'shortcut icon', href: '/favicon.ico' }
+      ],
+      meta: [
+        { name: 'theme-color', content: '#2E4FE0' },
+        {
+          name: 'description',
+          content:
+            'Dashboard per infrastruttura di ricarica elettrica: stazioni, sessioni, analytics, tariffe.'
+        },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'ChargeHub' },
+        { property: 'og:image', content: '/og-image.png' },
+        { name: 'twitter:card', content: 'summary_large_image' }
+      ]
+    }
+  },
   imports: {
     // Composable condivisi fuori da app/composables/ (struttura feature-first).
     dirs: ['shared/composables']
