@@ -20,7 +20,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@mdi/font": "^7.4.47",
     "@nuxtjs/i18n": "^10.6.0",
     "@pinia/nuxt": "^1.0.2",
     "@vueuse/nuxt": "^14.4.0",

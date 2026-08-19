@@ -3,3 +3,6 @@
 .data
 node_modules
 pnpm-lock.yaml
+# Generato una volta da node_modules/@mdi/font (Giorno 24), non scritto a
+# mano: riformattarlo non aggiunge leggibilità, solo diff rumorosi.
+app/assets/css/mdi-subset.css

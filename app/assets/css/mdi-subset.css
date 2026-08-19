@@ -1,0 +1,90 @@
+/*
+ * Sottoinsieme di @mdi/font (Giorno 24): solo le icone usate davvero in
+ * questa app (30) + quelle richieste internamente da Vuetify stesso
+ * (checkbox, frecce, chiudi, ecc. — 76 totali, verificato leggendo
+ * vuetify/iconsets/mdi.js), non l'intero set (~7000 regole, ~570 kB non
+ * compressi). Generato una volta a mano da node_modules/@mdi/font, non
+ * mantenuto automaticamente: se si aggiunge una nuova icona mdi-* al
+ * progetto, questo file va rigenerato (vedi docs/adr per lo script usato).
+ * Trovato con Lighthouse su un runner CI pulito, non stimato: l'intero
+ * font+CSS come parte del bundle critico dava FCP 11.5s, LCP 16.9s,
+ * Performance 46/100 su /de/stations/47109.
+ */
+@font-face{font-family:"Material Design Icons";src:url("/fonts/mdi-subset.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:swap}
+.mdi:before,.mdi-set{display:inline-block;font:normal normal normal 24px/1 "Material Design Icons";font-size:inherit;text-rendering:auto;line-height:inherit;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+.mdi-account::before{content:"\F0004"}
+.mdi-alert-circle::before{content:"\F0028"}
+.mdi-apple-keyboard-command::before{content:"\F0633"}
+.mdi-apple-keyboard-control::before{content:"\F0634"}
+.mdi-apple-keyboard-option::before{content:"\F0635"}
+.mdi-apple-keyboard-shift::before{content:"\F0636"}
+.mdi-arrow-down::before{content:"\F0045"}
+.mdi-arrow-left::before{content:"\F004D"}
+.mdi-arrow-right::before{content:"\F0054"}
+.mdi-arrow-up::before{content:"\F005D"}
+.mdi-backspace::before{content:"\F006E"}
+.mdi-battery-charging-high::before{content:"\F12A6"}
+.mdi-cached::before{content:"\F00E8"}
+.mdi-calendar::before{content:"\F00ED"}
+.mdi-chart-bar::before{content:"\F0128"}
+.mdi-check::before{content:"\F012C"}
+.mdi-check-circle::before{content:"\F05E0"}
+.mdi-checkbox-blank-outline::before{content:"\F0131"}
+.mdi-checkbox-marked::before{content:"\F0132"}
+.mdi-chevron-down::before{content:"\F0140"}
+.mdi-chevron-left::before{content:"\F0141"}
+.mdi-chevron-right::before{content:"\F0142"}
+.mdi-chevron-up::before{content:"\F0143"}
+.mdi-circle::before{content:"\F0765"}
+.mdi-circle-medium::before{content:"\F09DE"}
+.mdi-close::before{content:"\F0156"}
+.mdi-close-circle::before{content:"\F0159"}
+.mdi-cloud-upload::before{content:"\F0167"}
+.mdi-currency-eur::before{content:"\F01AD"}
+.mdi-delete::before{content:"\F01B4"}
+.mdi-download::before{content:"\F01DA"}
+.mdi-ev-station::before{content:"\F05F1"}
+.mdi-eyedropper::before{content:"\F020A"}
+.mdi-format-list-bulleted::before{content:"\F0279"}
+.mdi-fullscreen::before{content:"\F0293"}
+.mdi-fullscreen-exit::before{content:"\F0294"}
+.mdi-help-circle::before{content:"\F02D7"}
+.mdi-history::before{content:"\F02DA"}
+.mdi-home::before{content:"\F02DC"}
+.mdi-information::before{content:"\F02FC"}
+.mdi-keyboard-return::before{content:"\F0311"}
+.mdi-keyboard-space::before{content:"\F1050"}
+.mdi-login::before{content:"\F0342"}
+.mdi-logout::before{content:"\F0343"}
+.mdi-magnify::before{content:"\F0349"}
+.mdi-map::before{content:"\F034D"}
+.mdi-menu::before{content:"\F035C"}
+.mdi-menu-down::before{content:"\F035D"}
+.mdi-menu-right::before{content:"\F035F"}
+.mdi-minus::before{content:"\F0374"}
+.mdi-minus-box::before{content:"\F0375"}
+.mdi-page-first::before{content:"\F0600"}
+.mdi-page-last::before{content:"\F0601"}
+.mdi-palette::before{content:"\F03D8"}
+.mdi-paperclip::before{content:"\F03E2"}
+.mdi-pause::before{content:"\F03E4"}
+.mdi-pencil::before{content:"\F03EB"}
+.mdi-play::before{content:"\F040A"}
+.mdi-plus::before{content:"\F0415"}
+.mdi-power-plug-off::before{content:"\F06A6"}
+.mdi-progress-clock::before{content:"\F0996"}
+.mdi-radiobox-blank::before{content:"\F043D"}
+.mdi-radiobox-marked::before{content:"\F043E"}
+.mdi-star::before{content:"\F04CE"}
+.mdi-star-half-full::before{content:"\F04D0"}
+.mdi-star-outline::before{content:"\F04D2"}
+.mdi-unfold-more-horizontal::before{content:"\F054F"}
+.mdi-view-dashboard::before{content:"\F056E"}
+.mdi-view-split-vertical::before{content:"\F0BCC"}
+.mdi-volume-high::before{content:"\F057E"}
+.mdi-volume-low::before{content:"\F057F"}
+.mdi-volume-medium::before{content:"\F0580"}
+.mdi-volume-variant-off::before{content:"\F0E08"}
+.mdi-weather-night::before{content:"\F0594"}
+.mdi-weather-sunny::before{content:"\F0599"}
+.mdi-wifi-off::before{content:"\F05AA"}

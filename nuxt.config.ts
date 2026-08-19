@@ -86,8 +86,9 @@ export default defineNuxtConfig({
   modules: ['vuetify-nuxt-module', '@pinia/nuxt', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
   // Skip link + prefers-reduced-motion (Giorno 18): stili globali non legati
   // alle variabili Sass di Vuetify, quindi un CSS a parte da quello in
-  // vuetify.moduleOptions.styles.configFile.
-  css: ['~/assets/css/accessibility.css'],
+  // vuetify.moduleOptions.styles.configFile. mdi-subset.css (Giorno 24):
+  // vedi il commento su vuetifyOptions.icons qui sotto.
+  css: ['~/assets/css/accessibility.css', '~/assets/css/mdi-subset.css'],
   /**
    * Default globali (Giorno 24): ogni pagina imposta già il proprio titolo
    * via `useSeoMeta` (convenzione dal Giorno 1, "Nome pagina – ChargeHub"),
@@ -132,6 +133,21 @@ export default defineNuxtConfig({
       }
     },
     vuetifyOptions: {
+      /**
+       * `false`, non lasciato al default (Giorno 24, dopo il primo run
+       * reale della CI su un runner pulito): il default del modulo
+       * (`@mdi/font` in locale, dato che è installato) inietta l'intera
+       * foglio di stile MDI (~7000 icone, ~570 kB non compressi) come parte
+       * del bundle critico che blocca il primo rendering — misurato da
+       * Lighthouse, non stimato: FCP 11.5s, LCP 16.9s, Performance 46/100
+       * su `/de/stations/47109`. `css` qui sopra carica invece
+       * `mdi-subset.css`, generato a mano con solo le 76 icone davvero
+       * usate (30 dall'app + quelle interne di Vuetify stesso — checkbox,
+       * frecce, chiudi...) — stesse classi `.mdi`/`.mdi-xxx` di sempre,
+       * zero componenti toccati. `icons: false` qui evita che il modulo
+       * inietti *anche* la sua versione (locale o CDN) sopra alla nostra.
+       */
+      icons: false,
       theme: {
         defaultTheme: 'light',
         themes: {
