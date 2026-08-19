@@ -1,5 +1,6 @@
 allowBuilds:
   esbuild: true
   unrs-resolver: true
+  '@parcel/watcher': true
 minimumReleaseAgeExclude:
   - vuetify@3.13.2
