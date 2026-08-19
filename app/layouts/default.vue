@@ -42,6 +42,14 @@ const navItems = computed(() => [
 
 <template>
   <div>
+    <!--
+      Primo elemento raggiungibile da tastiera (Giorno 18): invisibile finché
+      non riceve focus (vedi app/assets/css/accessibility.css), salta la nav
+      e va dritto al contenuto — senza, un utente da tastiera deve attraversare
+      tutta la app bar/drawer ad ogni cambio pagina.
+    -->
+    <a class="skip-link" href="#main-content">{{ t('common.skipToContent') }}</a>
+
     <v-app-bar :elevation="1" density="comfortable">
       <v-app-bar-nav-icon v-if="mobile" :aria-label="t('nav.openMenu')" @click="drawer = !drawer" />
       <v-app-bar-title>ChargeHub</v-app-bar-title>
@@ -73,7 +81,7 @@ const navItems = computed(() => [
         <template #activator="{ props: menuProps }">
           <v-btn variant="text" v-bind="menuProps">{{ locale.toUpperCase() }}</v-btn>
         </template>
-        <v-list density="compact">
+        <v-list density="compact" role="presentation">
           <v-list-item
             v-for="loc in locales"
             :key="loc.code"
@@ -94,7 +102,15 @@ const navItems = computed(() => [
       @mouseenter="rail = false"
       @mouseleave="rail = true"
     >
-      <v-list nav :aria-label="t('nav.mainNav')">
+      <!--
+        `role="presentation"`: Vuetify dà `role="list"` a questo elemento ma
+        `role="link"` (non "listitem") ai `v-list-item` con `:to` — una
+        combinazione non valida per ARIA (`aria-required-children`, trovato
+        con axe-core, Giorno 18). Qui non serve semantica di lista: è un
+        gruppo di link di navigazione già dentro il landmark `<nav>` del
+        drawer, con la propria etichetta.
+      -->
+      <v-list nav role="presentation" :aria-label="t('nav.mainNav')">
         <v-list-item
           v-for="item in navItems"
           :key="item.to"
@@ -107,7 +123,7 @@ const navItems = computed(() => [
       </v-list>
     </v-navigation-drawer>
 
-    <v-main>
+    <v-main id="main-content" tabindex="-1">
       <slot />
     </v-main>
   </div>

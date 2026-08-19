@@ -1,0 +1,73 @@
+/*
+ * Stili globali di accessibilità (Giorno 18), non legati a Vuetify: skip
+ * link (nascosto finché non riceve focus da tastiera) e rispetto di
+ * `prefers-reduced-motion` per ogni transizione/animazione dell'app,
+ * incluse quelle interne di Vuetify (i suoi componenti usano classi
+ * `.v-*-transition-*` standard, silenziarle qui non richiede toccare
+ * ciascun componente).
+ */
+
+.skip-link {
+  position: absolute;
+  top: -48px;
+  left: 8px;
+  z-index: 3000;
+  padding: 10px 16px;
+  border-radius: 4px;
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+/**
+ * Anello di focus esplicito, indipendente dal meccanismo interno di
+ * Vuetify (overlay/ripple, non sempre un `outline` CSS intercettabile) —
+ * garantisce un indicatore di focus reale su ogni elemento, verificato con
+ * un test Playwright (Giorno 18), non assunto.
+ */
+:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary)) !important;
+  outline-offset: 2px;
+}
+
+/**
+ * L'opacità "medium emphasis" di default di Vuetify (0.6, usata per label
+ * fluttuanti, testo secondario, icone) scende sotto 4.5:1 su sfondi chiari
+ * a font piccoli (WCAG 1.4.3) — verificato con axe-core (Giorno 18) su una
+ * label di v-text-field. Alzarla aumenta sempre il contrasto (testo più
+ * scuro su sfondo chiaro, più chiaro su sfondo scuro), quindi è sicura in
+ * entrambi i temi.
+ */
+.v-theme--light,
+.v-theme--dark {
+  --v-medium-emphasis-opacity: 0.74;
+}
+
+/** Contenuto solo per screen reader (es. regioni aria-live), invisibile a schermo ma presente nel DOM. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

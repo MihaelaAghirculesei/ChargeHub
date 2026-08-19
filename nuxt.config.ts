@@ -84,6 +84,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['vuetify-nuxt-module', '@pinia/nuxt', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
+  // Skip link + prefers-reduced-motion (Giorno 18): stili globali non legati
+  // alle variabili Sass di Vuetify, quindi un CSS a parte da quello in
+  // vuetify.moduleOptions.styles.configFile.
+  css: ['~/assets/css/accessibility.css'],
   imports: {
     // Composable condivisi fuori da app/composables/ (struttura feature-first).
     dirs: ['shared/composables']
