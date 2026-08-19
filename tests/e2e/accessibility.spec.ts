@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, type Page, test } from '@playwright/test'
+import { LoginPage } from './pages/LoginPage'
 
 /**
  * Scansione axe-core (Giorno 18, "Fatto quando: axe non riporta
@@ -28,15 +29,6 @@ async function scanForViolations(page: Page) {
     .analyze()
 }
 
-async function loginAsOperator(page: Page) {
-  await page.goto('/de/login')
-  await page.waitForLoadState('networkidle')
-  await page.getByLabel('Benutzername').fill('operator')
-  await page.getByLabel('Passwort').fill('operator123')
-  await page.locator('form').getByRole('button', { name: 'Anmelden' }).click()
-  await page.waitForURL('**/de')
-}
-
 for (const path of PUBLIC_PAGES) {
   test(`nessuna violazione axe su ${path}`, async ({ page }) => {
     await page.goto(path)
@@ -51,7 +43,7 @@ for (const path of PUBLIC_PAGES) {
 }
 
 test('nessuna violazione axe su /tariffs dopo il login', async ({ page }) => {
-  await loginAsOperator(page)
+  await new LoginPage(page).loginAsOperator()
 
   await page.goto('/de/tariffs')
   await page.waitForLoadState('networkidle')

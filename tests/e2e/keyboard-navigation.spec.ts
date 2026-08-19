@@ -1,13 +1,5 @@
-import { expect, type Page, test } from '@playwright/test'
-
-async function loginAsOperator(page: Page) {
-  await page.goto('/de/login')
-  await page.waitForLoadState('networkidle')
-  await page.getByLabel('Benutzername').fill('operator')
-  await page.getByLabel('Passwort').fill('operator123')
-  await page.locator('form').getByRole('button', { name: 'Anmelden' }).click()
-  await page.waitForURL('**/de')
-}
+import { expect, test } from '@playwright/test'
+import { LoginPage } from './pages/LoginPage'
 
 test('lo skip link è il primo elemento raggiungibile e porta al contenuto principale', async ({
   page
@@ -41,7 +33,7 @@ test('il focus resta visibile durante la navigazione da tastiera', async ({ page
 test('il dialog di creazione tariffa intrappola il focus e lo restituisce alla chiusura', async ({
   page
 }) => {
-  await loginAsOperator(page)
+  await new LoginPage(page).loginAsOperator()
 
   await page.goto('/de/tariffs')
   const openButton = page.getByRole('button', { name: 'Neuer Tarif' })
@@ -63,7 +55,7 @@ test('il dialog di creazione tariffa intrappola il focus e lo restituisce alla c
 })
 
 test('i pulsanti icona hanno un’area di tocco di almeno 44×44px', async ({ page }) => {
-  await loginAsOperator(page)
+  await new LoginPage(page).loginAsOperator()
 
   await page.goto('/de/tariffs')
 
