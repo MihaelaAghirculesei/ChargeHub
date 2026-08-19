@@ -12,5 +12,17 @@
   $spacer: 4px,
   // Card e chip più arrotondate: linguaggio visivo più morbido per una dashboard,
   // ma non "pillola" (mantiene una gerarchia visiva chiara rispetto a `pill`/`circle`).
-  $border-radius-root: 10px
+  $border-radius-root: 10px,
+  // `false`, non il default `true` (Giorno 25, gate Lighthouse Performance
+  // su /de/stations/47109): genera `.bg-{colore}[-variante]`/
+  // `.text-{colore}[-variante]` per ogni colore Material Design (~19) ×
+  // variante (~14 ciascuno, lighten/darken/accent) — 243 kB su 248 kB di
+  // `entry.css`, 98% inutilizzato su quella pagina secondo l'audit
+  // Lighthouse "unused-css-rules". L'app usa solo ruoli del tema
+  // (primary/success/error/info/surface-variant, sempre generati,
+  // indipendenti da questa variabile — vedi node_modules/vuetify/lib/
+  // styles/generic/_colors.scss) più `text-medium-emphasis` per il caso
+  // "grigio neutro" (KpiCard.vue, valore CSS diretto invece del nome di
+  // classe `text-grey` che questa variabile elimina).
+  $color-pack: false
 );

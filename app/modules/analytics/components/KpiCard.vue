@@ -25,6 +25,23 @@ const trendColor = computed<'success' | 'error' | 'grey'>(() => {
   return isGood ? 'success' : 'error'
 })
 
+/**
+ * Valore CSS diretto, non il nome di classe `grey` (Giorno 25, gate
+ * Lighthouse Performance su /de/stations/47109): `$color-pack: false` in
+ * app/assets/vuetify-settings.scss toglie dal CSS globale le migliaia di
+ * classi `.bg-*`/`.text-*` generate per ogni colore Material Design ×
+ * variante (243 KB su 248 KB di `entry.css`, 98% inutilizzato su quella
+ * pagina secondo l'audit Lighthouse "unused-css-rules") — restano solo le
+ * utility legate al tema (primary/success/error/... e le emphasis,
+ * sempre generate). Stesso identico colore di `text-medium-emphasis` qui
+ * sotto, passato come valore CSS invece che come nome di classe che non
+ * esisterebbe più.
+ */
+const NEUTRAL_TREND_COLOR = 'rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity))'
+const trendIconColor = computed(() =>
+  trendColor.value === 'grey' ? NEUTRAL_TREND_COLOR : trendColor.value
+)
+
 const trendIcon = computed(() => {
   if (props.trendPercent === 0) return 'mdi-minus'
   return props.trendPercent > 0 ? 'mdi-arrow-up' : 'mdi-arrow-down'
@@ -50,7 +67,7 @@ const formattedValue = computed(() => {
     </v-card-item>
     <v-card-text>
       <div class="d-flex align-center ga-1 mb-2">
-        <v-icon :icon="trendIcon" size="small" :color="trendColor" />
+        <v-icon :icon="trendIcon" size="small" :color="trendIconColor" />
         <!--
           `text-grey` (grigio Vuetify fisso, ~#9e9e9e) non basta per un
           testo a 12px su sfondo card chiaro (contrasto 2.67, trovato con
@@ -68,7 +85,7 @@ const formattedValue = computed(() => {
       </div>
       <v-sparkline
         :model-value="series"
-        :color="trendColor"
+        :color="trendIconColor"
         height="40"
         line-width="2"
         padding="4"
