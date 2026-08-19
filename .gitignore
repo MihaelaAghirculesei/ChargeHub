@@ -16,6 +16,11 @@ logs
 # Report di coverage generati da `vitest --coverage`
 coverage
 
+# Output dei test E2E Playwright
+test-results
+playwright-report
+blob-report
+
 # Misc
 .DS_Store
 .fleet
