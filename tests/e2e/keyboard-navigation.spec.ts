@@ -40,6 +40,12 @@ test('il dialog di creazione tariffa intrappola il focus e lo restituisce alla c
   await new LoginPage(page).loginAsOperator()
 
   await page.goto('/de/tariffs')
+  // SSR, non un guscio vuoto: il bottone esiste già nell'HTML iniziale,
+  // quindi `waitFor({ state: 'attached' })` su di lui non aspetterebbe
+  // l'idratazione (stesso problema descritto nel test sopra, causa
+  // diversa) — `networkidle` copre l'attesa reale, stesso pattern di
+  // tests/e2e/accessibility.spec.ts.
+  await page.waitForLoadState('networkidle')
   const openButton = page.getByRole('button', { name: 'Neuer Tarif' })
   await openButton.click()
 
@@ -62,6 +68,9 @@ test('i pulsanti icona hanno un’area di tocco di almeno 44×44px', async ({ pa
   await new LoginPage(page).loginAsOperator()
 
   await page.goto('/de/tariffs')
+  // Vedi il commento nel test sopra: SSR, serve `networkidle` per
+  // aspettare l'idratazione prima di interagire.
+  await page.waitForLoadState('networkidle')
 
   // Ambiente di test senza cookie pregressi: nessuna tariffa esiste ancora,
   // quindi i pulsanti icona da misurare non ci sarebbero — se ne crea una.
