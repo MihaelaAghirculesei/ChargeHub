@@ -290,7 +290,21 @@ watch(
   }
 )
 
-onMounted(initMap)
+/**
+ * Non `onMounted(initMap)`: `<ClientOnly>` mostra prima il proprio slot
+ * `#fallback` (anche lato client, non solo in SSR) e passa al contenuto
+ * reale — quindi al `div ref="mapContainer"` — solo dopo il proprio
+ * `onMounted` interno, che flusha in un tick separato. `StationsMap`'s
+ * `onMounted` gira comunque nello stesso giro sincrono di mount, PRIMA di
+ * quel flush: `mapContainer.value` è sempre `null` a quel punto, la mappa
+ * non si inizializza mai. Bug reale, mai visto prima perché ogni verifica
+ * precedente di questa pagina era via `curl` (HTML statico, non esegue
+ * JS/hydration) — trovato solo ora con un browser vero (Giorno 20).
+ * `watch` sul ref, non `onMounted`: parte quando il div compare davvero.
+ */
+watch(mapContainer, (el) => {
+  if (el) initMap()
+})
 
 onBeforeUnmount(() => {
   popup?.remove()

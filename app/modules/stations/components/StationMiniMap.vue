@@ -49,7 +49,13 @@ async function initMap() {
     .addTo(mapInstance)
 }
 
-onMounted(initMap)
+// Stesso bug/fix di StationsMap.vue: `<ClientOnly>` sostituisce il proprio
+// `#fallback` col div reale un tick dopo l'`onMounted` di questo
+// componente, quindi `onMounted(initMap)` troverebbe sempre
+// `mapContainer.value` nullo. `watch` sul ref, non `onMounted`.
+watch(mapContainer, (el) => {
+  if (el) initMap()
+})
 
 onBeforeUnmount(() => {
   marker?.remove()
@@ -60,10 +66,18 @@ onBeforeUnmount(() => {
 
 <template>
   <ClientOnly>
+    <!--
+      `role="application"`, non "img": la mappa contiene controlli
+      interattivi focalizzabili veri (zoom, attribuzione) via
+      `NavigationControl` — "img" nega semanticamente contenuto
+      interattivo al suo interno (`nested-interactive`, trovato con
+      axe-core solo ora che la mappa si inizializza davvero, vedi il fix
+      del bug di mount qui sopra: prima non veniva mai scansionata).
+    -->
     <div
       ref="mapContainer"
       class="station-mini-map"
-      role="img"
+      role="application"
       :aria-label="t('stations.miniMapAriaLabel')"
     />
     <template #fallback>
