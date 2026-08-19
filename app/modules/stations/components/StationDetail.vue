@@ -13,6 +13,21 @@ const { t } = useI18n()
 const { formatDate: formatLocaleDate } = useLocaleFormatters()
 const { telemetry, status: connectionStatus } = useLiveTelemetry(() => [props.station.id])
 
+/**
+ * Annuncio per screen reader (Giorno 18) solo sulle transizioni che contano
+ * (connesso ↔ non connesso), non ad ogni poll a 5s (Giorno 11) — altrimenti
+ * `aria-live="polite"` interromperebbe di continuo la lettura per un dato
+ * che nella maggior parte dei casi non è cambiato in modo rilevante.
+ */
+const connectionAnnouncement = ref('')
+watch(connectionStatus, (status, previous) => {
+  if (previous === undefined) return
+  if (status === 'live' && previous !== 'live')
+    connectionAnnouncement.value = t('common.connectionRestored')
+  else if (status !== 'live' && previous === 'live')
+    connectionAnnouncement.value = t('common.connectionLost')
+})
+
 const liveByConnectorId = computed(() => {
   const map = new Map<number, ChargePointTelemetry>()
   for (const connectorTelemetry of telemetry.value[0]?.connectors ?? []) {
@@ -53,7 +68,9 @@ function formatDate(value: string | null): string {
     <v-col cols="12" md="7">
       <v-card class="mb-4">
         <v-card-item>
-          <v-card-title class="text-h5">{{ station.name }}</v-card-title>
+          <v-card-title class="text-h5">
+            <h1 class="text-h5 ma-0">{{ station.name }}</h1>
+          </v-card-title>
           <v-card-subtitle>{{ station.operator }}</v-card-subtitle>
         </v-card-item>
         <v-card-text>
@@ -100,6 +117,7 @@ function formatDate(value: string | null): string {
             <span class="text-subtitle-1">{{ t('stations.detail.connectorsTitle') }}</span>
             <TelemetryConnectionIndicator :status="connectionStatus" />
           </v-card-title>
+          <div class="sr-only" role="status" aria-live="polite">{{ connectionAnnouncement }}</div>
         </v-card-item>
         <v-list lines="two">
           <v-list-item v-for="entry in connectorsWithTelemetry" :key="entry.connector.id">
@@ -118,6 +136,11 @@ function formatDate(value: string | null): string {
                 height="6"
                 rounded
                 class="mt-2"
+                :aria-label="
+                  t('stations.detail.chargingPower', {
+                    percent: Math.round(chargingPowerPercent(entry))
+                  })
+                "
               />
               <p class="text-caption text-medium-emphasis mt-1 mb-0">
                 {{ entry.live.powerKw }} kW &middot; {{ entry.live.sessionEnergyKwh }} kWh
