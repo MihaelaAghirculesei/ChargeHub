@@ -39,13 +39,19 @@
  * L'opacità "medium emphasis" di default di Vuetify (0.6, usata per label
  * fluttuanti, testo secondario, icone) scende sotto 4.5:1 su sfondi chiari
  * a font piccoli (WCAG 1.4.3) — verificato con axe-core (Giorno 18) su una
- * label di v-text-field. Alzarla aumenta sempre il contrasto (testo più
- * scuro su sfondo chiaro, più chiaro su sfondo scuro), quindi è sicura in
- * entrambi i temi.
+ * label di v-text-field, poi di nuovo (Giorno 21) su v-card-subtitle a
+ * 14px. `!important` non è decorativo qui: Vuetify imposta questa custom
+ * property via `style` inline sull'elemento `.v-theme--*` stesso (il tema
+ * attivo), che vince sempre su una regola di un foglio di stile esterno a
+ * parità di tutto il resto — senza, il valore restava 0.6 nonostante
+ * questa regola esistesse (verificato leggendo lo stile calcolato reale in
+ * un browser, non assunto: il "fix" del Giorno 18 non aveva mai avuto
+ * effetto per lo stesso motivo, solo che il testo toccato allora passava
+ * comunque 4.5:1 anche a 0.6, per pura coincidenza di dimensione/peso).
  */
 .v-theme--light,
 .v-theme--dark {
-  --v-medium-emphasis-opacity: 0.74;
+  --v-medium-emphasis-opacity: 0.8 !important;
 }
 
 /** Contenuto solo per screen reader (es. regioni aria-live), invisibile a schermo ma presente nel DOM. */
