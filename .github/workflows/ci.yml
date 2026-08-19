@@ -116,25 +116,28 @@ jobs:
       # target del piano vanno verificati sulla build di produzione reale,
       # non sul dev server. Runner GitHub pulito, non la macchina locale di
       # stanotte: qui il punteggio Performance è finalmente affidabile.
-      - name: Avvia la build di produzione
-        run: node .output/server/index.mjs &
-        env:
-          PORT: 3010
-
-      - name: Aspetta che risponda
-        run: npx wait-on http://localhost:3010/de/stations/47109 --timeout 60000
-
-      # /de/stations/47109 (SSR, dettaglio stazione, Giorno 9), non /de: la
-      # dashboard è client-side per scelta esplicita del piano (Giorno 21) e
-      # penalizzerebbe il punteggio Performance per un motivo architetturale
-      # intenzionale, non una regressione reale da inseguire qui.
-      - name: Lighthouse su /de/stations/47109
+      #
+      # Avvio, attesa e scansione nello stesso step (non step separati): un
+      # processo avviato in background con `&` in uno step non è garantito
+      # sopravvivere fino allo step successivo — visto succedere davvero al
+      # primo run reale di questo workflow (server "Listening" nel log, poi
+      # nessuna risposta nello step dopo). `127.0.0.1` esplicito, non
+      # `localhost`: il server logga "Listening on http://[::]:PORT"
+      # (wildcard IPv6) e la risoluzione di "localhost" non è garantita
+      # preferire IPv4/IPv6 allo stesso modo su ogni runner.
+      - name: Avvia la build, aspetta, scansiona /de/stations/47109 con Lighthouse
         run: |
-          pnpm exec lighthouse http://localhost:3010/de/stations/47109 \
+          node .output/server/index.mjs &
+          SERVER_PID=$!
+          trap "kill $SERVER_PID" EXIT
+          npx wait-on http://127.0.0.1:3010/de/stations/47109 --timeout 60000
+          pnpm exec lighthouse http://127.0.0.1:3010/de/stations/47109 \
             --output=json --output-path=./lighthouse-report.json \
             --chrome-flags="--headless=new --no-sandbox" \
             --only-categories=performance,accessibility,best-practices,seo \
             --quiet
+        env:
+          PORT: 3010
 
       - name: Verifica i target del piano (Performance >= 90, Accessibility/Best Practices/SEO >= 95, CLS <= 0.1)
         run: |
