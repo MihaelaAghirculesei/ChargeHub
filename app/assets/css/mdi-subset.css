@@ -3,12 +3,31 @@
  * questa app (30) + quelle richieste internamente da Vuetify stesso
  * (checkbox, frecce, chiudi, ecc. — 76 totali, verificato leggendo
  * vuetify/iconsets/mdi.js), non l'intero set (~7000 regole, ~570 kB non
- * compressi). Generato una volta a mano da node_modules/@mdi/font, non
- * mantenuto automaticamente: se si aggiunge una nuova icona mdi-* al
- * progetto, questo file va rigenerato (vedi docs/adr per lo script usato).
- * Trovato con Lighthouse su un runner CI pulito, non stimato: l'intero
- * font+CSS come parte del bundle critico dava FCP 11.5s, LCP 16.9s,
- * Performance 46/100 su /de/stations/47109.
+ * compressi). Generato una volta a mano da node_modules/@mdi/font
+ * (estraendo da materialdesignicons.min.css le regole `.mdi-xxx::before`
+ * di queste 76 icone), non mantenuto automaticamente: se si aggiunge una
+ * nuova icona mdi-* al progetto, questo file va rigenerato con lo stesso
+ * procedimento. Trovato con Lighthouse su un runner CI pulito, non
+ * stimato: l'intero font+CSS come parte del bundle critico dava FCP
+ * 11.5s, LCP 16.9s, Performance 46/100 su /de/stations/47109.
+ *
+ * `public/fonts/mdi-subset.woff2` (Giorno 25): non più il font
+ * @mdi/font completo rinominato (403 kB, tutti i ~7000 glifi) ma un
+ * sottoinsieme vero del BINARIO, generato con `fonttools` (Python) sugli
+ * stessi 76 codepoint referenziati qui sotto:
+ *
+ *   pip install fonttools brotli
+ *   pyftsubset node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2 \
+ *     --output-file=public/fonts/mdi-subset.woff2 --flavor=woff2 \
+ *     --unicodes=U+F0004,U+F0028,... (i codepoint di content: "\FXXXX" qui sotto) \
+ *     --layout-features='' --no-hinting --desubroutinize
+ *
+ * 403 kB -> 3.7 kB (99%): il CSS qui sopra teneva già solo le REGOLE per
+ * 76 icone, ma il file .woff2 conteneva comunque tutti i glifi del set
+ * completo — scoperto rileggendo l'audit "network-requests" di Lighthouse
+ * dopo aver risolto il collo di bottiglia di maplibre-gl (Giorno 25): con
+ * quello fuori dal percorso critico, il font è tornato a essere l'asset
+ * singolo più pesante della pagina (394 kB, priorità VeryHigh).
  */
 @font-face{font-family:"Material Design Icons";src:url("/fonts/mdi-subset.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:swap}
 .mdi:before,.mdi-set{display:inline-block;font:normal normal normal 24px/1 "Material Design Icons";font-size:inherit;text-rendering:auto;line-height:inherit;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
