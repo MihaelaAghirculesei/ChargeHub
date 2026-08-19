@@ -68,6 +68,19 @@ jobs:
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Immagine ufficiale Playwright (browser + librerie di sistema già
+    # installati, versione pinnata a quella di @playwright/test in
+    # package.json), non `playwright install --with-deps` su un runner
+    # Ubuntu generico. Cambio necessario, non solo prudente: due run
+    # consecutivi sono rimasti bloccati >1h30 esattamente su
+    # quell'installazione — un problema documentato e noto di
+    # microsoft/playwright su runner ubuntu-latest (mirror apt instabile in
+    # un caso, hang nell'estrazione zip dei browser in un altro), non
+    # qualcosa risolto da `DEBIAN_FRONTEND=noninteractive` (primo tentativo,
+    # si è bloccato di nuovo identico). L'immagine ufficiale elimina lo step
+    # di installazione del tutto, non lo rende solo più silenzioso.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
     steps:
       - uses: actions/checkout@v4
 
@@ -79,20 +92,6 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-
-      # `--with-deps` chiama `apt-get install` per le librerie di sistema dei
-      # browser: su runner Ubuntu recenti questo può far scattare il prompt
-      # interattivo di `needrestart` (quali servizi riavviare dopo
-      # l'aggiornamento di una libreria) — senza una TTY per rispondere, il
-      # comando resta appeso indefinitamente. Visto succedere per davvero:
-      # due run consecutivi bloccati >1h30 sullo stesso identico step, mai
-      # completati da soli (il timeout-minutes qui sotto è la rete di
-      # sicurezza per quando si ripresenta, non la causa risolta da sola).
-      - name: Installa i browser Playwright
-        run: pnpm exec playwright install --with-deps
-        env:
-          DEBIAN_FRONTEND: noninteractive
-          NEEDRESTART_MODE: a
 
       - name: E2E (Chromium, WebKit, mobile Chrome/Safari — Giorno 20)
         run: pnpm test:e2e
