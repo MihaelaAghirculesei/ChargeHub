@@ -205,5 +205,39 @@ export default defineNuxtConfig({
         strict: true
       }
     }
+  },
+  /**
+   * Rendering ibrido per rotta (Giorno 21), non un solo modo per tutta
+   * l'app:
+   * - `/login`: nessun dato per-richiesta (il form parte sempre vuoto, il
+   *   redirect "già loggato" e quello dopo il login girano lato client via
+   *   `useAuth()`/query string, non nell'HTML) — l'unica pagina di questa
+   *   app che qualifica davvero come "landing" statica, `prerender: true`.
+   * - `/` (dashboard): KPI derivati da OCM + simulatori (Giorno 10-13), mai
+   *   davvero statici né utili da servire pre-renderizzati identici a ogni
+   *   visitatore — client-side puro (`ssr: false`), come richiesto dal
+   *   piano.
+   * - `/stations/*` (dettaglio stazione, non la lista): SSR resta essenziale
+   *   ("Fatto quando" del Giorno 9, contenuto completo nella prima risposta,
+   *   non solo dopo l'idratazione).
+   *
+   * Provato anche `swr` (stale-while-revalidate/ISR) su `/stations/*`, per
+   * evitare di ricalcolare da zero dati OCM che non cambiano a ogni
+   * richiesta — **tolto**: rompe l'idratazione client, sia in `pnpm dev`
+   * che nella build di produzione. Con `swr` attivo, il client tenta di
+   * caricare un `/_payload.json` di supporto (pensato per prerender/ISR)
+   * che qui non viene generato (404, `[NUXT_E7002]`), Vue non riesce a
+   * riconciliare l'HTML SSR con quello atteso ("Hydration node mismatch")
+   * e il contenuto della pagina sparisce subito dopo il primo paint — un
+   * bug reale che romperebbe la pagina per ogni visitatore vero, trovato
+   * solo verificando con un browser reale (curl vede l'HTML SSR iniziale,
+   * corretto, e basta) e confermato identico sia in dev sia in build di
+   * produzione. Da rivedere se questa combinazione Nuxt/Nitro cambia.
+   */
+  routeRules: {
+    '/de/login': { prerender: true },
+    '/en/login': { prerender: true },
+    '/de': { ssr: false },
+    '/en': { ssr: false }
   }
 })
