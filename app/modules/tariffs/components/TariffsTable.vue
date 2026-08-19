@@ -36,14 +36,14 @@ function formatAmount(value: number): string {
           <v-btn
             icon="mdi-pencil"
             variant="text"
-            size="small"
+            :size="44"
             :aria-label="t('tariffs.editAction', { name: tariff.name })"
             @click="emit('edit', tariff)"
           />
           <v-btn
             icon="mdi-delete"
             variant="text"
-            size="small"
+            :size="44"
             :aria-label="t('tariffs.deleteAction', { name: tariff.name })"
             @click="emit('remove', tariff.id)"
           />

@@ -63,12 +63,20 @@ function submit() {
     <v-card>
       <v-card-title>{{ tariff ? t('tariffs.editTariff') : t('tariffs.newTariff') }}</v-card-title>
       <v-card-text>
-        <v-form @submit.prevent="submit">
+        <!--
+          Niente `@submit.prevent` su `v-form`: internamente Vuetify chiama
+          comunque un submit nativo dopo la validazione (vedi login.vue),
+          e Invio in un campo qui dentro genererebbe comunque un evento
+          `submit` nativo del form sottostante. `@keydown.enter` sui campi
+          evita del tutto quel percorso.
+        -->
+        <v-form>
           <v-text-field
             v-model="form.name"
             :label="t('tariffs.name')"
             :error-messages="errorsFor('name')"
             class="mb-2"
+            @keydown.enter="submit"
           />
           <v-text-field
             v-model.number="form.pricePerKwh"
@@ -78,6 +86,7 @@ function submit() {
             :label="t('tariffs.pricePerKwh')"
             :error-messages="errorsFor('pricePerKwh')"
             class="mb-2"
+            @keydown.enter="submit"
           />
           <v-text-field
             v-model.number="form.blockingFeePerMinute"
@@ -87,6 +96,7 @@ function submit() {
             :label="t('tariffs.blockingFeePerMinute')"
             :error-messages="errorsFor('blockingFeePerMinute')"
             class="mb-2"
+            @keydown.enter="submit"
           />
           <v-text-field
             v-model.number="form.monthlyFeeEur"
@@ -95,6 +105,7 @@ function submit() {
             min="0"
             :label="t('tariffs.monthlyFeeEur')"
             :error-messages="errorsFor('monthlyFeeEur')"
+            @keydown.enter="submit"
           />
         </v-form>
       </v-card-text>

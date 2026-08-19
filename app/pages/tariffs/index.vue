@@ -27,15 +27,31 @@ const { isOperator } = useAuth()
 const dialogOpen = ref(false)
 const editingTariff = ref<Tariff | null>(null)
 
+/**
+ * Il dialog è controllato da fuori (`v-model`, non `activator`): Vuetify
+ * non sa quindi a quale elemento restituire il focus alla chiusura. Lo
+ * teniamo noi — l'elemento attivo al momento dell'apertura è sempre quello
+ * che ha attivato l'azione (click o Invio/Spazio da tastiera).
+ */
+let triggerElement: HTMLElement | null = null
+
 function openCreate() {
+  triggerElement = document.activeElement as HTMLElement | null
   editingTariff.value = null
   dialogOpen.value = true
 }
 
 function openEdit(tariff: Tariff) {
+  triggerElement = document.activeElement as HTMLElement | null
   editingTariff.value = tariff
   dialogOpen.value = true
 }
+
+watch(dialogOpen, (open) => {
+  if (!open) {
+    void nextTick(() => triggerElement?.focus())
+  }
+})
 
 function handleSave(input: TariffInput) {
   if (editingTariff.value) {
