@@ -139,31 +139,53 @@ jobs:
       # `localhost`: il server logga "Listening on http://[::]:PORT"
       # (wildcard IPv6) e la risoluzione di "localhost" non è garantita
       # preferire IPv4/IPv6 allo stesso modo su ogni runner.
-      - name: Avvia la build, aspetta, scansiona /de/stations/47109 con Lighthouse
+      - name: Avvia la build, aspetta, scansiona /de/stations/47109 con Lighthouse (3 run)
         run: |
           node .output/server/index.mjs &
           SERVER_PID=$!
           trap "kill $SERVER_PID" EXIT
           npx wait-on http://127.0.0.1:3010/de/stations/47109 --timeout 60000
-          pnpm exec lighthouse http://127.0.0.1:3010/de/stations/47109 \
-            --output=json --output-path=./lighthouse-report.json \
-            --chrome-flags="--headless=new --no-sandbox" \
-            --only-categories=performance,accessibility,best-practices,seo \
-            --quiet
+          # 3 richieste di riscaldamento, non solo `wait-on` (Giorno 25,
+          # misurato in locale sulla stessa build): la primissima richiesta
+          # dopo l'avvio del server è sistematicamente più lenta (JIT/V8
+          # ancora a freddo) e da sola faceva scendere Performance di
+          # diversi punti rispetto a richieste successive identiche — con
+          # `wait-on` che si ferma al primo 200 OK, quella richiesta fredda
+          # sarebbe rimasta proprio quella scansionata da Lighthouse.
+          curl -sf -o /dev/null http://127.0.0.1:3010/de/stations/47109
+          curl -sf -o /dev/null http://127.0.0.1:3010/de/stations/47109
+          curl -sf -o /dev/null http://127.0.0.1:3010/de/stations/47109
+          # 3 scansioni, non 1 (Giorno 25): anche a server "caldo", misurato
+          # ripetutamente in locale sulla stessa identica build, un singolo
+          # run di Lighthouse oscilla di un paio di punti Performance da
+          # un'esecuzione all'altra (rumore di misurazione reale, non un
+          # problema dell'app — la pratica raccomandata da Lighthouse CI
+          # stesso per questo è più run + mediana, non un numero singolo).
+          for i in 1 2 3; do
+            pnpm exec lighthouse http://127.0.0.1:3010/de/stations/47109 \
+              --output=json --output-path="./lighthouse-report-$i.json" \
+              --chrome-flags="--headless=new --no-sandbox" \
+              --only-categories=performance,accessibility,best-practices,seo \
+              --quiet
+          done
         env:
           PORT: 3010
 
-      - name: Verifica i target del piano (Performance >= 90, Accessibility/Best Practices/SEO >= 95, CLS <= 0.1)
+      - name: Verifica i target del piano sulla mediana di 3 run (Performance >= 90, Accessibility/Best Practices/SEO >= 95, CLS <= 0.1)
         run: |
           node -e "
-            const r = require('./lighthouse-report.json');
-            const pct = (k) => Math.round(r.categories[k].score * 100);
-            const cls = r.audits['cumulative-layout-shift'].numericValue;
-            console.log('Performance:', pct('performance'));
+            const reports = [1, 2, 3].map((i) => require(\`./lighthouse-report-\${i}.json\`));
+            const median = (values) => {
+              const sorted = [...values].sort((a, b) => a - b);
+              return sorted[Math.floor(sorted.length / 2)];
+            };
+            const pct = (k) => median(reports.map((r) => Math.round(r.categories[k].score * 100)));
+            const cls = median(reports.map((r) => r.audits['cumulative-layout-shift'].numericValue));
+            console.log('Performance (mediana di 3):', pct('performance'), reports.map((r) => Math.round(r.categories.performance.score * 100)));
             console.log('Accessibility:', pct('accessibility'));
             console.log('Best Practices:', pct('best-practices'));
             console.log('SEO:', pct('seo'));
-            console.log('CLS:', cls);
+            console.log('CLS (mediana di 3):', cls, reports.map((r) => r.audits['cumulative-layout-shift'].numericValue));
             const failures = [];
             if (pct('performance') < 90) failures.push('Performance < 90');
             if (pct('accessibility') < 95) failures.push('Accessibility < 95');
@@ -178,5 +200,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lighthouse-report
-          path: lighthouse-report.json
+          path: lighthouse-report-*.json
           retention-days: 7
