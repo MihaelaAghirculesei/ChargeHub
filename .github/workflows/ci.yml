@@ -1,0 +1,165 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# `NUXT_SESSION_PASSWORD` qui non è un vero segreto di produzione — sigilla
+# solo la sessione mock usata dai test in CI (nessun dato reale dietro),
+# minimo 32 caratteri richiesto da validateEnv() (vedi server/utils/env.ts).
+# `NUXT_OCM_API_KEY` invece va aggiunta come secret del repository
+# (Settings -> Secrets and variables -> Actions -> NUXT_OCM_API_KEY): senza,
+# `pnpm build` passa comunque (validateEnv() controlla solo che la stringa
+# non sia vuota), ma le rotte che chiamano davvero OpenChargeMap durante i
+# test E2E possono fallire/andare in rate limit con una chiave finta.
+env:
+  NUXT_SESSION_PASSWORD: 'ci-only-session-password-not-a-real-secret-32chars'
+  NUXT_OCM_API_KEY: ${{ secrets.NUXT_OCM_API_KEY || 'ci-placeholder-key' }}
+
+jobs:
+  quality:
+    name: Lint, typecheck, unit test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Format
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      # Soglia di copertura (Giorno 19: 91.82% statements/93.19% lines
+      # raggiunti) applicata da vitest.config.ts, non solo un numero
+      # riportato qui — un calo reale sotto l'80% del piano fa fallire
+      # questo step, non solo un'occhiata al report.
+      - name: Unit test + coverage gate
+        run: pnpm test:coverage
+
+      - name: Build
+        run: pnpm build
+
+      - name: Nessun segreto nell'output di build
+        shell: bash
+        run: |
+          if grep -rl -- "$NUXT_OCM_API_KEY" .output/ 2>/dev/null; then
+            echo "Trovata un'occorrenza del VALORE della chiave OCM in .output/ - vedi sopra"
+            exit 1
+          fi
+          echo "OK: nessuna occorrenza del valore della chiave OCM in .output/"
+
+  e2e:
+    name: E2E Playwright
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Installa i browser Playwright
+        run: pnpm exec playwright install --with-deps
+
+      - name: E2E (Chromium, WebKit, mobile Chrome/Safari — Giorno 20)
+        run: pnpm test:e2e
+        env:
+          CI: true
+
+      - name: Report Playwright (se fallisce)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  lighthouse:
+    name: Lighthouse CI
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      # `node .output/server/index.mjs` (non `pnpm dev`, Giorno 21): i
+      # target del piano vanno verificati sulla build di produzione reale,
+      # non sul dev server. Runner GitHub pulito, non la macchina locale di
+      # stanotte: qui il punteggio Performance è finalmente affidabile.
+      - name: Avvia la build di produzione
+        run: node .output/server/index.mjs &
+        env:
+          PORT: 3010
+
+      - name: Aspetta che risponda
+        run: npx wait-on http://localhost:3010/de/stations/47109 --timeout 60000
+
+      # /de/stations/47109 (SSR, dettaglio stazione, Giorno 9), non /de: la
+      # dashboard è client-side per scelta esplicita del piano (Giorno 21) e
+      # penalizzerebbe il punteggio Performance per un motivo architetturale
+      # intenzionale, non una regressione reale da inseguire qui.
+      - name: Lighthouse su /de/stations/47109
+        run: |
+          pnpm exec lighthouse http://localhost:3010/de/stations/47109 \
+            --output=json --output-path=./lighthouse-report.json \
+            --chrome-flags="--headless=new --no-sandbox" \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --quiet
+
+      - name: Verifica i target del piano (Performance >= 90, Accessibility/Best Practices/SEO >= 95, CLS <= 0.1)
+        run: |
+          node -e "
+            const r = require('./lighthouse-report.json');
+            const pct = (k) => Math.round(r.categories[k].score * 100);
+            const cls = r.audits['cumulative-layout-shift'].numericValue;
+            console.log('Performance:', pct('performance'));
+            console.log('Accessibility:', pct('accessibility'));
+            console.log('Best Practices:', pct('best-practices'));
+            console.log('SEO:', pct('seo'));
+            console.log('CLS:', cls);
+            const failures = [];
+            if (pct('performance') < 90) failures.push('Performance < 90');
+            if (pct('accessibility') < 95) failures.push('Accessibility < 95');
+            if (pct('best-practices') < 95) failures.push('Best Practices < 95');
+            if (pct('seo') < 95) failures.push('SEO < 95');
+            if (cls > 0.1) failures.push('CLS > 0.1');
+            if (failures.length) { console.error('FALLITO:', failures.join(', ')); process.exit(1); }
+          "
+
+      - name: Report Lighthouse
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: lighthouse-report.json
+          retention-days: 7
