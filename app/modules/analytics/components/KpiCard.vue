@@ -49,9 +49,22 @@ const formattedValue = computed(() => {
       <v-card-title class="text-h5">{{ formattedValue }}</v-card-title>
     </v-card-item>
     <v-card-text>
-      <div class="d-flex align-center ga-1 mb-2" :class="`text-${trendColor}`">
-        <v-icon :icon="trendIcon" size="small" />
-        <span class="text-caption">{{ trendLabel }}</span>
+      <div class="d-flex align-center ga-1 mb-2">
+        <v-icon :icon="trendIcon" size="small" :color="trendColor" />
+        <!--
+          `text-grey` (grigio Vuetify fisso, ~#9e9e9e) non basta per un
+          testo a 12px su sfondo card chiaro (contrasto 2.67, trovato con
+          axe-core, Giorno 18): per il caso "invariato" si usa
+          `text-medium-emphasis`, che eredita l'opacità già alzata per
+          l'accessibilità (vedi accessibility.css) invece di un grigio
+          indipendente dal tema.
+        -->
+        <span
+          class="text-caption"
+          :class="trendColor === 'grey' ? 'text-medium-emphasis' : `text-${trendColor}`"
+        >
+          {{ trendLabel }}
+        </span>
       </div>
       <v-sparkline
         :model-value="series"
