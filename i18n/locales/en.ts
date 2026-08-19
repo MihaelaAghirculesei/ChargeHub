@@ -7,7 +7,10 @@ export default {
     unknown: 'Unknown',
     cancel: 'Cancel',
     save: 'Save',
-    retry: 'Retry'
+    retry: 'Retry',
+    skipToContent: 'Skip to main content',
+    connectionRestored: 'Connection restored',
+    connectionLost: 'Connection lost'
   },
 
   nav: {
@@ -65,6 +68,7 @@ export default {
 
   stations: {
     title: 'Stations',
+    seoTitle: 'Stations – ChargeHub',
     viewMode: { map: 'Map', list: 'List', split: 'Split' },
     filters: {
       search: 'Search (name, operator, city)',
@@ -101,7 +105,8 @@ export default {
       address: 'Address',
       access: 'Access',
       connectorsTitle: 'Connectors',
-      noConnectors: 'No connector data available'
+      noConnectors: 'No connector data available',
+      chargingPower: 'Charging power: {percent}% of maximum power'
     }
   },
 
