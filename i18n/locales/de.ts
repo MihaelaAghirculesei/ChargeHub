@@ -20,6 +20,17 @@ export default {
     connectionLost: 'Verbindung unterbrochen'
   },
 
+  errorPage: {
+    seoTitle: 'Fehler – ChargeHub',
+    notFoundTitle: 'Seite nicht gefunden',
+    notFoundText:
+      'Es gibt hier nichts zu sehen — die Adresse existiert nicht oder wurde verschoben.',
+    genericTitle: 'Etwas ist schiefgelaufen',
+    genericText:
+      'Ein unerwarteter Fehler ist aufgetreten. Versuche es erneut oder gehe zurück zum Dashboard.',
+    backHome: 'Zurück zum Dashboard'
+  },
+
   nav: {
     dashboard: 'Dashboard',
     stations: 'Stationen',

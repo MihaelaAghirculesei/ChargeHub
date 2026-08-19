@@ -13,6 +13,15 @@ export default {
     connectionLost: 'Connection lost'
   },
 
+  errorPage: {
+    seoTitle: 'Error – ChargeHub',
+    notFoundTitle: 'Page not found',
+    notFoundText: "There's nothing here — the address doesn't exist or has moved.",
+    genericTitle: 'Something went wrong',
+    genericText: 'An unexpected error occurred. Try again or go back to the dashboard.',
+    backHome: 'Back to dashboard'
+  },
+
   nav: {
     dashboard: 'Dashboard',
     stations: 'Stations',
