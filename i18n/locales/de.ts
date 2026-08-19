@@ -126,7 +126,8 @@ export default {
       access: 'Zugang',
       connectorsTitle: 'Anschlüsse',
       noConnectors: 'Keine Anschlussdaten verfügbar',
-      chargingPower: 'Ladeleistung: {percent}% der maximalen Leistung'
+      chargingPower: 'Ladeleistung: {percent}% der maximalen Leistung',
+      showMap: 'Karte anzeigen'
     }
   },
 

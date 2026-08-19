@@ -115,7 +115,8 @@ export default {
       access: 'Access',
       connectorsTitle: 'Connectors',
       noConnectors: 'No connector data available',
-      chargingPower: 'Charging power: {percent}% of maximum power'
+      chargingPower: 'Charging power: {percent}% of maximum power',
+      showMap: 'Show map'
     }
   },
 

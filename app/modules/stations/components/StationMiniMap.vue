@@ -1,89 +1,57 @@
 <script setup lang="ts">
-import 'maplibre-gl/dist/maplibre-gl.css'
-import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
-
 /**
- * Mappa a marker singolo per la pagina di dettaglio (Giorno 9) — non è
- * `StationsMap.vue` semplificata: niente clustering, niente sync hover con
- * una tabella, niente viewport che scrive sui filtri di ricerca. Sono
- * concetti che qui non hanno senso, mescolarli avrebbe reso `StationsMap`
- * più complicata per un caso d'uso che non le appartiene.
+ * Wrapper leggero, reso anche in SSR (Giorno 9) — non `StationsMap.vue`
+ * semplificata: niente clustering, niente sync hover con una tabella,
+ * niente viewport che scrive sui filtri di ricerca. Sono concetti che qui
+ * non hanno senso, mescolarli avrebbe reso `StationsMap` più complicata
+ * per un caso d'uso che non le appartiene.
+ *
+ * La mappa vera vive in `StationMiniMapCanvas.vue`, caricato con
+ * `defineAsyncComponent` solo al click su "Mostra mappa" (Giorno 24) — non
+ * un `import('maplibre-gl')` diretto qui dentro, neanche dietro
+ * `IntersectionObserver`/`requestIdleCallback` (tentativi precedenti nello
+ * stesso giorno, misurati con Lighthouse in locale sulla stessa build
+ * della CI: Performance 47 -> 52, insufficiente). Il vero motivo per cui
+ * quei tentativi non bastavano, verificato leggendo l'HTML SSR reale: un
+ * `import()` presente nel codice di un componente reso in SSR — anche se
+ * la funzione che lo contiene non viene mai chiamata lato server — finisce
+ * comunque nei `<link rel="prefetch">` che Nuxt genera per ogni import
+ * dinamico raggiungibile da un modulo toccato dal render SSR
+ * (`vue-bundle-renderer`, non un bug: prefetch pensato per gli import
+ * dinamici che POI verranno eseguiti quasi sempre, non per uno dietro un
+ * click esplicito). Risultato: ~960 kB di maplibre-gl scaricati comunque,
+ * click o no. Spostando l'import in un file MAI toccato da SSR (montato
+ * solo client-side da `defineAsyncComponent` dopo il click), quel file non
+ * compare tra i moduli SSR analizzati e il suo import dinamico non viene
+ * più prefetchato — verificato di nuovo sull'HTML SSR reale dopo questo
+ * cambio.
  */
 const props = defineProps<{ latitude: number; longitude: number }>()
 
 const { t } = useI18n()
-const mapContainer = ref<HTMLDivElement | null>(null)
-const theme = useTheme()
-let map: MapLibreMap | null = null
-let marker: Marker | null = null
+const mapLoaded = ref(false)
 
-async function initMap() {
-  if (!mapContainer.value) return
-  const maplibregl = await import('maplibre-gl')
+// Nessun `loadingComponent` (Giorno 24): il chunk di questo componente è
+// pochi kB, si risolve in pratica subito — resta comunque il contenitore
+// vuoto durante il vero fetch di maplibre-gl dentro `initMap()`, come già
+// prima di questo cambio.
+const MapCanvas = defineAsyncComponent(
+  () => import('~/modules/stations/components/StationMiniMapCanvas.vue')
+)
 
-  const mapInstance = new maplibregl.Map({
-    container: mapContainer.value,
-    style: {
-      version: 8,
-      sources: {
-        osm: {
-          type: 'raster',
-          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize: 256,
-          maxzoom: 19,
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
-        }
-      },
-      layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
-    },
-    center: [props.longitude, props.latitude],
-    zoom: 15
-  })
-  map = mapInstance
-
-  mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
-
-  marker = new maplibregl.Marker({ color: theme.current.value.colors.primary })
-    .setLngLat([props.longitude, props.latitude])
-    .addTo(mapInstance)
+function showMap() {
+  mapLoaded.value = true
 }
-
-// Stesso bug/fix di StationsMap.vue: `<ClientOnly>` sostituisce il proprio
-// `#fallback` col div reale un tick dopo l'`onMounted` di questo
-// componente, quindi `onMounted(initMap)` troverebbe sempre
-// `mapContainer.value` nullo. `watch` sul ref, non `onMounted`.
-watch(mapContainer, (el) => {
-  if (el) initMap()
-})
-
-onBeforeUnmount(() => {
-  marker?.remove()
-  map?.remove()
-  map = null
-})
 </script>
 
 <template>
-  <ClientOnly>
-    <!--
-      `role="application"`, non "img": la mappa contiene controlli
-      interattivi focalizzabili veri (zoom, attribuzione) via
-      `NavigationControl` — "img" nega semanticamente contenuto
-      interattivo al suo interno (`nested-interactive`, trovato con
-      axe-core solo ora che la mappa si inizializza davvero, vedi il fix
-      del bug di mount qui sopra: prima non veniva mai scansionata).
-    -->
-    <div
-      ref="mapContainer"
-      class="station-mini-map"
-      role="application"
-      :aria-label="t('stations.miniMapAriaLabel')"
-    />
-    <template #fallback>
-      <v-skeleton-loader type="image" height="220" />
-    </template>
-  </ClientOnly>
+  <div v-if="!mapLoaded" class="station-mini-map station-mini-map--placeholder">
+    <v-icon icon="mdi-map" size="40" class="mb-2 text-medium-emphasis" />
+    <v-btn variant="tonal" color="primary" @click="showMap">
+      {{ t('stations.detail.showMap') }}
+    </v-btn>
+  </div>
+  <MapCanvas v-else :latitude="props.latitude" :longitude="props.longitude" />
 </template>
 
 <style scoped>
@@ -91,5 +59,13 @@ onBeforeUnmount(() => {
   height: 220px;
   border-radius: 10px;
   overflow: hidden;
+}
+
+.station-mini-map--placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--v-theme-on-surface), 0.06);
 }
 </style>
