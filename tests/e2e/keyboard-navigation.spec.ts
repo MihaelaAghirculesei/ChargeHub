@@ -5,10 +5,13 @@ test('lo skip link è il primo elemento raggiungibile e porta al contenuto princ
   page
 }) => {
   await page.goto('/de')
+  // `/de` è client-side (Giorno 21): la prima risposta è un guscio vuoto,
+  // il layout (skip link incluso) esiste solo dopo l'idratazione.
+  const skipLink = page.locator('.skip-link')
+  await skipLink.waitFor({ state: 'attached' })
 
   // Nessun click: solo tastiera, come richiesto dal "Fatto quando" del piano.
   await page.keyboard.press('Tab')
-  const skipLink = page.locator('.skip-link')
   await expect(skipLink).toBeFocused()
 
   await page.keyboard.press('Enter')
@@ -17,6 +20,7 @@ test('lo skip link è il primo elemento raggiungibile e porta al contenuto princ
 
 test('il focus resta visibile durante la navigazione da tastiera', async ({ page }) => {
   await page.goto('/de')
+  await page.locator('.skip-link').waitFor({ state: 'attached' })
   await page.keyboard.press('Tab')
   await page.keyboard.press('Tab')
 

@@ -34,8 +34,15 @@ for (const path of PUBLIC_PAGES) {
     await page.goto(path)
     // Le pagine con `useLiveTelemetry`/liste virtualizzate finiscono di
     // stabilizzarsi poco dopo il load — un piccolo margine evita falsi
-    // positivi su contenuto ancora in transizione.
+    // positivi su contenuto ancora in transizione. Testo reale dentro
+    // `<main>` (non solo `networkidle`) copre anche `/de` (client-side,
+    // Giorno 21: la prima risposta è un guscio vuoto, il contenuto arriva
+    // dopo l'idratazione) e il primo hit "a freddo" di una rotta con `swr`
+    // in `pnpm dev`.
     await page.waitForLoadState('networkidle')
+    await page.waitForFunction(
+      () => (document.querySelector('main')?.textContent?.trim().length ?? 0) > 0
+    )
 
     const results = await scanForViolations(page)
     expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
