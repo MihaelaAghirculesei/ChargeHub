@@ -38,7 +38,11 @@ const chartOptions = {
   <div>
     <ClientOnly>
       <div style="height: 260px">
-        <Bar :data="chartData" :options="chartOptions" />
+        <Bar
+          :data="chartData"
+          :options="chartOptions"
+          :aria-label="t('analytics.energyByDayTitle')"
+        />
       </div>
       <template #fallback>
         <v-skeleton-loader type="image" height="260" />

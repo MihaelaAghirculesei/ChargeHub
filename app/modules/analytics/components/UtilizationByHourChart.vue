@@ -43,7 +43,11 @@ const chartOptions = {
   <div>
     <ClientOnly>
       <div style="height: 260px">
-        <Line :data="chartData" :options="chartOptions" />
+        <Line
+          :data="chartData"
+          :options="chartOptions"
+          :aria-label="t('analytics.utilizationByHourTitle')"
+        />
       </div>
       <template #fallback>
         <v-skeleton-loader type="image" height="260" />

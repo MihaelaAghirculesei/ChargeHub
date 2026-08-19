@@ -40,7 +40,11 @@ const chartOptions = { responsive: true, maintainAspectRatio: false }
   <div>
     <ClientOnly>
       <div style="height: 260px">
-        <Doughnut :data="chartData" :options="chartOptions" />
+        <Doughnut
+          :data="chartData"
+          :options="chartOptions"
+          :aria-label="t('analytics.statusDistributionTitle')"
+        />
       </div>
       <template #fallback>
         <v-skeleton-loader type="image" height="260" />
