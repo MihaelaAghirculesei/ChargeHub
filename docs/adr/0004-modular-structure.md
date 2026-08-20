@@ -1,62 +1,64 @@
-# ADR-0004: Struttura feature-first (`app/modules/`), non per tipo di file
+# ADR-0004: Feature-first-Struktur (`app/modules/`), nicht nach Dateityp
 
-## Stato
+## Status
 
-Accettato — 2026-08-18.
+Angenommen — 2026-08-18.
 
-## Contesto
+## Kontext
 
-Nuxt non impone una struttura per il codice applicativo oltre alle cartelle
-con significato speciale (`pages/`, `components/`, `composables/`,
-`layouts/`, `server/`). Il progetto ha sei aree funzionali distinte
-(stazioni, sessioni, analytics, tariffe, auth) ciascuna con il proprio
-repository client, store, composable e componenti — la domanda è come
-organizzarle: per **tipo di file** (`components/`, `composables/`,
-`stores/` a livello globale, con nomi che iniziano tutti per `Station*`,
-`Session*`...) o per **feature**.
+Nuxt schreibt keine Struktur für Anwendungscode vor, abgesehen von Ordnern
+mit besonderer Bedeutung (`pages/`, `components/`, `composables/`,
+`layouts/`, `server/`). Das Projekt hat sechs fachlich getrennte Bereiche
+(Stationen, Sitzungen, Analytics, Tarife, Auth), jeder mit eigenem
+Client-Repository, Store, Composables und Komponenten — die Frage ist, wie
+man sie organisiert: nach **Dateityp** (`components/`, `composables/`,
+`stores/` global, mit Namen, die alle mit `Station*`, `Session*`... beginnen)
+oder nach **Feature**.
 
-## Decisione
+## Entscheidung
 
-`app/modules/<feature>/` — ogni modulo è un piccolo verticale autosufficiente:
+`app/modules/<feature>/` — jedes Modul ist ein kleiner, eigenständiger
+vertikaler Schnitt:
 
 ```
 app/modules/stations/
 ├── components/       # StationsMap.vue, StationsTable.vue, StationDetail.vue...
 ├── composables/       # useStations, useStation, useStationReferenceData
 ├── stores/             # stations.store.ts, stations-filters.store.ts
-├── telemetry/          # transport.ts, polling-transport.ts (Giorno 11)
-├── repository.ts        # unico punto che sa che i dati vivono dietro /api/stations
+├── telemetry/          # transport.ts, polling-transport.ts (Tag 11)
+├── repository.ts        # einziger Ort, der weiß, dass die Daten hinter /api/stations liegen
 ├── types.ts
-└── index.ts             # barrel: cosa il modulo espone all'esterno
+└── index.ts             # Barrel: was das Modul nach außen bereitstellt
 ```
 
-Le pagine (`app/pages/stations/index.vue`, `[id].vue`) restano sottili:
-compongono componenti dei moduli, non contengono logica propria oltre
-`definePageMeta`/`useSeoMeta`. Codice condiviso da più moduli (formattazione
-locale, tema) vive in `app/shared/composables/`, non duplicato né promosso
-prematuramente a "core" prima di essere davvero condiviso da almeno due
-moduli.
+Die Seiten (`app/pages/stations/index.vue`, `[id].vue`) bleiben dünn: sie
+setzen Modul-Komponenten zusammen, enthalten keine eigene Logik über
+`definePageMeta`/`useSeoMeta` hinaus. Von mehreren Modulen gemeinsam
+genutzter Code (lokale Formatierung, Theme) lebt in
+`app/shared/composables/` — weder dupliziert noch vorschnell zu "Core"
+befördert, bevor er wirklich von mindestens zwei Modulen geteilt wird.
 
-## Perché non "per tipo di file"
+## Warum nicht "nach Dateityp"
 
-Con sei feature, una struttura per tipo (`app/components/`, `app/stores/`,
-`app/composables/` tutte piatte) avrebbe prodotto cartelle da 20+ file
-ordinati solo per prefisso di nome, dove capire "cosa tocca il modulo
-stazioni" richiede di scorrere ogni cartella. `app/modules/stations/` risponde
-da solo: aprendolo si vede l'intera superficie di quella feature. Il costo
-reale è la ricerca cross-modulo ("dove uso `useAuth`?") — mitigato dai barrel
-`index.ts` (l'unica cosa che serve a chi importa da fuori) e da import
-alias (`~/modules/...`) invece di percorsi relativi lunghi.
+Bei sechs Features hätte eine Struktur nach Typ (`app/components/`,
+`app/stores/`, `app/composables/`, alle flach) Ordner mit 20+ Dateien
+erzeugt, nur nach Namenspräfix sortiert, in denen man erst alle Ordner
+durchsuchen müsste, um zu verstehen "was gehört zum Stationen-Modul".
+`app/modules/stations/` beantwortet das von selbst: es zu öffnen zeigt die
+gesamte Oberfläche dieser Feature. Die echten Kosten liegen bei der
+modulübergreifenden Suche ("wo verwende ich `useAuth`?") — abgefedert durch
+die `index.ts`-Barrels (das Einzige, was für Imports von außen nötig ist)
+und durch Import-Aliase (`~/modules/...`) statt langer relativer Pfade.
 
-## Conseguenze
+## Konsequenzen
 
-- Un modulo che cresce troppo (stazioni ha mappa + tabella + filtri +
-  telemetria live) resta comunque un solo modulo, non forza una
-  sotto-suddivisione artificiale solo per contenere la dimensione delle
-  cartelle.
-- `shared/` è per codice usato da **almeno due** moduli — una regola
-  esplicita per non trasformarlo in un cestino di tutto ciò che non si sa
-  dove mettere.
-- Il barrel (`index.ts`) di ogni modulo è la superficie pubblica: un test o
-  un altro modulo importa da lì, non da un file interno specifico — permette
-  di rifattorizzare l'interno di un modulo senza toccare chi lo consuma.
+- Ein zu groß werdendes Modul (Stationen hat Karte + Tabelle + Filter +
+  Live-Telemetrie) bleibt trotzdem ein einziges Modul, es erzwingt keine
+  künstliche Unterteilung nur um die Ordnergröße zu begrenzen.
+- `shared/` ist für Code, der von **mindestens zwei** Modulen genutzt wird —
+  eine explizite Regel, damit es nicht zum Sammelbecken für alles wird, wo
+  man nicht weiß, wohin damit.
+- Das Barrel (`index.ts`) jedes Moduls ist die öffentliche Oberfläche: ein
+  Test oder ein anderes Modul importiert von dort, nicht aus einer
+  spezifischen internen Datei — das erlaubt, das Innere eines Moduls zu
+  refaktorieren, ohne dessen Konsumenten anzufassen.

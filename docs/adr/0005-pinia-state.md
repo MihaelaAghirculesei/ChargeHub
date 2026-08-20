@@ -1,57 +1,59 @@
-# ADR-0005: Pinia solo per stato client condiviso, non per i dati del server
+# ADR-0005: Pinia nur für geteilten Client-State, nicht für Server-Daten
 
-## Stato
+## Status
 
-Accettato — 2026-08-18.
+Angenommen — 2026-08-18.
 
-## Contesto
+## Kontext
 
-L'app ha due categorie di stato ben distinte, e confonderle è l'errore più
-comune con Pinia in un'app Nuxt:
+Die App hat zwei klar getrennte Kategorien von Zustand, und sie zu verwechseln
+ist der häufigste Fehler mit Pinia in einer Nuxt-App:
 
-1. **Dati che vengono dal server** (stazioni, sessioni, telemetria, KPI) —
-   hanno già una cache/fetch/loading state gestiti da `useAsyncData`/
-   `useFetch` di Nuxt, con SSR, deduplicazione e invalidazione integrati.
-2. **Stato client puro, condiviso tra componenti non imparentati** — filtri
-   di ricerca stazioni (Giorno 4), tema chiaro/scuro (Giorno 2), tariffe
-   create dall'utente (Giorno 15), sessione autenticata (Giorno 16).
+1. **Daten, die vom Server kommen** (Stationen, Sitzungen, Telemetrie, KPIs)
+   — haben bereits Cache/Fetch/Loading-State, verwaltet von Nuxts
+   `useAsyncData`/`useFetch`, mit eingebautem SSR, Deduplizierung und
+   Invalidierung.
+2. **Reiner Client-State, zwischen nicht verwandten Komponenten geteilt** —
+   Stationssuchfilter (Tag 4), Hell-/Dunkel-Theme (Tag 2), von Nutzer:innen
+   angelegte Tarife (Tag 15), authentifizierte Session (Tag 16).
 
-## Decisione
+## Entscheidung
 
-Pinia **solo** per la categoria 2. Ogni store è scoped al modulo che lo
-possiede (`stations-filters.store.ts`, `tariffs.store.ts`, non un unico
-store globale): riflette la stessa struttura feature-first di
-[ADR-0004](0004-modular-structure.md), non un contenitore unico di "stato
-dell'app".
+Pinia **nur** für Kategorie 2. Jeder Store ist auf das ihn besitzende Modul
+gescoped (`stations-filters.store.ts`, `tariffs.store.ts`, nicht ein
+einziger globaler Store): spiegelt dieselbe Feature-first-Struktur wie
+[ADR-0004](0004-modular-structure.md) wider, kein einheitlicher
+"App-State"-Container.
 
-I dati dal server **non** entrano in uno store Pinia duplicandoli — i
-composable dei moduli (`useStations`, `useKpis`...) chiamano direttamente
-`useAsyncData` verso il repository del modulo. Un solo store fa eccezione
-(`stations.store.ts`, Giorno 4): non cache-a i dati lui stesso, incapsula
-la chiamata `useAsyncData` dietro un'interfaccia stabile che sia la mappa
-sia la tabella delle stazioni consumano, evitando due fetch indipendenti
-per la stessa area di ricerca.
+Server-Daten fließen **nicht** durch Duplizierung in einen Pinia-Store — die
+Modul-Composables (`useStations`, `useKpis`...) rufen direkt `useAsyncData`
+gegen das Modul-Repository auf. Ein einziger Store bildet die Ausnahme
+(`stations.store.ts`, Tag 4): er cached die Daten nicht selbst, sondern
+kapselt den `useAsyncData`-Aufruf hinter einem stabilen Interface, das sowohl
+die Karte als auch die Stationstabelle konsumieren — so werden zwei
+unabhängige Fetches für denselben Suchbereich vermieden.
 
-## Perché non uno stato Pinia unico per tutto
+## Warum kein einheitlicher Pinia-State für alles
 
-Duplicare in Pinia dati che `useAsyncData` già gestisce (SSR, cache,
-refetch) significa reimplementare a mano quella logica, spesso peggio, e
-avere due fonti di verità che possono disallinearsi (la cache SSR-idratata
-di Nuxt e uno store Pinia riempito da un `onMounted` separato). I filtri
-stazioni, il tema, le tariffe non hanno invece un "server" da interrogare —
-sono stato client che deve sopravvivere alla navigazione tra pagine e
-persistere tra sessioni (`useCookie`, non `localStorage`: letto anche in
-SSR per il primo paint già nello stato giusto, stesso principio per tema,
-filtri e tariffe).
+Daten in Pinia zu duplizieren, die `useAsyncData` bereits verwaltet (SSR,
+Cache, Refetch), bedeutet, diese Logik von Hand neu zu implementieren — oft
+schlechter — und zwei Wahrheitsquellen zu haben, die auseinanderlaufen
+können (Nuxts SSR-hydratisierter Cache und ein separat per `onMounted`
+gefüllter Pinia-Store). Die Stationsfilter, das Theme, die Tarife haben
+dagegen keinen "Server" zum Abfragen — es ist Client-State, der die
+Navigation zwischen Seiten überleben und über Sitzungen hinweg persistiert
+werden muss (`useCookie`, nicht `localStorage`: auch in SSR gelesen, für den
+ersten Paint bereits im richtigen Zustand — dasselbe Prinzip für Theme,
+Filter und Tarife).
 
-## Conseguenze
+## Konsequenzen
 
-- Nessun watcher manuale per tenere sincronizzati "cache Nuxt" e "store
-  Pinia" per lo stesso dato — non esiste quella duplicazione.
-- Un test di uno store Pinia (es. `tariffs.store.test.ts`) resta un test
-  di logica pura (CRUD locale, validazione), mai un test che deve anche
-  mockare `useAsyncData`.
-- La persistenza via `useCookie` (non un plugin `pinia-plugin-persistedstate`)
-  è una scelta deliberata: nessuna dipendenza aggiuntiva per store che
-  devono solo sopravvivere a un reload, coerente in tutti e tre i casi
-  (tema, filtri, tariffe).
+- Kein manueller Watcher, um "Nuxt-Cache" und "Pinia-Store" für dieselben
+  Daten synchron zu halten — diese Duplizierung existiert nicht.
+- Ein Test eines Pinia-Stores (z. B. `tariffs.store.test.ts`) bleibt ein Test
+  reiner Logik (lokales CRUD, Validierung), nie ein Test, der zusätzlich
+  `useAsyncData` mocken muss.
+- Die Persistenz über `useCookie` (kein `pinia-plugin-persistedstate`-Plugin)
+  ist eine bewusste Entscheidung: keine zusätzliche Abhängigkeit für Stores,
+  die nur einen Reload überleben müssen — konsistent in allen drei Fällen
+  (Theme, Filter, Tarife).
