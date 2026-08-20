@@ -2,122 +2,127 @@
 
 [![CI](https://github.com/MihaelaAghirculesei/ChargeHub/actions/workflows/ci.yml/badge.svg)](https://github.com/MihaelaAghirculesei/ChargeHub/actions/workflows/ci.yml)
 
-Dashboard per la gestione di infrastruttura di ricarica elettrica. Progetto portfolio costruito con Nuxt 4 e Vuetify 3.
+Dashboard zur Verwaltung von Ladeinfrastruktur für Elektrofahrzeuge. Portfolio-Projekt, gebaut mit Nuxt 4 und Vuetify 3.
 
-| Dashboard                                                    | Stazioni (mappa + lista)                                                            |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| ![Dashboard con KPI e trend](docs/screenshots/dashboard.png) | ![Ricerca stazioni su mappa e tabella sincronizzate](docs/screenshots/stations.png) |
+**Live-Demo:** [charge-hub-one.vercel.app/de](https://charge-hub-one.vercel.app/de) — Zugangsdaten siehe [Login](#login) unten.
 
-| Dettaglio stazione                                                             | Analytics                                                           |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| ![Dettaglio stazione con telemetria live](docs/screenshots/station-detail.png) | ![Grafici energia, stato, utilizzo](docs/screenshots/analytics.png) |
+| Dashboard                                                        | Stationen (Karte + Liste)                                                              |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| ![Dashboard mit KPIs und Trends](docs/screenshots/dashboard.png) | ![Stationssuche mit synchronisierter Karte und Tabelle](docs/screenshots/stations.png) |
+
+| Stationsdetail                                                             | Analytics                                                                 |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| ![Stationsdetail mit Live-Telemetrie](docs/screenshots/station-detail.png) | ![Diagramme: Energie, Status, Auslastung](docs/screenshots/analytics.png) |
 
 ## Stack
 
 - **Framework:** Nuxt 4 + TypeScript strict
-- **UI:** Vuetify 3 (via `vuetify-nuxt-module`) + SCSS
-- **State:** Pinia — solo per stato client condiviso, non per i dati dal server (vedi [ADR-0005](docs/adr/0005-pinia-state.md))
-- **Validazione:** Zod
-- **Mappa:** MapLibre GL JS + OpenStreetMap
-- **Grafici:** Chart.js (`vue-chartjs`)
-- **Test:** Vitest + `@nuxt/test-utils` (unit/component) + Playwright (E2E, Chromium/WebKit/mobile) + axe-core (accessibilità)
-- **i18n:** `@nuxtjs/i18n`, tedesco (default) + inglese, routing localizzato (`/de/...`, `/en/...`)
-- **CI:** GitHub Actions — lint, typecheck, unit test con soglia di copertura, build, E2E, Lighthouse CI (vedi [`.github/workflows/ci.yml`](.github/workflows/ci.yml))
+- **UI:** Vuetify 3 (über `vuetify-nuxt-module`) + SCSS
+- **State:** Pinia — nur für geteilten Client-State, nicht für Server-Daten (siehe [ADR-0005](docs/adr/0005-pinia-state.md))
+- **Validierung:** Zod
+- **Karte:** MapLibre GL JS + OpenStreetMap
+- **Diagramme:** Chart.js (`vue-chartjs`)
+- **Tests:** Vitest + `@nuxt/test-utils` (Unit/Component) + Playwright (E2E, Chromium/WebKit/mobil) + axe-core (Barrierefreiheit)
+- **i18n:** `@nuxtjs/i18n`, Deutsch (Standard) + Englisch, lokalisiertes Routing (`/de/...`, `/en/...`)
+- **CI/CD:** GitHub Actions — Lint, Typecheck, Unit-Tests mit Coverage-Schwelle, Build, E2E, Lighthouse CI (siehe [`.github/workflows/ci.yml`](.github/workflows/ci.yml)); `main` ist per Branch Protection geschützt (PR + alle 3 Checks grün erforderlich); Deploy auf Vercel automatisch bei jedem Merge, Preview-Deployment für jeden PR
 
-## Architettura
+## Architektur
 
 ```mermaid
 flowchart TB
     subgraph Client["Browser"]
-        Pages["app/pages/*<br/>sottili: compongono i moduli"]
-        Modules["app/modules/*<br/>stazioni · sessioni · analytics · tariffe · auth"]
-        Pinia["Pinia<br/>filtri · tema · tariffe · sessione"]
+        Pages["app/pages/*<br/>dünn: setzen nur die Module zusammen"]
+        Modules["app/modules/*<br/>Stationen · Sitzungen · Analytics · Tarife · Auth"]
+        Pinia["Pinia<br/>Filter · Theme · Tarife · Session"]
         Pages --> Modules
-        Modules -.->|stato client condiviso| Pinia
+        Modules -.->|geteilter Client-State| Pinia
     end
 
     subgraph Server["Nitro (server/)"]
         API["/api/*"]
-        Simulators["Simulatori deterministici<br/>telemetria · sessioni · KPI<br/>(seed → stesso risultato, nessuno stato tra richieste)"]
-        Session["Sessione sigillata<br/>(cookie httpOnly, h3 useSession)"]
+        Simulators["Deterministische Simulatoren<br/>Telemetrie · Sitzungen · KPIs<br/>(Seed → gleiches Ergebnis, kein State zwischen Requests)"]
+        Session["Versiegelte Session<br/>(httpOnly-Cookie, h3 useSession)"]
         API --> Simulators
         API --> Session
     end
 
-    OCM[("Open Charge Map<br/>registro stazioni reale")]
+    OCM[("Open Charge Map<br/>echtes Stationsregister")]
 
     Modules -->|useAsyncData| API
-    API -->|anagrafica stazioni| OCM
+    API -->|Stationsstammdaten| OCM
 
     style OCM fill:#e8f5e9,stroke:#2e7d32
     style Simulators fill:#fff3e0,stroke:#e65100
 ```
 
-**Perché questa forma:** l'anagrafica delle stazioni è l'unico dato realmente esterno (OCM); tutto ciò che OCM non offre — stato di ricarica live, sessioni storiche, KPI — è simulato **lato server**, stateless per costruzione (nessuna variabile di modulo mutata, nessun `setInterval`: il target di deploy è Vercel serverless, dove un'istanza di funzione non sopravvive garantita tra un'invocazione e la successiva — vedi [ADR-0002](docs/adr/0002-telemetry-simulation.md)). Il client non sa la differenza: entrambe le fonti arrivano dietro lo stesso `/api/*`.
+**Warum diese Form:** Die Stationsstammdaten sind die einzige wirklich externe Datenquelle (OCM); alles, was OCM nicht liefert — Live-Ladestatus, historische Sitzungen, KPIs — wird **serverseitig simuliert**, konstruktionsbedingt zustandslos (keine mutierten Modul-Variablen, kein `setInterval`: Deploy-Ziel ist Vercel Serverless, wo eine Funktionsinstanz nicht garantiert zwischen zwei Aufrufen überlebt — siehe [ADR-0002](docs/adr/0002-telemetry-simulation.md)). Der Client kennt den Unterschied nicht: beide Quellen laufen über dieselbe `/api/*`.
 
-### Decisioni tecniche principali
+### Wichtigste technische Entscheidungen
 
-| Decisione                                                                 | Perché                                                                                                                                          | ADR                                           |
-| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| Simulatori deterministici (seed → stesso risultato), non stato in memoria | Vercel è serverless: niente garantisce che un'istanza sopravviva tra due richieste                                                              | [0002](docs/adr/0002-telemetry-simulation.md) |
-| Aggiornamenti live via polling dietro un'interfaccia, non WebSocket       | Un'interfaccia `TelemetryTransport` disaccoppia la UI dal trasporto — passare a SSE/WebSocket un giorno tocca un solo file                      | [0003](docs/adr/0003-live-updates.md)         |
-| Struttura feature-first (`app/modules/`), non per tipo di file            | Con 6 aree funzionali, una cartella per modulo si legge da sola; una struttura per tipo si perde tra prefissi di nome                           | [0004](docs/adr/0004-modular-structure.md)    |
-| Pinia solo per stato client, mai per dati dal server                      | `useAsyncData` già gestisce cache/SSR/dedup — duplicarlo in uno store crea due fonti di verità                                                  | [0005](docs/adr/0005-pinia-state.md)          |
-| Rendering ibrido per rotta (prerender/SSR/client-side)                    | Login statico, dashboard dinamica, dettaglio stazione SSR — un default unico avrebbe sacrificato uno dei tre                                    | [0006](docs/adr/0006-rendering-strategy.md)   |
-| Design system con ruoli semantici (mai colore da solo)                    | Stato di uno stallo di ricarica comunicato da icona + testo + colore insieme, non dal colore isolato — requisito di accessibilità, non estetica | [0001](docs/adr/0001-design-system.md)        |
+| Entscheidung                                                                  | Warum                                                                                                                                                    | ADR                                           |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Deterministische Simulatoren (Seed → gleiches Ergebnis), kein In-Memory-State | Vercel ist serverless: nichts garantiert, dass eine Instanz zwischen zwei Requests überlebt                                                              | [0002](docs/adr/0002-telemetry-simulation.md) |
+| Live-Updates via Polling hinter einem Interface, nicht WebSocket              | Ein `TelemetryTransport`-Interface entkoppelt die UI vom Transport — ein Wechsel zu SSE/WebSocket betrifft eines Tages nur eine Datei                    | [0003](docs/adr/0003-live-updates.md)         |
+| Feature-first-Struktur (`app/modules/`), nicht nach Dateityp                  | Bei 6 fachlichen Bereichen liest sich ein Ordner pro Modul von selbst; eine Struktur nach Dateityp verliert sich in Namenspräfixen                       | [0004](docs/adr/0004-modular-structure.md)    |
+| Pinia nur für Client-State, nie für Server-Daten                              | `useAsyncData` übernimmt bereits Cache/SSR/Dedup — das in einem Store zu duplizieren schafft zwei Wahrheitsquellen                                       | [0005](docs/adr/0005-pinia-state.md)          |
+| Hybrides Rendering pro Route (Prerender/SSR/Client-seitig)                    | Login statisch, Dashboard dynamisch, Stationsdetail SSR — ein einziger Standard hätte einen der drei Fälle geopfert                                      | [0006](docs/adr/0006-rendering-strategy.md)   |
+| Design-System mit semantischen Rollen (nie Farbe allein)                      | Der Status eines Ladepunkts wird über Icon + Text + Farbe zusammen kommuniziert, nicht über Farbe allein — Barrierefreiheits-Anforderung, keine Ästhetik | [0001](docs/adr/0001-design-system.md)        |
 
-## Dati: cosa è reale, cosa è simulato
+## Daten: was echt ist, was simuliert ist
 
-Dichiarato apertamente, non nascosto in un commento:
+Offen ausgewiesen, nicht in einem Kommentar versteckt:
 
-- **Anagrafica stazioni** (nome, indirizzo, connettori, operatore): **reale**, da [Open Charge Map](https://openchargemap.org/) — un registro aggiornato da chi censisce le stazioni, non un feed live.
-- **Stato di ricarica, potenza istantanea, sessioni storiche, KPI**: **simulati** lato server, deterministici (stesso seed → stesso risultato), perché OCM non espone nulla di questo e nessun feed reale del genere è accessibile senza hardware o un accordo con un CPO.
-- **Login**: **mock esplicito**, due account fissi hardcoded lato server (vedi sotto) — non c'è un database utenti, solo per dimostrare guardie di rotta e permessi per ruolo.
+- **Stationsstammdaten** (Name, Adresse, Anschlüsse, Betreiber): **echt**, von [Open Charge Map](https://openchargemap.org/) — ein von der Community gepflegtes Register, kein Live-Feed.
+- **Ladestatus, Momentanleistung, historische Sitzungen, KPIs**: **serverseitig simuliert**, deterministisch (gleicher Seed → gleiches Ergebnis), weil OCM davon nichts liefert und kein echter Feed dieser Art ohne Hardware oder eine Vereinbarung mit einem CPO zugänglich ist.
+- **Login**: **explizit gemockt**, zwei feste, serverseitig hartkodierte Accounts (siehe unten) — keine Nutzerdatenbank, dient nur dazu, Route-Guards und rollenbasierte Rechte zu demonstrieren.
 
 ## Setup
 
 ```bash
 pnpm install
-cp .env.example .env   # imposta NUXT_OCM_API_KEY, vedi sotto
+cp .env.example .env   # NUXT_OCM_API_KEY setzen, siehe unten
 pnpm dev
 ```
 
-L'app valida la configurazione al boot: senza una `NUXT_OCM_API_KEY` valida in `.env`, il server si arresta con un errore esplicito invece di partire in uno stato inconsistente. La chiave si ottiene registrandosi su [openchargemap.org/site/develop/api](https://openchargemap.org/site/develop/api).
+Die App validiert die Konfiguration beim Start: ohne gültigen `NUXT_OCM_API_KEY` in `.env` bricht der Server mit einer klaren Fehlermeldung ab, statt in einem inkonsistenten Zustand zu starten. Die Kombination erhältst du nach Registrierung auf [openchargemap.org/site/develop/api](https://openchargemap.org/site/develop/api).
 
-Serve anche una `NUXT_SESSION_PASSWORD` (almeno 32 caratteri) per il login — genera la tua, es. `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+Für den Login wird außerdem ein `NUXT_SESSION_PASSWORD` (mindestens 32 Zeichen) benötigt — erzeuge deins z. B. mit `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
 
 ## Login
 
-**Mock esplicito: nessun backend/database reale.** Due account fissi, hardcoded lato server (`server/utils/auth-session.ts`) solo per dimostrare guardie di rotta e permessi (Giorno 16) — non è pensato per la produzione.
+**Explizit gemockt: kein echtes Backend/keine Datenbank.** Zwei feste, serverseitig hartkodierte Accounts (`server/utils/auth-session.ts`), nur um Route-Guards und Rechte zu demonstrieren — nicht für den Produktivbetrieb gedacht.
 
-| Utente     | Password      | Ruolo      | Può                                |
-| ---------- | ------------- | ---------- | ---------------------------------- |
-| `operator` | `operator123` | `operator` | Gestire le tariffe (`/tariffs`)    |
-| `viewer`   | `viewer123`   | `viewer`   | Vedere le tariffe, non modificarle |
+| Nutzer     | Passwort      | Rolle      | Darf                                 |
+| ---------- | ------------- | ---------- | ------------------------------------ |
+| `operator` | `operator123` | `operator` | Tarife verwalten (`/tariffs`)        |
+| `viewer`   | `viewer123`   | `viewer`   | Tarife nur ansehen, nicht bearbeiten |
 
-La sessione è un cookie httpOnly sigillato (firmato + cifrato con `NUXT_SESSION_PASSWORD`, via `useSession` di h3) — nessuno store server-side, coerente con il deploy serverless (stesso principio del simulatore di telemetria, [ADR-0002](docs/adr/0002-telemetry-simulation.md)).
+Die Session ist ein versiegeltes httpOnly-Cookie (signiert + verschlüsselt mit `NUXT_SESSION_PASSWORD`, via `useSession` von h3) — kein serverseitiger Store, konsistent mit dem Serverless-Deploy (gleiches Prinzip wie beim Telemetrie-Simulator, [ADR-0002](docs/adr/0002-telemetry-simulation.md)).
 
-## Script
+## Skripte
 
-| Comando                                                | Descrizione                                       |
+| Befehl                                                 | Beschreibung                                      |
 | ------------------------------------------------------ | ------------------------------------------------- |
-| `pnpm dev`                                             | Dev server                                        |
-| `pnpm build`                                           | Build di produzione                               |
+| `pnpm dev`                                             | Dev-Server                                        |
+| `pnpm build`                                           | Produktions-Build                                 |
 | `pnpm lint` / `pnpm lint:fix`                          | ESLint                                            |
 | `pnpm format` / `pnpm format:check`                    | Prettier                                          |
-| `pnpm typecheck`                                       | Type check TypeScript strict                      |
-| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest (unit/component), con gate di copertura    |
+| `pnpm typecheck`                                       | TypeScript-strict-Typecheck                       |
+| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest (Unit/Component), mit Coverage-Gate        |
 | `pnpm test:e2e`                                        | Playwright — Chromium, WebKit, Pixel 7, iPhone 14 |
 
-## Limiti noti e cosa farei con più tempo
+## Bekannte Grenzen und was ich mit mehr Zeit anders machen würde
 
-- **Icone via webfont, non SVG on-demand.** `@mdi/font` locale (non più da CDN esterna, vedi ADR e log del Giorno 21) resta comunque l'intero set di icone scaricato, non solo quelle usate. La migrazione a icone SVG tree-shaken (`@mdi/js`) richiede riscrivere ogni riferimento `icon="mdi-xxx"` nel codice — decine di punti, rimandata per rischio/tempo, non per svista.
-- **Nessun caching HTTP applicativo (`swr`/ISR) sul dettaglio stazione.** Un tentativo reale è stato fatto e respinto perché rompeva l'idratazione client in questa combinazione Nuxt/Nitro (vedi [ADR-0006](docs/adr/0006-rendering-strategy.md)) — ogni richiesta rifà il fetch verso OCM. Da riprendere se la versione di Nuxt/Nitro cambia comportamento.
-- **Zero test di un click preciso su un marker della mappa.** MapLibre renderizza su canvas/WebGL: le coordinate pixel di una stazione dipendono dalla sua proiezione cartografica, che ricalcolare in un test duplicherebbe la logica della libreria solo per un test fragile a ogni cambio di viewport/zoom di default. La sincronia mappa↔lista è verificata nella direzione stabile (hover riga tabella → evidenziazione), non nell'altra.
-- **CI E2E/Lighthouse dipendono da un secret non incluso nel repository.** `NUXT_OCM_API_KEY` va aggiunta come secret di GitHub Actions perché quei job chiamino davvero OpenChargeMap — senza, falliscono con un 502 dalla chiave finta usata come placeholder, comportamento atteso e documentato, non un bug del workflow.
-- **Nessun deploy Vercel reale collegato.** Il progetto è pronto per il deploy (route rules, build, env validate) ma non è mai stato effettivamente pubblicato — una scelta deliberata, non un passo dimenticato.
-- **Con più tempo:** subsetting/SVG delle icone per il bundle iniziale; badge di coverage/Lighthouse nel README (richiedono un servizio esterno tipo Codecov o artefatti committati, entrambi fuori ambito finora); un secondo linguaggio di dati simulati (es. prezzi dinamici per fascia oraria) per rendere il calcolatore tariffe più realistico.
+- **Icons via Webfont, nicht als On-Demand-SVG.** `@mdi/font` wird lokal gehostet (nicht mehr von einem externen CDN) und auf die tatsächlich verwendeten Icons reduziert (Font-Subset via `fonttools`/`pyftsubset`, 403 kB → 3,7 kB) — trotzdem ein Webfont, kein Tree-Shaking auf Glyph-Ebene. Die Migration zu SVG-Icons (`@mdi/js`) würde jede `icon="mdi-xxx"`-Referenz im Code umschreiben — Dutzende Stellen, aus Zeit-/Risikogründen zurückgestellt, nicht übersehen.
+- **Kein anwendungsseitiges HTTP-Caching (`swr`/ISR) auf dem Stationsdetail.** Ein echter Versuch wurde gemacht und verworfen, weil er in dieser Nuxt/Nitro-Kombination die Client-Hydration brach (siehe [ADR-0006](docs/adr/0006-rendering-strategy.md)) — jeder Request holt die Daten neu von OCM. Bei einer geänderten Nuxt/Nitro-Version erneut zu prüfen.
+- **Kein Test für einen präzisen Klick auf einen Kartenmarker.** MapLibre rendert auf Canvas/WebGL: die Pixelkoordinaten einer Station hängen von ihrer Kartenprojektion ab, deren Nachrechnen in einem Test die Logik der Bibliothek nur für einen bei jeder Viewport-/Zoom-Änderung brüchigen Test duplizieren würde. Die Karte-Liste-Synchronisation ist in der stabilen Richtung getestet (Hover auf Tabellenzeile → Hervorhebung), nicht umgekehrt.
 
-## Stato del progetto
+**Mit mehr Zeit:** echtes SVG-Icon-Set (`@mdi/js`) für den initialen Bundle statt Webfont-Subset; Coverage-/Lighthouse-Badge im README (erfordert einen externen Dienst wie Codecov oder committete Artefakte, beides bisher außerhalb des Scopes); eine zweite Schicht simulierter Daten (z. B. zeitabhängige dynamische Preise), um den Tarifrechner realistischer zu machen.
 
-Le decisioni architetturali sono documentate come ADR in [`docs/adr/`](docs/adr/) man mano che vengono prese. Il log di avanzamento giorno per giorno (non incluso nel repository) copre l'intero percorso dal setup iniziale a CI/CD.
+## Performance
+
+Lighthouse auf `/de/stations/[id]` (mobile Simulation, Median aus 3 Läufen in CI): **Performance 90+/100**, Accessibility/Best Practices/SEO **100/100**, CLS **< 0,05**. Ausgangspunkt war Performance 46/100 — die größten Hebel waren verzögertes Laden der Karte (MapLibre lädt erst nach Klick, nicht automatisch nach der Hydration), ein echtes Font-Subset statt des vollständigen Icon-Sets, deaktiviertes Vuetify-Color-Pack (nie verwendete Utility-Klassen) sowie Brotli-Kompression für HTML und statische Assets (Nitro komprimiert standardmäßig nur Build-Artefakte, nicht die pro Request gerenderte Seite).
+
+## Projektstatus
+
+Architekturentscheidungen sind als ADRs in [`docs/adr/`](docs/adr/) dokumentiert, sobald sie getroffen werden. Der tägliche Fortschritts-Log (nicht Teil dieses Repositorys) deckt den gesamten Weg vom initialen Setup bis zu CI/CD und Deploy ab.
