@@ -1,178 +1,188 @@
-# ADR-0001: Design system (SCSS, palette semantica, dark mode, layout)
+# ADR-0001: Design System (SCSS, semantische Palette, Dark Mode, Layout)
 
-## Stato
+## Status
 
-Accettato — 2026-08-18.
+Angenommen — 2026-08-18.
 
-## Contesto
+## Kontext
 
-L'annuncio Cubos chiede esplicitamente "sehr gute Kenntnisse in SCSS" e che il/la
-candidato/a contribuisca attivamente alla "Designsprache" del prodotto. Vuetify 3
-copre già i componenti; quello che va costruito qui è lo strato di decisioni che
-li rende coerenti con il dominio (stazioni di ricarica) e accessibili, non un
-design system da zero (vedi "Cosa NON fare" nel piano).
+Die Cubos-Stellenausschreibung verlangt explizit "sehr gute Kenntnisse in SCSS"
+und dass der/die Kandidat/in aktiv an der "Designsprache" des Produkts
+mitwirkt. Vuetify 3 deckt die Komponenten bereits ab; was hier zu bauen ist,
+ist die Entscheidungsschicht, die sie mit der Domäne (Ladestationen) kohärent
+und barrierefrei macht — kein Design System von Grund auf (siehe "Was NICHT
+zu tun ist" im Plan).
 
-Serve inoltre un layout applicativo di base (barra, navigazione, contenuto)
-prima che le pagine reali (stazioni, sessioni, ecc.) vengano costruite nei
-prossimi giorni.
+Außerdem wird ein grundlegendes Anwendungslayout (Leiste, Navigation, Inhalt)
+benötigt, bevor die echten Seiten (Stationen, Sitzungen usw.) in den
+kommenden Tagen gebaut werden.
 
-## Decisioni
+## Entscheidungen
 
-### 1. Palette semantica legata al dominio, non ai nomi Vuetify
+### 1. Semantische Palette an die Domäne gebunden, nicht an Vuetify-Namen
 
-I quattro colori di stato di un punto di ricarica sono mappati sui ruoli
-semantici _esistenti_ di Vuetify invece di introdurre colori custom ad-hoc:
+Die vier Statusfarben eines Ladepunkts sind auf die _bestehenden_ semantischen
+Rollen von Vuetify gemappt, statt eigene Ad-hoc-Farben einzuführen:
 
-| Stato dominio | Ruolo Vuetify     | Perché                                                                                     |
-| ------------- | ----------------- | ------------------------------------------------------------------------------------------ |
-| Disponibile   | `success`         | Verde è già la convenzione universale per "ok, pronto all'uso".                            |
-| In ricarica   | `info`            | Stato attivo/in corso, non un'azione riuscita né un errore.                                |
-| Guasto        | `error`           | Riusa la semantica di errore invece di un rosso hardcoded a parte.                         |
-| Offline       | `surface-variant` | Non è un errore né uno stato "attivo": è spento, quindi va desaturato invece che colorato. |
+| Domänenstatus | Vuetify-Rolle     | Warum                                                                                         |
+| ------------- | ----------------- | --------------------------------------------------------------------------------------------- |
+| Verfügbar     | `success`         | Grün ist bereits die universelle Konvention für "ok, einsatzbereit".                          |
+| Lädt          | `info`            | Aktiver/laufender Status, weder eine erfolgreiche Aktion noch ein Fehler.                     |
+| Gestört       | `error`           | Nutzt die bestehende Fehler-Semantik statt eines separaten hartkodierten Rots.                |
+| Offline       | `surface-variant` | Weder ein Fehler noch ein "aktiver" Status: ausgeschaltet, daher entsättigt statt eingefärbt. |
 
-Vantaggio pratico: qualunque componente Vuetify che accetta una `color` prop
-(`v-chip`, `v-icon`, `v-alert`, …) eredita automaticamente questa semantica
-senza che i componenti applicativi debbano conoscere i valori esadecimali —
-coerente con la regola del piano "nessun colore hardcoded nei componenti".
-`app/pages/index.vue` mostra l'uso previsto (icona + testo, mai il solo colore:
-è già la base per il lavoro di accessibilità del Giorno 18).
+Praktischer Vorteil: Jede Vuetify-Komponente, die eine `color`-Prop akzeptiert
+(`v-chip`, `v-icon`, `v-alert`, …), erbt diese Semantik automatisch, ohne dass
+die Anwendungskomponenten Hex-Werte kennen müssen — konsistent mit der
+Planregel "keine hartkodierten Farben in Komponenten". `app/pages/index.vue`
+zeigt die vorgesehene Verwendung (Icon + Text, nie Farbe allein: bereits die
+Grundlage für die Barrierefreiheits-Arbeit von Tag 18).
 
-### 2. Contrasto verificato, non assunto
+### 2. Kontrast geprüft, nicht angenommen
 
-Ogni coppia colore/testo (`success`/`on-success`, `info`/`on-info`, …) è stata
-verificata con un piccolo script Node basato sulla formula di luminanza
-relativa WCAG 2.1 (`(L1+0.05)/(L2+0.05)`), non lasciata al calcolo automatico
-di Vuetify. Risultati (minimo richiesto: 4.5:1):
+Jedes Farbe/Text-Paar (`success`/`on-success`, `info`/`on-info`, …) wurde mit
+einem kleinen Node-Skript auf Basis der WCAG-2.1-Formel für relative
+Leuchtdichte (`(L1+0.05)/(L2+0.05)`) geprüft, nicht der automatischen
+Berechnung von Vuetify überlassen. Ergebnisse (Mindestanforderung: 4,5:1):
 
-| Coppia                               | Light  | Dark   |
+| Paar                                 | Light  | Dark   |
 | ------------------------------------ | ------ | ------ |
-| success / on-success                 | 5.35:1 | 7.28:1 |
-| info / on-info                       | 5.29:1 | 8.49:1 |
-| error / on-error                     | 5.62:1 | 6.86:1 |
-| surface-variant / on-surface-variant | 6.52:1 | 7.02:1 |
-| primary / on-primary                 | 6.34:1 | 7.51:1 |
-| secondary / on-secondary             | 6.15:1 | 8.77:1 |
+| success / on-success                 | 5,35:1 | 7,28:1 |
+| info / on-info                       | 5,29:1 | 8,49:1 |
+| error / on-error                     | 5,62:1 | 6,86:1 |
+| surface-variant / on-surface-variant | 6,52:1 | 7,02:1 |
+| primary / on-primary                 | 6,34:1 | 7,51:1 |
+| secondary / on-secondary             | 6,15:1 | 8,77:1 |
 
-Tutte le coppie hanno un margine reale sopra la soglia (non 4.51:1 "per un
-pelo"), per restare valide anche a piccoli aggiustamenti futuri della palette.
-`on-background`/`on-surface` non sono stati fissati esplicitamente: Vuetify li
-calcola automaticamente in nero/bianco puro dal contrasto, che su sfondi quasi
-bianchi (light) o quasi neri (dark) è già al massimo teorico.
+Alle Paare haben einen echten Puffer über der Schwelle (nicht 4,51:1 "auf den
+letzten Drücker"), um auch bei kleinen künftigen Anpassungen der Palette
+gültig zu bleiben. `on-background`/`on-surface` wurden nicht explizit
+gesetzt: Vuetify berechnet sie automatisch als reines Schwarz/Weiß aus dem
+Kontrast, was auf fast weißen (Light) bzw. fast schwarzen (Dark)
+Hintergründen bereits am theoretischen Maximum liegt.
 
-### 3. SCSS: variabili di sistema sovrascritte in `_variables.scss`
+### 3. SCSS: System-Variablen in `_variables.scss` überschrieben
 
-`app/assets/scss/_variables.scss` sovrascrive le SASS variable interne di
-Vuetify (`@use 'vuetify/settings' with (...)`), non solo il tema JS:
+`app/assets/scss/_variables.scss` überschreibt die internen SASS-Variablen
+von Vuetify (`@use 'vuetify/settings' with (...)`), nicht nur das JS-Theme:
 
-- **Font-stack di sistema** (`-apple-system, 'Segoe UI', Roboto, …`) invece di
-  un webfont scaricato: zero richieste di rete, zero FOUT/CLS. Per una
-  dashboard interna la coerenza col sistema operativo dell'utente pesa più di
-  un font brandizzato.
-- **`$border-radius-root: 10px`** (default Vuetify: 4px) — linguaggio visivo
-  più morbido per una dashboard basata su card, senza arrivare a forme "a
-  pillola".
-- **`$spacer: 4px`** reso esplicito (è già il default) perché è la base su cui
-  ragionano tutte le utility `pa-*`/`ma-*` usate nei componenti.
+- **System-Font-Stack** (`-apple-system, 'Segoe UI', Roboto, …`) statt eines
+  heruntergeladenen Webfonts: keine Netzwerk-Requests, kein FOUT/CLS. Für ein
+  internes Dashboard wiegt die Konsistenz mit dem Betriebssystem der
+  Nutzer:innen mehr als eine gebrandete Schrift.
+- **`$border-radius-root: 10px`** (Vuetify-Standard: 4px) — weichere visuelle
+  Sprache für ein kartenbasiertes Dashboard, ohne bis zu "Pillenform" zu gehen.
+- **`$spacer: 4px`** explizit gemacht (ist bereits der Standard), weil es die
+  Basis ist, auf der alle in den Komponenten verwendeten `pa-*`/`ma-*`-
+  Utilities aufbauen.
 
-### 4. Dark mode persistito via `useCookie`, non `ssrClientHints`
+### 4. Dark Mode über `useCookie` persistiert, nicht `ssrClientHints`
 
-`vuetify-nuxt-module` offre un meccanismo `ssrClientHints` integrato per il
-color scheme. Non l'ho usato: l'annuncio e il piano chiedono esplicitamente di
-saper implementare la persistenza con `useCookie` "a mano" — usare la feature
-già pronta del modulo avrebbe nascosto esattamente la competenza che questo
-giorno deve dimostrare, oltre a un cookie di scelta esplicita dell'utente
-(pensato per restare tale) essendo semanticamente diverso da un client hint
-che riflette la preferenza del sistema operativo.
+`vuetify-nuxt-module` bietet einen eingebauten `ssrClientHints`-Mechanismus
+für das Farbschema. Ich habe ihn nicht verwendet: Ausschreibung und Plan
+verlangen explizit, die Persistenz mit `useCookie` "von Hand" zu
+implementieren — die fertige Modul-Funktion zu nutzen hätte genau die
+Kompetenz verdeckt, die dieser Tag zeigen soll. Außerdem ist ein Cookie für
+eine explizite Nutzerwahl (soll das auch bleiben) semantisch etwas anderes
+als ein Client Hint, der die Systempräferenz widerspiegelt.
 
-Implementazione (`app/shared/composables/useAppTheme.ts` +
+Implementierung (`app/shared/composables/useAppTheme.ts` +
 `app/plugins/vuetify-theme.ts`):
 
-- Il cookie `chargehub-theme` (`light`/`dark`, un anno) è l'unica fonte di
-  verità.
-- Il plugin legge il cookie nell'hook `vuetify:before-create` — **prima**
-  che Vuetify crei l'istanza del tema — sia lato server che lato client, così
-  l'HTML renderizzato in SSR e l'hydration partono già dallo stesso tema:
-  nessun flash al reload. Usare l'hook invece di `useTheme()` nel corpo del
-  plugin evita anche una dipendenza dal contesto di setup di Vue.
-- `useAppTheme()` espone `isDark`/`toggleTheme` per l'UI (il pulsante
-  nell'app bar) e scrive sia sul tema live (`theme.global.name.value`) sia sul
-  cookie, cosi restano sempre sincronizzati.
+- Das Cookie `chargehub-theme` (`light`/`dark`, ein Jahr) ist die einzige
+  Quelle der Wahrheit.
+- Das Plugin liest das Cookie im Hook `vuetify:before-create` — **bevor**
+  Vuetify die Theme-Instanz erstellt — sowohl server- als auch clientseitig,
+  sodass das serverseitig gerenderte HTML und die Hydration mit demselben
+  Theme starten: kein Flash beim Reload. Den Hook statt `useTheme()` im
+  Plugin-Body zu nutzen vermeidet außerdem eine Abhängigkeit vom
+  Vue-Setup-Kontext.
+- `useAppTheme()` stellt `isDark`/`toggleTheme` für die UI bereit (der Button
+  in der App-Bar) und schreibt sowohl auf das Live-Theme
+  (`theme.global.name.value`) als auch auf das Cookie, sodass beide immer
+  synchron bleiben.
 
-### 5. Layout applicativo responsive
+### 5. Responsives Anwendungslayout
 
-`app/layouts/default.vue`: `v-app-bar` (titolo + toggle tema) +
-`v-navigation-drawer` + `v-main` con uno `<slot />`. Il drawer è:
+`app/layouts/default.vue`: `v-app-bar` (Titel + Theme-Umschalter) +
+`v-navigation-drawer` + `v-main` mit einem `<slot />`. Der Drawer ist:
 
-- `temporary` (overlay) sotto il breakpoint mobile di Vuetify, aperto dal
-  pulsante hamburger nell'app bar;
-- `permanent` con variante `rail` (icone, si espande al passaggio del mouse)
-  da tablet in su — pattern standard per dashboard con più sezioni.
+- `temporary` (Overlay) unterhalb des Vuetify-Mobile-Breakpoints, geöffnet
+  über den Hamburger-Button in der App-Bar;
+- `permanent` mit `rail`-Variante (Icons, erweitert sich bei Mausüberfahrt)
+  ab Tablet-Größe — Standardmuster für Dashboards mit mehreren Bereichen.
 
-Le voci di navigazione per i moduli non ancora costruiti (stazioni, sessioni,
-analytics, tariffe) sono presenti ma `disabled`, per riflettere onestamente
-l'architettura pianificata (`app/modules/*`) senza puntare a rotte che non
-esistono ancora.
+Die Navigationseinträge für noch nicht gebaute Module (Stationen, Sitzungen,
+Analytics, Tarife) sind vorhanden, aber `disabled` — um die geplante
+Architektur (`app/modules/*`) ehrlich widerzuspiegeln, ohne auf noch nicht
+existierende Routen zu verweisen.
 
-## Nota tecnica: bug Dart Sass su Windows con percorsi assoluti
+## Technischer Hinweis: Dart-Sass-Bug unter Windows mit absoluten Pfaden
 
-Durante l'implementazione, `vuetify.moduleOptions.styles.configFile` (il modo
-documentato per agganciare `_variables.scss` alla compilazione interna dei
-componenti Vuetify) falliva con `Can't find stylesheet to import.` **solo su
-Windows**. Causa: `vuetify-nuxt-module` genera internamente
-`@use '<percorso assoluto>';` per il file di configurazione, ma Dart Sass su
-Windows interpreta un percorso `C:/...` come URL con scheme `"C"` invece che
-come percorso assoluto — bug noto e ancora aperto
+Während der Implementierung schlug `vuetify.moduleOptions.styles.configFile`
+(der dokumentierte Weg, `_variables.scss` an die interne Kompilierung der
+Vuetify-Komponenten anzubinden) mit `Can't find stylesheet to import.` fehl —
+**nur unter Windows**. Ursache: `vuetify-nuxt-module` generiert intern
+`@use '<absoluter Pfad>';` für die Konfigurationsdatei, aber Dart Sass unter
+Windows interpretiert einen Pfad wie `C:/...` als URL mit dem Schema `"C"`
+statt als absoluten Pfad — ein bekannter, noch offener Bug
 ([sass/dart-sass#1690](https://github.com/sass/dart-sass/issues/1690),
 [vuetifyjs/vuetify-loader#300](https://github.com/vuetifyjs/vuetify-loader/issues/300)).
-Riprodotto in isolamento (fuori da Vite/Nuxt) con `sass.compileString`: fallisce
-sia con il percorso nudo sia con un URL `file://` correttamente formato.
+Isoliert reproduziert (außerhalb von Vite/Nuxt) mit `sass.compileString`:
+schlägt sowohl mit dem nackten Pfad als auch mit einer korrekt formatierten
+`file://`-URL fehl.
 
-Soluzione adottata in `nuxt.config.ts`: un [importer Sass
-custom](https://sass-lang.com/documentation/js-api/interfaces/fileimporter/)
-(`windowsSassImporter`) registrato via
-`vite.css.preprocessorOptions.scss.importers`, che intercetta gli specifier
-prima del resolver di default e li risolve a mano su disco (replicando anche
-la convenzione dei parziali Sass — `_nome.scss` prima di `nome.scss`, più
-`_index.*`/`index.*` per le directory — necessaria perché una volta preso il
-controllo della risoluzione, va gestita fino in fondo anche per gli `@use`
-relativi interni al pacchetto `vuetify`). Alternative scartate:
+Gewählte Lösung in `nuxt.config.ts`: ein [custom Sass
+Importer](https://sass-lang.com/documentation/js-api/interfaces/fileimporter/)
+(`windowsSassImporter`), registriert über
+`vite.css.preprocessorOptions.scss.importers`, der die Spezifier vor dem
+Standard-Resolver abfängt und sie von Hand auf der Festplatte auflöst
+(dabei wird auch die Sass-Partial-Konvention repliziert — `_name.scss` vor
+`name.scss`, plus `_index.*`/`index.*` für Verzeichnisse — nötig, weil nach
+Übernahme der Auflösung auch die internen relativen `@use`-Anweisungen des
+`vuetify`-Pakets bis zum Ende gehandhabt werden müssen). Verworfene
+Alternativen:
 
-- **Spostare il progetto in un percorso senza spazi**: non risolve — il bug
-  si riproduce anche su percorsi assoluti senza spazi.
-- **Patchare `vuetify-nuxt-module`** perché generi `file://` testuale invece
-  del percorso nudo: da solo non basta, perché il resolver di default di
-  Dart Sass fallisce anche su un `file://` scritto come testo.
-- **Patchare il modulo per emettere backslash Windows nativi** (`C:\Users\...`
-  con `@use '...' as *;`): scartata dopo aver **causato** un bug più subdolo
-  del bug originale — nelle stringhe SCSS un backslash seguito da cifre
-  esadecimali è una _unicode escape_ CSS valida, quindi `\Desktop` veniva
-  silenziosamente riscritto in `Þsktop` (`\De` → U+00DE) invece di dare un
-  errore di risoluzione. Prova del repo: durante lo sviluppo è comparso
-  l'errore `The default namespace "UsersLGÞsktopProgetti privati\fhargeHub"`.
-  Nessuna quantità di logica nell'importer Sass custom può recuperare una
-  stringa già corrotta dal tokenizer di Sass prima ancora di arrivarci — da
-  qui la regola pratica: **mai backslash grezzi dentro una stringa Sass**,
-  solo `/` o path già passati per `pathToFileURL`.
-- **`sass` invece di `sass-embedded`**: pnpm reinstalla `sass-embedded` in
-  automatico come peer opzionale di `@vuetify/unplugin-styles`, e Vite lo
-  preferisce se risolvibile; l'importer custom è quindi scritto per
-  funzionare con entrambi (gestisce sia stringhe non codificate sia
-  percent-encoded, come restituite da `sass-embedded`).
+- **Projekt in einen Pfad ohne Leerzeichen verschieben**: löst das Problem
+  nicht — der Bug reproduziert sich auch bei absoluten Pfaden ohne
+  Leerzeichen.
+- **`vuetify-nuxt-module` patchen**, damit es `file://` als Text statt des
+  nackten Pfads generiert: reicht allein nicht, weil der Standard-Resolver
+  von Dart Sass auch bei einer als Text geschriebenen `file://`-URL fehlschlägt.
+- **Das Modul patchen, um native Windows-Backslashes auszugeben**
+  (`C:\Users\...` mit `@use '...' as *;`): verworfen, nachdem dies einen
+  noch subtileren Bug als den ursprünglichen **verursacht** hat — in
+  SCSS-Strings ist ein Backslash gefolgt von Hexadezimalziffern ein gültiges
+  CSS-_Unicode-Escape_, daher wurde `\Desktop` stillschweigend zu `Þsktop`
+  umgeschrieben (`\De` → U+00DE), statt einen Auflösungsfehler zu werfen.
+  Beweis im Repo: während der Entwicklung erschien der Fehler
+  `The default namespace "UsersLGÞsktopProgetti privati\fhargeHub"`. Keine
+  noch so ausgefeilte Logik im custom Sass Importer kann einen String
+  wiederherstellen, der bereits vom Sass-Tokenizer korrumpiert wurde, bevor
+  er überhaupt ankommt — daher die praktische Regel: **niemals rohe
+  Backslashes in einem Sass-String**, nur `/` oder Pfade, die bereits durch
+  `pathToFileURL` gelaufen sind.
+- **`sass` statt `sass-embedded`**: pnpm installiert `sass-embedded`
+  automatisch als optionale Peer-Dependency von `@vuetify/unplugin-styles`
+  neu, und Vite bevorzugt es, wenn auflösbar; der custom Importer ist daher
+  so geschrieben, dass er mit beiden funktioniert (behandelt sowohl
+  nicht-codierte als auch percent-encoded Strings, wie sie von
+  `sass-embedded` zurückgegeben werden).
 
-Impatto pratico: nessuno per lo sviluppo su macOS/Linux (l'importer si limita
-a lasciar passare qualunque specifier che non somigli a un percorso assoluto
-Windows). Su Windows, senza questo importer, `pnpm dev` non parte.
+Praktische Auswirkung: keine für die Entwicklung unter macOS/Linux (der
+Importer lässt jeden Spezifier durch, der keinem absoluten Windows-Pfad
+ähnelt). Unter Windows startet `pnpm dev` ohne diesen Importer nicht.
 
-## Conseguenze
+## Konsequenzen
 
-- Aggiungere un nuovo stato di stazione in futuro richiede una scelta
-  esplicita di quale ruolo Vuetify riusare (o l'introduzione ponderata di un
-  nuovo ruolo), non un colore a caso.
-- Il layout applicativo è pronto per ospitare le pagine reali dei prossimi
-  giorni senza ulteriori modifiche strutturali.
-- La combinazione pnpm + Windows + Vuetify richiede l'importer Sass custom in
-  `nuxt.config.ts`: se in futuro si aggiorna `vuetify-nuxt-module` a una
-  versione che risolve il problema a monte, va verificato se l'importer è
-  ancora necessario prima di rimuoverlo. Nessuna patch a `node_modules` è
-  necessaria: l'importer funziona sull'output originale, non modificato, del
-  modulo.
+- Einen neuen Stationsstatus künftig hinzuzufügen erfordert eine explizite
+  Entscheidung, welche Vuetify-Rolle wiederverwendet wird (oder die
+  wohlüberlegte Einführung einer neuen Rolle), nicht eine zufällige Farbe.
+- Das Anwendungslayout ist bereit, die echten Seiten der kommenden Tage ohne
+  weitere strukturelle Änderungen aufzunehmen.
+- Die Kombination pnpm + Windows + Vuetify erfordert den custom Sass Importer
+  in `nuxt.config.ts`: falls künftig `vuetify-nuxt-module` auf eine Version
+  aktualisiert wird, die das Problem an der Wurzel löst, muss geprüft werden,
+  ob der Importer noch nötig ist, bevor er entfernt wird. Kein Patch an
+  `node_modules` ist nötig: der Importer arbeitet auf der originalen,
+  unveränderten Ausgabe des Moduls.

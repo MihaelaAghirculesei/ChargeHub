@@ -1,70 +1,74 @@
-# ADR-0006: Rendering ibrido per rotta — non un solo modo per tutta l'app
+# ADR-0006: Hybrides Rendering pro Route — nicht eine einzige Art für die ganze App
 
-## Stato
+## Status
 
-Accettato — 2026-08-19 (Giorno 21), con un tentativo respinto documentato sotto.
+Angenommen — 2026-08-19 (Tag 21), mit einem unten dokumentierten verworfenen Versuch.
 
-## Contesto
+## Kontext
 
-Nuxt rende ogni pagina server-side per default. Non tutte le pagine di
-questa app hanno lo stesso profilo: il dettaglio stazione ha dati che
-cambiano raramente e beneficia di SSR completo al primo paint (Giorno 9);
-la dashboard mostra KPI derivati da OCM + simulatori (Giorno 10-13), mai
-davvero statici né identici per due visitatori; il login non ha alcun dato
-per-richiesta nell'HTML.
+Nuxt rendert jede Seite standardmäßig serverseitig. Nicht alle Seiten dieser
+App haben dasselbe Profil: das Stationsdetail hat Daten, die sich selten
+ändern, und profitiert von vollständigem SSR beim ersten Paint (Tag 9); das
+Dashboard zeigt KPIs, abgeleitet aus OCM + Simulatoren, nie wirklich
+statisch noch für zwei Besucher:innen identisch; der Login hat keinerlei
+Pro-Request-Daten im HTML.
 
-## Decisioni
+## Entscheidungen
 
-### `routeRules` per rotta, non un default globale
+### `routeRules` pro Route, kein globaler Standard
 
-- `/login`: `{ prerender: true }` — l'unica pagina di questa app senza
-  alcun dato per-richiesta nell'HTML (il redirect "già loggato" e quello
-  dopo il login girano lato client via `useAuth()`/query string, non
-  nel markup).
-- `/` (dashboard): `{ ssr: false }` — client-side puro. KPI derivati da
-  OCM + simulatori, mai statici né utili da pre-renderizzare identici per
-  ogni visitatore.
-- Dettaglio stazione (`/stations/:id`): SSR di default, invariato — resta
-  essenziale per il "Fatto quando" del Giorno 9 (contenuto completo nella
-  prima risposta, non solo dopo l'idratazione).
+- `/login`: `{ prerender: true }` — die einzige Seite dieser App ohne
+  jegliche Pro-Request-Daten im HTML (der Redirect "bereits eingeloggt" und
+  der nach dem Login laufen clientseitig über `useAuth()`/Query-String, nicht
+  im Markup).
+- `/` (Dashboard): `{ ssr: false }` — rein clientseitig. KPIs, abgeleitet aus
+  OCM + Simulatoren, nie statisch noch sinnvoll für jede:n Besucher:in
+  identisch vorzurendern.
+- Stationsdetail (`/stations/:id`): SSR als Standard, unverändert — bleibt
+  essenziell für das "Fertig, wenn" von Tag 9 (vollständiger Inhalt in der
+  ersten Antwort, nicht erst nach der Hydration).
 
-### Tentato e respinto: `swr` sul dettaglio stazione
+### Versucht und verworfen: `swr` auf dem Stationsdetail
 
-Per evitare di ricalcolare dati OCM che non cambiano a ogni richiesta, il
-tentativo naturale era `swr: 300` (stale-while-revalidate/ISR) sulla rotta
-di dettaglio. **Rotto**, verificato con un browser reale sia in `pnpm dev`
-sia nella build di produzione: con `swr` attivo il client tenta di caricare
-un `/_payload.json` di supporto (pensato per prerender/ISR) che con `swr`
-da solo non viene generato — 404, poi `[Vue warn]: Hydration node mismatch`,
-e il contenuto della pagina sparisce subito dopo il primo paint. Un `curl`
-vede solo l'HTML SSR iniziale (corretto) e si ferma lì, cieco a qualunque
-cosa succeda dopo durante l'idratazione — un bug che un `curl` da solo non
-avrebbe mai potuto rivelare, e che avrebbe rotto la pagina per ogni
-visitatore vero se non fosse stato trovato prima del rilascio.
+Um zu vermeiden, dass OCM-Daten, die sich nicht bei jedem Request ändern,
+neu berechnet werden, war der naheliegende Versuch `swr: 300`
+(stale-while-revalidate/ISR) auf der Detail-Route. **Kaputt**, verifiziert
+mit einem echten Browser sowohl in `pnpm dev` als auch im Produktions-Build:
+mit aktiviertem `swr` versucht der Client, eine unterstützende
+`/_payload.json` zu laden (gedacht für Prerender/ISR), die mit `swr` allein
+nicht generiert wird — 404, dann `[Vue warn]: Hydration node mismatch`, und
+der Seiteninhalt verschwindet direkt nach dem ersten Paint. Ein `curl` sieht
+nur das anfängliche SSR-HTML (korrekt) und endet dort, blind gegenüber allem,
+was danach während der Hydration passiert — ein Bug, den `curl` allein nie
+hätte aufdecken können, und der die Seite für jede:n echte:n Besucher:in
+kaputt gemacht hätte, wäre er nicht vor dem Release gefunden worden.
 
-**Tolto.** Il dettaglio stazione resta SSR puro, senza caching applicativo
-aggiuntivo oltre a quello che Nitro/il CDN forniscono già di default per
-risposte non esplicitamente marcate. Da riconsiderare se questa
-combinazione Nuxt/Nitro cambia comportamento in una versione futura.
+**Entfernt.** Das Stationsdetail bleibt reines SSR, ohne zusätzliches
+anwendungsseitiges Caching über das hinaus, was Nitro/das CDN bereits
+standardmäßig für nicht explizit markierte Antworten bereitstellen. Bei
+einer künftigen Version, die das Verhalten dieser Nuxt/Nitro-Kombination
+ändert, erneut zu prüfen.
 
-## Perché non un solo modo per tutta l'app
+## Warum nicht eine einzige Art für die ganze App
 
-Un default unico (tutto SSR, o tutto client-side) avrebbe sacrificato o il
-"Fatto quando" del Giorno 9 (contenuto SSR completo per il dettaglio
-stazione) o la semplicità della dashboard (che non ha bisogno di SSR per
-dati che cambiano ad ogni visita). `routeRules` di Nitro rende questa scelta
-per-rotta esplicita in un solo punto (`nuxt.config.ts`), non sparsa in
-`definePageMeta` di pagine diverse.
+Ein einheitlicher Standard (alles SSR oder alles clientseitig) hätte entweder
+das "Fertig, wenn" von Tag 9 (vollständiger SSR-Inhalt für das
+Stationsdetail) oder die Einfachheit des Dashboards geopfert (das kein SSR
+für bei jedem Besuch wechselnde Daten braucht). Nitros `routeRules` macht
+diese Pro-Route-Entscheidung an einer einzigen Stelle explizit
+(`nuxt.config.ts`), nicht verstreut über `definePageMeta` verschiedener
+Seiten.
 
-## Conseguenze
+## Konsequenzen
 
-- La dashboard, essendo client-side, penalizza per costruzione le metriche
-  Lighthouse legate al primo paint (FCP/LCP) rispetto a una pagina SSR
-  equivalente — una scelta intenzionale, non una regressione da inseguire.
-  Il gate Lighthouse in CI (Giorno 22) scansiona il dettaglio stazione
-  (SSR), non la dashboard, per questo motivo.
-- Nessun caching HTTP applicativo (`swr`/ISR) sul dettaglio stazione al
-  momento — ogni richiesta rifà il fetch verso OCM. Se il volume di
-  traffico dovesse giustificarlo, la strada corretta è capire perché
-  l'estrazione del payload fallisce con `swr` in questa versione di
-  Nuxt/Nitro, non riprovare lo stesso `swr` sperando in un esito diverso.
+- Das Dashboard benachteiligt, weil clientseitig, konstruktionsbedingt die
+  Lighthouse-Metriken rund um den ersten Paint (FCP/LCP) gegenüber einer
+  gleichwertigen SSR-Seite — eine bewusste Entscheidung, keine zu
+  verfolgende Regression. Das Lighthouse-Gate in der CI (Tag 22) scannt
+  deshalb das Stationsdetail (SSR), nicht das Dashboard.
+- Aktuell kein anwendungsseitiges HTTP-Caching (`swr`/ISR) auf dem
+  Stationsdetail — jeder Request holt die Daten erneut von OCM. Sollte das
+  Verkehrsvolumen es rechtfertigen, ist der richtige Weg herauszufinden,
+  warum die Payload-Extraktion mit `swr` in dieser Nuxt/Nitro-Version
+  fehlschlägt, nicht dasselbe `swr` erneut zu versuchen in der Hoffnung auf
+  ein anderes Ergebnis.

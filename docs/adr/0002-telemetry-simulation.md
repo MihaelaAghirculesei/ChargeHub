@@ -1,127 +1,133 @@
-# ADR-0002: Simulatore di telemetria (dati non-OCM, deterministico e stateless)
+# ADR-0002: Telemetrie-Simulator (Nicht-OCM-Daten, deterministisch und zustandslos)
 
-## Stato
+## Status
 
-Accettato — 2026-08-18.
+Angenommen — 2026-08-18.
 
-## Contesto
+## Kontext
 
-Open Charge Map è un **registro**: anagrafica di stazioni e connettori,
-aggiornata da chi la censisce, non un feed live. Non offre "sta caricando
-adesso, a quanti kW". Il piano (Giorno 10) chiede però una dashboard che
-mostri lo stato dinamico di un punto di ricarica in stile OCPP
-(`Available`/`Charging`/`Faulted`/`Offline`), con una potenza che segua una
-curva di ricarica plausibile — dato che nessun feed reale del genere è
-accessibile senza hardware o un accordo con un CPO, va simulato.
+Open Charge Map ist ein **Register**: Stammdaten von Stationen und
+Anschlüssen, gepflegt von denen, die sie erfassen, kein Live-Feed. Es liefert
+nicht "lädt gerade, mit wie viel kW". Der Plan (Tag 10) verlangt jedoch ein
+Dashboard, das den dynamischen Status eines Ladepunkts im OCPP-Stil zeigt
+(`Available`/`Charging`/`Faulted`/`Offline`), mit einer Leistung, die einer
+plausiblen Ladekurve folgt — da kein echter Feed dieser Art ohne Hardware
+oder eine Vereinbarung mit einem CPO zugänglich ist, muss simuliert werden.
 
-Il vincolo che guida ogni decisione qui sotto è il target di deploy: **Vercel,
-serverless** (decisione bloccata, vedi ChargeHub.md §0). Un'istanza di
-funzione non è garantita sopravvivere tra un'invocazione e la successiva —
-niente `setInterval`, niente variabile di modulo mutata nel tempo: al
-prossimo cold start quello stato sparisce o, peggio, con più istanze
-concorrenti diverge in modo silenzioso e incoerente tra una richiesta e
-l'altra.
+Die Randbedingung, die jede Entscheidung hier unten leitet, ist das
+Deploy-Ziel: **Vercel, serverless** (festgelegte Entscheidung, siehe
+ChargeHub.md §0). Eine Funktionsinstanz überlebt nicht garantiert zwischen
+zwei Aufrufen — kein `setInterval`, keine über die Zeit mutierte
+Modul-Variable: beim nächsten Cold Start verschwindet dieser Zustand, oder
+schlimmer, er divergiert bei mehreren gleichzeitigen Instanzen still und
+inkonsistent zwischen Requests.
 
-## Decisioni
+## Entscheidungen
 
-### 1. Funzione pura di (seed, istante), non una macchina a stati con memoria
+### 1. Reine Funktion von (Seed, Zeitpunkt), keine zustandsbehaftete State Machine
 
 `computeChargePointTelemetry(connectorId, seedKey, maxPowerKw, now)` in
-`server/services/telemetry-simulator.ts` non legge né scrive alcuno stato:
-riceve l'istante corrente e restituisce lo stato che quel connettore
-"avrebbe" in quel momento, ricalcolato da zero ogni volta. Due invocazioni
-con lo stesso `seedKey` e lo stesso `now` restituiscono sempre lo stesso
-risultato (testato esplicitamente) — è questo, non una variabile persistita,
-che rende l'API riproducibile e coerente su più istanze serverless
-concorrenti.
+`server/services/telemetry-simulator.ts` liest und schreibt keinerlei
+Zustand: sie erhält den aktuellen Zeitpunkt und gibt zurück, welchen Status
+dieser Anschluss zu diesem Zeitpunkt "hätte" — jedes Mal von Grund auf neu
+berechnet. Zwei Aufrufe mit demselben `seedKey` und demselben `now` liefern
+immer dasselbe Ergebnis (explizit getestet) — das, und nicht eine
+persistierte Variable, macht die API über mehrere gleichzeitige
+Serverless-Instanzen hinweg reproduzierbar und konsistent.
 
-`seedKey` è derivato in modo stabile da id reali di OCM
-(`` `station-${station.id}-connector-${connector.id}` ``), mai generato a
-caso: lo stesso connettore ha sempre lo stesso "carattere" (durata di ciclo,
-affidabilità) a ogni richiesta, anche da istanze serverless diverse che non
-condividono nulla tra loro.
+`seedKey` wird stabil aus echten OCM-IDs abgeleitet
+(`` `station-${station.id}-connector-${connector.id}` ``), nie zufällig
+generiert: derselbe Anschluss hat bei jedem Request immer denselben
+"Charakter" (Zyklusdauer, Zuverlässigkeit), selbst von verschiedenen
+Serverless-Instanzen, die nichts miteinander teilen.
 
-### 2. Il tempo reale sostituisce lo stato: un ciclo deterministico modulo l'orologio
+### 2. Echte Zeit ersetzt Zustand: ein deterministischer Zyklus modulo der Uhr
 
-Da `seedKey` si deriva un **profilo del connettore** (hash FNV-1a seguito da
-un PRNG Mulberry32, entrambi deterministici e senza dipendenze):
-lunghezza del ciclo (10–30 minuti), quota di ciclo `Available` prima di
-ricaricare, quota `Charging`, uno sfasamento e un "roll" di affidabilità.
-Il connettore attraversa il ciclo semplicemente perché `now` avanza — non
-c'è un timer applicativo, è il modulo dell'epoch corrente rispetto alla
-lunghezza del ciclo (`epochSeconds % cycleLengthSeconds`, con lo sfasamento
-sommato prima). Connettori diversi hanno profili diversi (seed diverso), quindi
-non risultano mai tutti sincronizzati sullo stesso stato — verificato in
-`tests/unit/server/services/telemetry-simulator.test.ts`.
+Aus `seedKey` wird ein **Anschluss-Profil** abgeleitet (FNV-1a-Hash gefolgt
+von einem Mulberry32-PRNG, beide deterministisch und ohne Abhängigkeiten):
+Zykluslänge (10–30 Minuten), Anteil des Zyklus als `Available` vor dem
+erneuten Laden, Anteil als `Charging`, eine Phasenverschiebung und ein
+Zuverlässigkeits-"Wurf". Der Anschluss durchläuft den Zyklus einfach dadurch,
+dass `now` fortschreitet — es gibt keinen Anwendungs-Timer, es ist der Modulo
+der aktuellen Epoch bezogen auf die Zykluslänge
+(`epochSeconds % cycleLengthSeconds`, mit vorher addierter
+Phasenverschiebung). Verschiedene Anschlüsse haben verschiedene Profile
+(verschiedener Seed), landen also nie alle synchron im selben Status —
+verifiziert in `tests/unit/server/services/telemetry-simulator.test.ts`.
 
-Nella coda del ciclo (dopo la fase di ricarica) lo stato è per lo più
-`Available`, con un roll di affidabilità stabile per connettore che decide se
-diventa occasionalmente `Faulted` (6% dei connettori) o `Offline` (4%
-aggiuntivo) invece di tornare disponibile.
+Am Ende des Zyklus (nach der Ladephase) ist der Status meist `Available`,
+mit einem pro Anschluss stabilen Zuverlässigkeits-Wurf, der entscheidet, ob
+er gelegentlich `Faulted` (6 % der Anschlüsse) oder `Offline` (weitere 4 %)
+wird, statt verfügbar zu werden.
 
-### 3. Curva di potenza e energia calcolate analiticamente dal progresso, non accumulate
+### 3. Leistungs- und Energiekurve analytisch aus dem Fortschritt berechnet, nicht akkumuliert
 
-Durante `Charging`, la potenza è una frazione di `maxPowerKw` (il valore
-**reale** da OCM, non inventato) in funzione del progresso `0..1` nella
-sessione: quasi piatta fino all'80% (cala solo del 30%), poi più ripida nel
-restante 20% — la curva "carica veloce all'inizio, rallenta verso la fine"
-tipica della ricarica reale, senza dover inventare un profilo per ogni
-tecnologia di batteria.
+Während `Charging` ist die Leistung ein Bruchteil von `maxPowerKw` (der
+**echte** Wert von OCM, nicht erfunden) als Funktion des Fortschritts `0..1`
+in der Sitzung: fast flach bis 80 % (fällt nur um 30 %), dann steiler in den
+verbleibenden 20 % — die für echtes Laden typische Kurve "schnell am Anfang,
+langsamer gegen Ende", ohne für jede Batterietechnologie ein eigenes Profil
+erfinden zu müssen.
 
-L'energia di sessione (kWh) è l'integrale di quella curva tra 0 e il tempo
-trascorso — calcolato **numericamente** (integrazione trapezoidale, 60
-campioni) invece che con una primitiva in forma chiusa scritta a mano: più
-facile da verificare per correttezza e da modificare in futuro se la curva
-cambia forma, a un costo computazionale trascurabile per richiesta.
+Die Sitzungsenergie (kWh) ist das Integral dieser Kurve zwischen 0 und der
+verstrichenen Zeit — **numerisch** berechnet (Trapezintegration, 60
+Stichproben) statt mit einer handgeschriebenen geschlossenen Formel: leichter
+auf Korrektheit zu prüfen und künftig anzupassen, falls sich die Kurvenform
+ändert, bei vernachlässigbaren Rechenkosten pro Request.
 
-Sia potenza sia energia dipendono solo da quanto tempo è trascorso dall'inizio
-della sessione corrente (anch'esso derivato dal modulo del ciclo, non
-memorizzato) — nessun accumulo stateful, eppure l'energia cresce in modo
-monotono chiamata dopo chiamata finché la sessione prosegue (testato).
+Sowohl Leistung als auch Energie hängen nur davon ab, wie viel Zeit seit dem
+Beginn der aktuellen Sitzung vergangen ist (auch das aus dem Zyklus-Modulo
+abgeleitet, nicht gespeichert) — keine zustandsbehaftete Akkumulation, und
+dennoch wächst die Energie von Aufruf zu Aufruf monoton, solange die Sitzung
+andauert (getestet).
 
-### 4. Potenza di default per connettori senza `PowerKW` noto
+### 4. Standardleistung für Anschlüsse ohne bekannten `PowerKW`
 
-Non tutti i connettori OCM hanno un `PowerKW` compilato da chi li ha censiti
-(`shared/schemas/station.ts`, `powerKw: number | null`). Simularli sempre
-`Available` sarebbe sbagliato quanto inventare un numero preciso: si usa un
-default plausibile e dichiarato (`DEFAULT_POWER_KW = 11`, potenza AC
-trifase comune) solo per la simulazione — il dato OCM originale (`null`)
-resta intatto altrove nell'app.
+Nicht jeder OCM-Anschluss hat einen von der erfassenden Person eingetragenen
+`PowerKW` (`shared/schemas/station.ts`, `powerKw: number | null`). Sie immer
+als `Available` zu simulieren wäre genauso falsch wie eine exakte Zahl zu
+erfinden: es wird ein plausibler, deklarierter Standardwert verwendet
+(`DEFAULT_POWER_KW = 11`, gängige dreiphasige AC-Leistung) — nur für die
+Simulation. Die ursprünglichen OCM-Daten (`null`) bleiben an allen anderen
+Stellen der App unverändert.
 
-### 5. Endpoint batch, non "tutte le stazioni"
+### 5. Batch-Endpoint, nicht "alle Stationen"
 
-`GET /api/telemetry?stationId=1,2,3` accetta una lista di id (max 20),
-non un parametro "dammi tutto": rispecchia come la dashboard la userebbe
-davvero (stazioni visibili in una vista, non l'intero registro), e riusa
-`fetchStationById` — quindi la stessa cache 24h di
-`GET /api/stations/:id` — per le specifiche dei connettori. Se un id non
-esiste su OCM viene silenziosamente escluso dalla risposta (array vuoto o
-parziale, mai un errore) invece di far fallire l'intera richiesta batch per
-un singolo id sbagliato.
+`GET /api/telemetry?stationId=1,2,3` akzeptiert eine Liste von IDs (max. 20),
+keinen "gib mir alles"-Parameter: spiegelt wider, wie das Dashboard es
+tatsächlich nutzen würde (sichtbare Stationen in einer Ansicht, nicht das
+gesamte Register), und nutzt `fetchStationById` wieder — also denselben
+24-Stunden-Cache wie `GET /api/stations/:id` — für die Anschluss-Spezifika.
+Existiert eine ID nicht in OCM, wird sie still aus der Antwort ausgeschlossen
+(leeres oder teilweises Array, nie ein Fehler), statt den gesamten
+Batch-Request wegen einer einzelnen falschen ID scheitern zu lassen.
 
-## Come si sostituirebbe con un feed reale
+## Wie es mit einem echten Feed ersetzt würde
 
-Se in futuro fosse disponibile un feed reale (OCPP via un CPO, un WebSocket,
-un feed MQTT), il punto di sostituzione è isolato:
-`computeStationTelemetry`/`computeChargePointTelemetry` sono l'unico punto
-che `server/api/telemetry.get.ts` chiama per ottenere lo stato dinamico —
-andrebbero sostituite con una chiamata al servizio reale (o una lettura da
-uno store aggiornato da un webhook), lasciando invariati sia il contratto
-dell'endpoint (`shared/schemas/telemetry.ts`) sia il resto della app, che
-consuma solo quel contratto e non sa come i dati vengono prodotti.
+Sollte künftig ein echter Feed verfügbar sein (OCPP über einen CPO, ein
+WebSocket, ein MQTT-Feed), ist die Austauschstelle isoliert:
+`computeStationTelemetry`/`computeChargePointTelemetry` sind der einzige
+Punkt, den `server/api/telemetry.get.ts` aufruft, um den dynamischen Status
+zu erhalten — sie müssten durch einen Aufruf des echten Dienstes ersetzt
+werden (oder ein Lesen aus einem per Webhook aktualisierten Store), wobei
+sowohl der Endpoint-Vertrag (`shared/schemas/telemetry.ts`) als auch der
+Rest der App unverändert bleiben, die nur diesen Vertrag konsumiert und
+nicht weiß, wie die Daten erzeugt werden.
 
-## Conseguenze
+## Konsequenzen
 
-- Nessuno stato da persistere: compatibile as-is con funzioni serverless
-  senza affinità di istanza, senza bisogno di Redis o di un database solo
-  per tenere in vita un "orologio" della simulazione.
-- I dati sono deliberatamente **non** derivati da OCM in modo diretto: solo
-  `maxPowerKw` e gli id di stazione/connettore vengono da OCM, il resto è
-  calcolato. `Station`/`shared/schemas/station.ts` non sono stati estesi con
-  campi di telemetria — `StationTelemetry` è un tipo di dominio nuovo e
-  separato apposta, per non far credere che questi dati vengano dal registro.
-- Il roll di affidabilità è fisso per connettore (deriva dal seed): un
-  connettore "sfortunato" lo resta sempre, non cambia comportamento a ogni
-  richiesta — realistico (alcuni impianti guastano più spesso di altri) ma
-  vale la pena ricordarlo se in futuro si volesse una probabilità di guasto
-  che vari nel tempo.
+- Kein zu persistierender Zustand: kompatibel wie es ist mit Serverless-
+  Funktionen ohne Instanz-Affinität, ohne Redis oder eine Datenbank nur um
+  eine Simulations-"Uhr" am Leben zu halten.
+- Die Daten sind bewusst **nicht** direkt von OCM abgeleitet: nur
+  `maxPowerKw` und die Stations-/Anschluss-IDs kommen von OCM, der Rest ist
+  berechnet. `Station`/`shared/schemas/station.ts` wurden nicht um
+  Telemetrie-Felder erweitert — `StationTelemetry` ist absichtlich ein neuer,
+  eigenständiger Domänentyp, damit nicht der Eindruck entsteht, diese Daten
+  kämen aus dem Register.
+- Der Zuverlässigkeits-Wurf ist pro Anschluss fest (leitet sich aus dem Seed
+  ab): ein "unglücklicher" Anschluss bleibt es immer, sein Verhalten ändert
+  sich nicht bei jedem Request — realistisch (manche Anlagen fallen öfter aus
+  als andere), aber es lohnt sich, das im Hinterkopf zu behalten, falls
+  künftig eine über die Zeit variierende Ausfallwahrscheinlichkeit gewünscht
+  wird.
