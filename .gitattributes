@@ -1,0 +1,12 @@
+# Line endings normalizzati a LF nel repo (git li converte comunque
+# alla lettura/scrittura secondo core.autocrlf locale) — senza questo file,
+# su una macchina Windows con core.autocrlf=true qualunque operazione git
+# che tocca un file (checkout, stash, pull) lo riscrive in CRLF, facendo
+# fallire `prettier --check` (default endOfLine: "lf") anche quando il
+# contenuto non è davvero cambiato. Capitato due volte in una sessione
+# (21/08) su file appena scritti e già formattati correttamente.
+* text=auto eol=lf
+
+*.png binary
+*.ico binary
+*.woff2 binary
