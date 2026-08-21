@@ -111,7 +111,26 @@ export default defineNuxtConfig({
         // gli altri cadono da soli sul .ico servito per convenzione da
         // /favicon.ico anche senza un link esplicito.
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-        { rel: 'shortcut icon', href: '/favicon.ico' }
+        { rel: 'shortcut icon', href: '/favicon.ico' },
+        /**
+         * Senza preload, il font viene scoperto solo dopo che il CSS
+         * globale è stato scaricato E interpretato (la regola @font-face
+         * vive in mdi-subset.css) — un terzo hop sequenziale nella catena
+         * critica (HTML → CSS → font), trovato con l'audit
+         * "network-dependency-tree-insight" di Lighthouse. Il preload lo fa
+         * partire in parallelo al CSS invece che dopo. `crossorigin`
+         * obbligatorio anche per un font stesso-origine (i font vengono
+         * sempre richiesti in modalità CORS per spec): senza, il preload e
+         * il fetch reale di @font-face non condividono la cache e il font
+         * viene scaricato due volte.
+         */
+        {
+          rel: 'preload',
+          as: 'font',
+          type: 'font/woff2',
+          href: '/fonts/mdi-subset.woff2',
+          crossorigin: 'anonymous'
+        }
       ],
       meta: [
         { name: 'theme-color', content: '#2E4FE0' },
@@ -327,7 +346,18 @@ export default defineNuxtConfig({
     '/de/login': { prerender: true },
     '/en/login': { prerender: true },
     '/de': { ssr: false },
-    '/en': { ssr: false }
+    '/en': { ssr: false },
+    /**
+     * `public/fonts/mdi-subset.woff2` (Giorno 25) non ha un nome
+     * content-hashato come gli asset in `_nuxt/*` — Nitro non gli applica
+     * da solo il `Cache-Control: max-age=31536000, immutable` che dà agli
+     * asset di build. Trovato con l'audit "cache-insight" di Lighthouse:
+     * `Cache TTL: 0`, riscaricato ad ogni navigazione. Il contenuto cambia
+     * solo se qualcuno rigenera il sottoinsieme di icone a mano (vedi
+     * `mdi-subset.css`) — un evento raro e deliberato, non qualcosa che
+     * deve invalidare la cache di ogni visitatore automaticamente.
+     */
+    '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } }
   },
   /**
    * `compressPublicAssets: true` (Giorno 25, gate Lighthouse Performance su
