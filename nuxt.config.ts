@@ -226,6 +226,24 @@ export default defineNuxtConfig({
     }
   },
   vite: {
+    /**
+     * Silences the dev-server half of the `maplibre-gl-worker.mjs` 404
+     * (found 25/08 while verifying the security-headers change against a
+     * real production build — see `app/modules/stations/maplibre.ts` for
+     * the actual production fix and the full root cause). Without this,
+     * `pnpm dev` logs "The file does not exist at
+     * .../maplibre-gl-worker.mjs ... Try adding it to
+     * optimizeDeps.exclude" on every reload that touches the map (seen
+     * throughout this whole project): Vite's dev-only dependency
+     * pre-bundler flattens `maplibre-gl` into a single file and tries,
+     * and fails, to also probe its sibling worker file relative to that
+     * flattened location. Excluding it here stops the probe/warning in
+     * dev. This alone does NOT fix the production 404 — `optimizeDeps` is
+     * a dev-server-only concept, Rollup's production build never runs it.
+     */
+    optimizeDeps: {
+      exclude: ['maplibre-gl']
+    },
     css: {
       preprocessorOptions: {
         scss: {
