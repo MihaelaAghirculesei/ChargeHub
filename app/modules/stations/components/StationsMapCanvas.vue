@@ -9,6 +9,7 @@ import type {
   Popup
 } from 'maplibre-gl'
 import { haversineDistanceKm } from '~/modules/stations/geo'
+import { loadMaplibreGl } from '~/modules/stations/maplibre'
 import { useStations } from '~/modules/stations/composables/useStations'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
@@ -140,7 +141,7 @@ function updateFiltersFromViewport(mapInstance: MapLibreMap) {
 
 async function initMap() {
   if (!mapContainer.value) return
-  const maplibregl = await import('maplibre-gl')
+  const maplibregl = await loadMaplibreGl()
 
   const mapInstance = new maplibregl.Map({
     container: mapContainer.value,

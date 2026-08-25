@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
+import { loadMaplibreGl } from '~/modules/stations/maplibre'
 
 /**
  * Logica MapLibre vera, isolata dal wrapper `StationMiniMap.vue` (Giorno
@@ -21,7 +22,7 @@ let marker: Marker | null = null
 async function initMap() {
   if (!mapContainer.value) return
   const [maplibregl] = await Promise.all([
-    import('maplibre-gl'),
+    loadMaplibreGl(),
     import('maplibre-gl/dist/maplibre-gl.css')
   ])
 
