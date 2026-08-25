@@ -30,19 +30,22 @@ const AUTHENTICATED_PAGES = ['/de/tariffs']
  *
  * 2. WebKit reports a same-origin fetch cancelled by page navigation
  *    (`page.goto()` tearing down the previous page mid-request) as a
- *    misleading "Fetch API cannot load ... due to access control checks"
- *    TypeError instead of an AbortError. Confirmed via `requestfailed`
- *    (`errorText: 'Load request cancelled'`) on the exact same request —
- *    an explicit cancellation, not a real CORS/network failure. The app
- *    makes zero cross-origin requests client-side (OCM only ever runs
- *    server-side, see docs/adr/0002), so this can never mask a genuine
- *    CORS misconfiguration here. Restricted to `localhost` so it stays
- *    that narrow.
+ *    misleading "... due to access control checks" TypeError instead of an
+ *    AbortError. Confirmed via `requestfailed` (`errorText: 'Load request
+ *    cancelled'`) on the exact same request — an explicit cancellation, not
+ *    a real CORS/network failure. WebKit's own `error.message` for this
+ *    (unlike `error.stack`, which does spell out "Fetch API cannot load
+ *    http://...") is oddly truncated to just "/localhost:PORT/path...due to
+ *    access control checks." — matched on that shape, not the fuller stack
+ *    text. The app makes zero cross-origin requests client-side (OCM only
+ *    ever runs server-side, see docs/adr/0002), so this can never mask a
+ *    genuine CORS misconfiguration here. Restricted to `localhost` so it
+ *    stays that narrow.
  */
 function isKnownBenignNoise(text: string): boolean {
   return (
     /^\[\.WebGL-0x[0-9a-f]+\]GL Driver Message/i.test(text) ||
-    /^Fetch API cannot load http:\/\/localhost(:\d+)?\/.*due to access control checks\.$/.test(text)
+    (/localhost/.test(text) && /due to access control checks\.$/.test(text))
   )
 }
 
