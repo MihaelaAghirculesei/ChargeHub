@@ -139,14 +139,19 @@ jobs:
       # `localhost`: il server logga "Listening on http://[::]:PORT"
       # (wildcard IPv6) e la risoluzione di "localhost" non è garantita
       # preferire IPv4/IPv6 allo stesso modo su ogni runner.
-      # 4 pagine, non solo il dettaglio stazione (backlog "da senior" del
-      # 21/08, punto 4): dashboard/analytics/sessioni erano misurate solo a
-      # mano il 21/08, senza protezione da un regresso futuro in CI. Tariffe
-      # esclusa apposta — richiede login, e questa stessa sessione ha già
-      # scoperto che un cookie iniettato via header non equivale a un vero
-      # cookie jar di browser per l'auth-session lato client (falso
-      # positivo di idratazione visto il 25/08): scansionarla così
-      # produrrebbe letture inaffidabili, non un gate reale.
+      # 4 pages, not just the station detail (the "what would a senior do"
+      # backlog from 21/08, item 4): dashboard/analytics/sessions were only
+      # spot-checked by hand on 21/08, with no protection against a future
+      # regression in CI. Tariffs deliberately excluded — it requires
+      # login, and this same session already found that a cookie injected
+      # via header doesn't behave like a real browser cookie jar for the
+      # client-side auth-session re-check (a false hydration-mismatch
+      # positive on 25/08): scanning it this way would produce unreliable
+      # readings, not a real gate. `PAGES` here is the single source of
+      # truth for which slugs get scanned — the verify step below checks
+      # its output against `performanceThresholds`' keys and fails loudly
+      # on any mismatch, so a page added here without a matching threshold
+      # (or vice versa) can't silently go unguarded.
       - name: Avvia la build, aspetta, scansiona 4 pagine con Lighthouse (3 run ciascuna)
         run: |
           node .output/server/index.mjs &
@@ -189,27 +194,46 @@ jobs:
                 --quiet
             done
           done
+
+          printf '%s\n' "${!PAGES[@]}" > scanned-pages.txt
         env:
           PORT: 3010
 
-      # Soglie Performance per pagina, non tutte a 90 (Giorno 25, seconda
-      # continuazione): la prima misura reale sul runner CI pulito (non
-      # locale, non rumorosa) ha dato stations 91, dashboard 86, analytics
-      # 84, sessions 76 — tre pagine su quattro sotto il target del piano.
-      # Investigato prima di scontare la soglia (stesso metodo del bug reale
-      # trovato per sessions il 21/08): risposta API già compressa
-      # correttamente, TTFB del documento 30ms, il costo è tutto Script
-      # Evaluation/Total Blocking Time lato client — hydration Vue/Vuetify
-      # genuina sotto il CPU throttling di Lighthouse, non un difetto
-      # isolabile. Soglie qui sotto = baseline reale misurata con ~6 punti
-      # di margine (il rumore run-a-run osservato in questo progetto è di
-      # un paio di punti, mai di più) — un floor di regressione onesto, non
-      # il target 90 del piano: spingerle più su è un lavoro di
-      # ottimizzazione a parte, non incluso in questo backlog.
+      # Per-page Performance thresholds, not a flat 90 (Giorno 25, second
+      # continuation): the first real median-of-3 measurement on a clean CI
+      # runner (not local, not noisy) came back stations 91, dashboard 86,
+      # analytics 84, sessions 76 — three of four pages below the plan's
+      # target. Investigated before discounting the threshold (same method
+      # that found the real bug on sessions on 21/08): API response already
+      # compressed correctly, document TTFB 30ms, the cost is genuine
+      # client-side Script Evaluation/Total Blocking Time — Vue/Vuetify
+      # hydration under Lighthouse's CPU throttling, not an isolable
+      # defect. `stations` keeps the plan's real 90 — it already meets it
+      # and has for a while, this isn't a discounted number like the other
+      # three. Those three use today's real baseline with ~6 points of
+      # margin (observed run-to-run noise on this gate is a couple of
+      # points, never more) — an honest regression floor, not the plan's
+      # 90: pushing them higher is separate optimization work, not part of
+      # this backlog item.
       - name: Verifica i target del piano su ciascuna pagina, mediana di 3 run (soglie Performance per pagina, Accessibility/Best Practices/SEO >= 95, CLS <= 0.1)
         run: |
           node -e "
+            const fs = require('fs');
             const performanceThresholds = { stations: 90, dashboard: 80, analytics: 78, sessions: 70 };
+
+            // Cross-check against 'scanned-pages.txt' from the previous step
+            // (the actual PAGES map, bash-side): a page scanned there but
+            // missing a threshold here (or vice versa) fails loudly instead
+            // of silently going unguarded — see the comment above this step.
+            const scannedSlugs = fs.readFileSync('scanned-pages.txt', 'utf8').trim().split('\n').sort();
+            const thresholdSlugs = Object.keys(performanceThresholds).sort();
+            if (JSON.stringify(scannedSlugs) !== JSON.stringify(thresholdSlugs)) {
+              console.error('Mismatch between scanned pages and configured thresholds:');
+              console.error('  scanned:', scannedSlugs);
+              console.error('  thresholds:', thresholdSlugs);
+              process.exit(1);
+            }
+
             const median = (values) => {
               const sorted = [...values].sort((a, b) => a - b);
               return sorted[Math.floor(sorted.length / 2)];
