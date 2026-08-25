@@ -357,7 +357,61 @@ export default defineNuxtConfig({
      * `mdi-subset.css`) — un evento raro e deliberato, non qualcosa che
      * deve invalidare la cache di ogni visitatore automaticamente.
      */
-    '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } }
+    '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
+    /**
+     * Baseline security headers (backlog item #2, 25/08 — see
+     * docs/PROGRESS.md), applied to every route including `/api/**`.
+     *
+     * CSP is the only non-trivial one. `script-src`/`style-src` need
+     * `'unsafe-inline'`: Nuxt embeds the SSR hydration payload
+     * (`window.__NUXT__ = ...`) as an inline `<script>` on every
+     * server-rendered route, and Vuetify injects inline `<style>` for
+     * per-component dynamic sizing/theming — neither goes through a
+     * nonce here (a nonce-based CSP is a real project on its own, out of
+     * scope for "basic" headers). This is a known, documented trade-off:
+     * still blocks arbitrary *external* script/style/image/font/connect
+     * injection, which is the actual threat this closes off.
+     * `https://tile.openstreetmap.org` (the only third-party resource the
+     * app loads client-side, see `StationsMapCanvas.vue`) is listed under
+     * BOTH `img-src` and `connect-src`, not just `img-src` as the raster
+     * tiles' visual role would suggest: MapLibre GL fetches tiles via
+     * `fetch()` internally (for retry/error handling), and browsers gate
+     * `fetch()`-loaded resources on `connect-src` regardless of what the
+     * response bytes are eventually used for. Missing this broke the map
+     * outright in a first pass — caught by an actual browser run against
+     * the production build (`node .output/server/index.mjs`) with full,
+     * untruncated console capture; the full `pnpm test:e2e` run right
+     * before it looked clean, but that was a false negative from piping
+     * its own output through `tail` before saving it, not a real dev/prod
+     * difference — headers apply identically in both. `data:` in
+     * `img-src` covers Chart.js/MapLibre internal data URIs. `worker-src
+     * blob:` is required by MapLibre GL's internal tile-parsing Web
+     * Worker (spun up from a `blob:` URL, not a static file).
+     */
+    '/**': {
+      headers: {
+        'content-security-policy': [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline'",
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data: https://tile.openstreetmap.org",
+          "font-src 'self'",
+          "connect-src 'self' https://tile.openstreetmap.org",
+          "worker-src 'self' blob:",
+          "object-src 'none'",
+          "base-uri 'self'",
+          "form-action 'self'",
+          "frame-ancestors 'none'"
+        ].join('; '),
+        'x-frame-options': 'DENY',
+        'x-content-type-options': 'nosniff',
+        'referrer-policy': 'strict-origin-when-cross-origin',
+        // Nothing in this app uses any of these — deny them all outright
+        // rather than leaving them at the (permissive) browser default.
+        'permissions-policy':
+          'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()'
+      }
+    }
   },
   /**
    * `compressPublicAssets: true` (Giorno 25, gate Lighthouse Performance su
