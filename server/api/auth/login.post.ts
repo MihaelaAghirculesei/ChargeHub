@@ -7,33 +7,38 @@ const bodySchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  // `xForwardedFor: true`: dietro il proxy Vercel l'IP reale del chiamante
-  // arriva in `X-Forwarded-For`, non come indirizzo socket diretto.
-  const clientIp = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  // `xForwardedFor: true`: the real caller IP arrives via `X-Forwarded-For`
+  // behind Vercel's proxy, not as a direct socket address. Trustworthy on
+  // Vercel specifically: it overwrites this header at the edge and does not
+  // forward whatever a client sent (verified against Vercel's docs) — that
+  // guarantee would not hold behind a different/unknown proxy.
+  const clientIp = getRequestIP(event, { xForwardedFor: true })
 
-  const rateLimitStatus = loginRateLimiter.status(clientIp)
-  if (rateLimitStatus.blocked) {
-    setResponseHeader(event, 'Retry-After', rateLimitStatus.retryAfterSeconds)
-    throw createError({
-      statusCode: 429,
-      statusMessage: 'Zu viele Versuche. Bitte später erneut versuchen.'
-    })
+  // No fallback bucket for an unresolved IP: sharing one key across
+  // unrelated callers would let one of them lock out all the others.
+  if (clientIp) {
+    const reservation = loginRateLimiter.reserve(clientIp)
+    if (reservation.blocked) {
+      setResponseHeader(event, 'Retry-After', reservation.retryAfterSeconds)
+      throw createError({
+        statusCode: 429,
+        statusMessage: 'Zu viele Versuche. Bitte später erneut versuchen.'
+      })
+    }
   }
 
   const parsed = await readValidatedBody(event, (body) => bodySchema.safeParse(body))
 
   if (!parsed.success) {
-    loginRateLimiter.recordFailure(clientIp)
     throw createError({ statusCode: 400, statusMessage: 'Benutzername und Passwort erforderlich.' })
   }
 
   const account = MOCK_ACCOUNTS[parsed.data.username]
   if (!account || account.password !== parsed.data.password) {
-    loginRateLimiter.recordFailure(clientIp)
     throw createError({ statusCode: 401, statusMessage: 'Benutzername oder Passwort falsch.' })
   }
 
-  loginRateLimiter.recordSuccess(clientIp)
+  if (clientIp) loginRateLimiter.recordSuccess(clientIp)
 
   const session = await getAuthSession(event)
   await session.update({ username: parsed.data.username, role: account.role })
