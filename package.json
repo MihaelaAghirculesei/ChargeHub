@@ -32,7 +32,7 @@
     "vue-chartjs": "^5.3.4",
     "vue-router": "^5.2.0",
     "vuetify": "^3.13.2",
-    "vuetify-nuxt-module": "1.0.0-rc.4",
+    "vuetify-nuxt-module": "1.0.0-rc.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {
