@@ -84,3 +84,21 @@ export interface StationsPage {
   items: Station[]
   total: number
 }
+
+/**
+ * Filtri estratti da `POST /api/stations/nl-search` (ADR-0007) — sottoinsieme
+ * di `StationFilters` (app/modules/stations/types), la posizione non c'è
+ * apposta: la ricerca in linguaggio naturale aggiunge criteri sopra la vista
+ * corrente, non la sposta. Condiviso client+server così server/services/
+ * nl-search.ts e il repository lato client restano sulla stessa forma senza
+ * duplicarla.
+ */
+export const extractedStationFiltersSchema = z.object({
+  search: z.string().nullable(),
+  connectionTypeId: z.number().nullable(),
+  operatorId: z.number().nullable(),
+  statusTypeId: z.number().nullable(),
+  minPowerKw: z.number().nullable()
+})
+
+export type ExtractedStationFilters = z.infer<typeof extractedStationFiltersSchema>

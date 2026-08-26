@@ -6,7 +6,11 @@ export default defineVitestConfig({
     environment: 'nuxt',
     // `tests/e2e` sono spec Playwright (Giorno 18): stesso pattern `*.spec.ts`
     // dei test unitari, ma vanno eseguiti solo con `pnpm test:e2e`.
-    exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+    // `tests/eval` chiama davvero l'API Claude (costo reale, non
+    // deterministico) — va eseguita solo a mano con `pnpm eval:nl-search`,
+    // mai nella suite normale né nel gate CI. Stesso principio di
+    // `tests/e2e`, motivo diverso.
+    exclude: [...configDefaults.exclude, 'tests/e2e/**', 'tests/eval/**'],
     // Il default (10s) si è mostrato marginale (Giorno 23) sotto il carico
     // di una macchina con più build/server/browser aperti in parallelo:
     // `setupNuxt()` (l'inizializzazione dell'ambiente "nuxt" per file di

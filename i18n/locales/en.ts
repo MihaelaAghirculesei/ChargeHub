@@ -79,6 +79,18 @@ export default {
     title: 'Stations',
     seoTitle: 'Stations – ChargeHub',
     viewMode: { map: 'Map', list: 'List', split: 'Split' },
+    nlSearch: {
+      label: 'Free-text search',
+      placeholder: 'e.g. "fast CCS chargers from Ionity"',
+      submit: 'Search',
+      error: {
+        rate_limited: 'Too many searches — please try again in a minute.',
+        daily_cap:
+          "Today's free-text search limit has been reached — please use the classic filters instead.",
+        not_configured: 'Free-text search is currently unavailable — use the filters below.',
+        failed: 'Search failed — try again or use the filters below.'
+      }
+    },
     filters: {
       search: 'Search (name, operator, city)',
       connectionType: 'Connector type',

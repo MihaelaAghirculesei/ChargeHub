@@ -85,9 +85,52 @@ export function createRateLimiter(options: {
 
     recordSuccess(key: string): void {
       buckets.delete(key)
+    },
+
+    /**
+     * Give one reserved attempt back. The NL-search route uses this to
+     * refund a daily-cap slot when the Claude call failed with a provider
+     * error (`Anthropic.APIError` — the request was rejected, not billed),
+     * so a transient upstream outage cannot drain the global daily budget
+     * with zero successful extractions. No-op if the window has already
+     * rolled over or the counter is already at zero. Not the inverse of
+     * `recordSuccess()`, which clears the whole bucket.
+     */
+    release(key: string, now = Date.now()): void {
+      const bucket = currentBucket(key, now)
+      if (bucket && bucket.count > 0) bucket.count -= 1
     }
   }
 }
 
 /** 5 failed attempts per minute per IP — enough for a typo, not for a script. */
 export const loginRateLimiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 5 })
+
+/**
+ * 10 searches per minute per IP — each one is a real (small) Claude API
+ * cost, not just a login check. Generous enough for normal interactive use
+ * (typing, refining a query), low enough to bound the worst case if a
+ * script hammers the endpoint. See ADR-0007.
+ */
+export const nlSearchRateLimiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 10 })
+
+/**
+ * Global daily ceiling on Claude-backed searches, across **all** callers
+ * together — not per IP. The per-IP limiter above does nothing against a
+ * burst spread over many IPs, and on serverless each cold instance starts
+ * its per-IP counters from zero (same caveat as the class doc above). This
+ * is one shared bucket ("no more than N NL searches per day, in total"),
+ * reusing the same fixed-window primitive with a single constant key.
+ *
+ * Same honesty as every limiter here: in-memory, per process instance, so
+ * on a multi-instance deploy the real ceiling is N × instances, not N. It
+ * is a blast-radius reducer, not a spend guarantee — the hard cap is the
+ * spend limit set on the dedicated Anthropic workspace (see .env.example
+ * and ADR-0007), which no code path can exceed. 200/day leaves generous
+ * headroom over real portfolio traffic; tune it against actual usage, the
+ * same way the Lighthouse thresholds were.
+ */
+export const nlSearchDailyCap = createRateLimiter({ windowMs: 86_400_000, maxAttempts: 200 })
+
+/** Single constant key for {@link nlSearchDailyCap}: the bucket is global, not per-caller. */
+export const NL_SEARCH_DAILY_CAP_KEY = 'nl-search'

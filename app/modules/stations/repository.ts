@@ -1,5 +1,10 @@
 import { FetchError } from 'ofetch'
-import type { ReferenceData, Station, StationsPage } from '#shared/schemas/station'
+import type {
+  ExtractedStationFilters,
+  ReferenceData,
+  Station,
+  StationsPage
+} from '#shared/schemas/station'
 import type { StationFilters, StationsTableOptions } from '~/modules/stations/types'
 
 interface StationsQuery {
@@ -66,5 +71,13 @@ export const stationRepository = {
   /** Tabelle di lookup (tipi di connettore, operatori, stati) per i dropdown della barra filtri. */
   referenceData(countryCode: string): Promise<ReferenceData> {
     return $fetch<ReferenceData>('/api/reference-data', { query: { countrycode: countryCode } })
+  },
+
+  /** Ricerca stazioni in linguaggio naturale (ADR-0007): estrae filtri, non stazioni — il chiamante li applica allo store esistente. */
+  nlSearch(query: string, countryCode: string): Promise<{ filters: ExtractedStationFilters }> {
+    return $fetch<{ filters: ExtractedStationFilters }>('/api/stations/nl-search', {
+      method: 'POST',
+      body: { query, countrycode: countryCode }
+    })
   }
 }

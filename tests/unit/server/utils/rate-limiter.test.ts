@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createRateLimiter } from '~~/server/utils/rate-limiter'
+import {
+  NL_SEARCH_DAILY_CAP_KEY,
+  createRateLimiter,
+  nlSearchDailyCap
+} from '~~/server/utils/rate-limiter'
 
 describe('createRateLimiter', () => {
   it('permette fino a maxAttempts tentativi, poi blocca', () => {
@@ -34,6 +38,35 @@ describe('createRateLimiter', () => {
     limiter.recordSuccess('1.2.3.4')
 
     expect(limiter.status('1.2.3.4', 2_000).blocked).toBe(false)
+  })
+
+  it('release() restituisce un solo tentativo prenotato, senza scendere sotto zero', () => {
+    const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 2 })
+    limiter.reserve('k', 0)
+    limiter.reserve('k', 0)
+    expect(limiter.status('k', 0).blocked).toBe(true)
+
+    limiter.release('k', 0)
+    expect(limiter.status('k', 0).blocked).toBe(false) // di nuovo sotto soglia
+    expect(limiter.reserve('k', 0).blocked).toBe(false) // e c'è spazio per un altro
+
+    limiter.release('k', 0)
+    limiter.release('k', 0)
+    limiter.release('k', 0) // extra oltre lo zero: non deve andare in negativo
+    limiter.reserve('k', 0)
+    limiter.reserve('k', 0)
+    expect(limiter.reserve('k', 0).blocked).toBe(true) // soglia ancora a 2, non "sbloccata" da un conteggio negativo
+  })
+
+  it('release() è un no-op se la finestra è già scaduta (nessun bucket vivo)', () => {
+    const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 1 })
+    limiter.reserve('k', 0)
+    limiter.release('k', 60_001)
+
+    // Nuova finestra: il contatore riparte comunque da zero, il release non
+    // ha "regalato" un tentativo alla finestra vecchia né a quella nuova.
+    expect(limiter.reserve('k', 60_001).blocked).toBe(false)
+    expect(limiter.reserve('k', 60_001).blocked).toBe(true)
   })
 
   it('tiene i contatori separati per chiave', () => {
@@ -76,5 +109,24 @@ describe('createRateLimiter', () => {
 
     expect(limiter.status('old', 60_001).blocked).toBe(true)
     expect(limiter.status('other', 60_001).blocked).toBe(false)
+  })
+})
+
+describe('nlSearchDailyCap (tetto globale giornaliero, ADR-0007)', () => {
+  // Singleton di modulo: uso una finestra temporale isolata (`base`) lontana
+  // da 0 così questo blocco non interferisce con nessun altro test del file
+  // e viceversa — il bucket resta pieno solo dentro le sue 24h simulate.
+  const base = 10_000_000_000
+
+  it('blocca oltre 200 ricerche al giorno sommando tutte le chiamate, non per IP', () => {
+    for (let call = 0; call < 200; call += 1) {
+      expect(nlSearchDailyCap.reserve(NL_SEARCH_DAILY_CAP_KEY, base).blocked).toBe(false)
+    }
+
+    expect(nlSearchDailyCap.reserve(NL_SEARCH_DAILY_CAP_KEY, base).blocked).toBe(true)
+  })
+
+  it('si azzera dopo 24h', () => {
+    expect(nlSearchDailyCap.status(NL_SEARCH_DAILY_CAP_KEY, base + 86_400_000).blocked).toBe(false)
   })
 })
