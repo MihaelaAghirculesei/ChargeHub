@@ -90,6 +90,18 @@ export default {
     title: 'Stationen',
     seoTitle: 'Stationen – ChargeHub',
     viewMode: { map: 'Karte', list: 'Liste', split: 'Geteilt' },
+    nlSearch: {
+      label: 'Freitextsuche',
+      placeholder: 'z. B. „schnelle CCS-Ladepunkte von Ionity“',
+      submit: 'Suchen',
+      error: {
+        rate_limited: 'Zu viele Suchanfragen — bitte in einer Minute erneut versuchen.',
+        daily_cap:
+          'Das Tageslimit für die Sprachsuche ist erreicht — bitte nutze die klassischen Filter.',
+        not_configured: 'Freitextsuche derzeit nicht verfügbar — bitte die Filter unten verwenden.',
+        failed: 'Suche fehlgeschlagen — bitte erneut versuchen oder die Filter unten verwenden.'
+      }
+    },
     filters: {
       search: 'Suche (Name, Betreiber, Stadt)',
       connectionType: 'Anschlusstyp',

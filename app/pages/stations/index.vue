@@ -2,6 +2,7 @@
 import StationsActiveFilterChips from '~/modules/stations/components/StationsActiveFilterChips.vue'
 import StationsFilterBar from '~/modules/stations/components/StationsFilterBar.vue'
 import StationsMap from '~/modules/stations/components/StationsMap.vue'
+import StationsNlSearchBar from '~/modules/stations/components/StationsNlSearchBar.vue'
 import StationsTable from '~/modules/stations/components/StationsTable.vue'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 import type { StationsViewMode } from '~/modules/stations/types'
@@ -45,6 +46,7 @@ function onViewModeChange(value: unknown) {
       </v-btn-toggle>
     </div>
 
+    <StationsNlSearchBar />
     <StationsFilterBar class="mb-4" />
     <StationsActiveFilterChips />
 
