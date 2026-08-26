@@ -294,6 +294,12 @@ export default defineNuxtConfig({
     // server/utils/auth-session.ts — nessuno store server-side (coerente col
     // vincolo serverless già seguito da ADR-0002/0003).
     sessionPassword: '',
+    // Ricerca stazioni in linguaggio naturale (ADR-0007) — a differenza di
+    // ocmApiKey/sessionPassword, NON in validateEnv(): è una feature
+    // opzionale sopra l'app già funzionante, non un requisito di boot. Senza
+    // questa chiave l'endpoint risponde 503 in modo esplicito, l'app resta
+    // utilizzabile con la ricerca a filtri normale.
+    anthropicApiKey: '',
     public: {
       appName: 'ChargeHub'
     }
