@@ -19,6 +19,9 @@ coverage
 # Report Lighthouse generati a mano in locale per verificare il gate CI
 # prima del push (Giorno 25), mai committati
 lh-local.json
+lh-dashboard.json
+lh-analytics.json
+lighthouse-report-*.json
 
 # Output dei test E2E Playwright
 test-results
