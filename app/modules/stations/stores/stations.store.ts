@@ -3,10 +3,10 @@ import { stationRepository } from '~/modules/stations/repository'
 import type { StationFilters, StationsTableOptions } from '~/modules/stations/types'
 
 /**
- * Stato di *dominio*: le stazioni caricate e il totale che le riguarda, non
- * i filtri, la pagina o l'ordinamento correnti (quelli sono UI, vedi
- * `useStationsFiltersStore`). Parla solo con `stationRepository` — non
- * conosce query string, header o `$fetch`, quindi non sa niente di HTTP.
+ * *Domain* state: the loaded stations and the total that concerns them, not
+ * the current filters, page or sort (those are UI, see
+ * `useStationsFiltersStore`). Talks only to `stationRepository` — knows no
+ * query string, header or `$fetch`, so knows nothing about HTTP.
  */
 export const useStationsStore = defineStore('stations', () => {
   const stations = ref<Station[]>([])

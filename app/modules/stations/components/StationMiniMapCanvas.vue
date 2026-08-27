@@ -3,13 +3,13 @@ import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
 import { loadMaplibreGl } from '~/modules/stations/maplibre'
 
 /**
- * Logica MapLibre vera, isolata dal wrapper `StationMiniMap.vue` (Giorno
- * 24): questo file non viene MAI toccato dal render SSR (montato solo
- * client-side via `defineAsyncComponent`, dopo il click su "Mostra
- * mappa"), quindi il suo `import('maplibre-gl')` non finisce nei
- * `<link rel="prefetch">` che Nuxt genera per ogni import dinamico
- * raggiungibile da un componente reso in SSR — vedi il commento su
- * `StationMiniMap.vue` per la spiegazione completa del meccanismo.
+ * The real MapLibre logic, isolated from the `StationMiniMap.vue` wrapper
+ * (day 24): this file is NEVER touched by the SSR render (mounted
+ * client-side only via `defineAsyncComponent`, after the click on "Show
+ * map"), so its `import('maplibre-gl')` does not end up in the
+ * `<link rel="prefetch">` tags Nuxt generates for every dynamic import
+ * reachable from an SSR-rendered component — see the comment on
+ * `StationMiniMap.vue` for the full explanation of the mechanism.
  */
 const props = defineProps<{ latitude: number; longitude: number }>()
 
@@ -54,10 +54,10 @@ async function initMap() {
     .addTo(mapInstance)
 }
 
-// Componente sempre montato client-side (mai da `defineAsyncComponent`
-// durante SSR): `onMounted` basterebbe già qui, ma `watch` sul ref resta
-// coerente con `StationsMap.vue`, che ha lo stesso vincolo dentro
-// `<ClientOnly>`.
+// Component always mounted client-side (never from `defineAsyncComponent`
+// during SSR): `onMounted` would already be enough here, but a `watch` on
+// the ref stays consistent with `StationsMap.vue`, which has the same
+// constraint inside `<ClientOnly>`.
 watch(mapContainer, (el) => {
   if (el) initMap()
 })

@@ -3,18 +3,18 @@ import type { StationTelemetry } from '#shared/schemas/telemetry'
 import type { TelemetryTransport } from '~/modules/stations/telemetry/transport'
 
 const POLL_INTERVAL_MS = 5000
-/** Fallimenti consecutivi dopo cui passare da "riconnessione" a "offline". */
+/** Consecutive failures after which to go from "reconnecting" to "offline". */
 const OFFLINE_AFTER_FAILURES = 2
 
 /**
- * Unico punto del codice client che sa che la telemetria vive dietro
- * `/api/telemetry` — stesso ruolo di `stationRepository` per le stazioni,
- * qui dentro il transport perché è il suo unico consumatore.
+ * The only place in the client code that knows telemetry lives behind
+ * `/api/telemetry` — the same role as `stationRepository` for stations,
+ * inside the transport here because it is its only consumer.
  *
- * `setTimeout` auto-schedulato dopo ogni risposta, non `setInterval`: se una
- * richiesta impiega più di 5s (rete lenta, cold start serverless), non parte
- * una seconda richiesta sovrapposta — il prossimo poll è sempre 5s dopo la
- * fine dell'ultimo, mai in coda dietro richieste ancora pendenti.
+ * `setTimeout` self-scheduled after each response, not `setInterval`: if a
+ * request takes more than 5s (slow network, serverless cold start), no
+ * second overlapping request starts — the next poll is always 5s after the
+ * end of the last one, never queued behind requests still pending.
  */
 export const pollingTelemetryTransport: TelemetryTransport = {
   start(stationIds, { onUpdate, onStatusChange }) {

@@ -2,9 +2,9 @@
 import type { TelemetryConnectionStatus } from '~/modules/stations/telemetry/transport'
 
 /**
- * "reconnecting"/"offline" non sono stati del dominio stazioni (niente a che
- * fare con la palette di ADR-0001): è la connessione al polling stesso, quindi
- * `warning`/`error` di Vuetify restano generici apposta.
+ * "reconnecting"/"offline" are not station-domain statuses (nothing to do
+ * with the ADR-0001 palette): it is the polling connection itself, so
+ * Vuetify's `warning`/`error` stay generic on purpose.
  */
 const props = defineProps<{ status: TelemetryConnectionStatus }>()
 

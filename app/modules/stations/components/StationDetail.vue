@@ -14,10 +14,10 @@ const { formatDate: formatLocaleDate } = useLocaleFormatters()
 const { telemetry, status: connectionStatus } = useLiveTelemetry(() => [props.station.id])
 
 /**
- * Annuncio per screen reader (Giorno 18) solo sulle transizioni che contano
- * (connesso ↔ non connesso), non ad ogni poll a 5s (Giorno 11) — altrimenti
- * `aria-live="polite"` interromperebbe di continuo la lettura per un dato
- * che nella maggior parte dei casi non è cambiato in modo rilevante.
+ * Screen-reader announcement (day 18) only on the transitions that matter
+ * (connected ↔ not connected), not on every 5s poll (day 11) — otherwise
+ * `aria-live="polite"` would keep interrupting the reading for a value that
+ * in most cases has not changed in any relevant way.
  */
 const connectionAnnouncement = ref('')
 watch(connectionStatus, (status, previous) => {

@@ -1,9 +1,9 @@
 import type { StationSortKey } from '#shared/schemas/station'
 
 /**
- * Filtri di ricerca stazioni lato client. Forma di dominio, non di rete:
- * `stationRepository` è l'unico punto che li traduce nei query param che
- * `GET /api/stations` si aspetta (vedi server/api/stations/index.get.ts).
+ * Client-side station search filters. A domain shape, not a network one:
+ * `stationRepository` is the only place that translates them into the query
+ * params `GET /api/stations` expects (see server/api/stations/index.get.ts).
  */
 export interface StationFilters {
   latitude: number
@@ -19,13 +19,12 @@ export interface StationFilters {
 }
 
 /**
- * Le chiavi di `StationFilters` che finiscono nell'URL (query param
- * condivisibile). `latitude`/`longitude`/`radiusKm` sono qui dal Giorno 8:
- * spostare la mappa è ora un modo di cambiare la ricerca, non solo la barra
- * filtri del Giorno 6 — vedi `app/modules/stations/filters-url.ts`.
- * `countryCode`/`maxResults` restano fuori: il primo non ha ancora una UI,
- * il secondo è un dettaglio interno (quanti risultati cachare), non un
- * criterio di ricerca che un utente percepisce.
+ * The `StationFilters` keys that end up in the URL (shareable query param).
+ * `latitude`/`longitude`/`radiusKm` are here since day 8: panning the map
+ * is now a way to change the search, not only the day-6 filter bar — see
+ * `app/modules/stations/filters-url.ts`. `countryCode`/`maxResults` stay
+ * out: the first has no UI yet, the second is an internal detail (how many
+ * results to cache), not a search criterion a user perceives.
  */
 export type StationFilterKey =
   | 'latitude'
@@ -38,9 +37,9 @@ export type StationFilterKey =
   | 'minPowerKw'
 
 /**
- * Stato della tabella (`v-data-table-server`), non della ricerca: cambiare
- * pagina/ordinamento non è un nuovo filtro. Tenuto separato da
- * `StationFilters` apposta — vedi `useStationsFiltersStore`.
+ * Table state (`v-data-table-server`), not search state: changing
+ * page/sort is not a new filter. Kept separate from `StationFilters` on
+ * purpose — see `useStationsFiltersStore`.
  */
 export interface StationsTableOptions {
   page: number
@@ -50,9 +49,10 @@ export interface StationsTableOptions {
 }
 
 /**
- * Come mostrare mappa e lista sul Giorno 8: una delle due, o entrambe
- * affiancate. Stato di UI puro, persistito ("con la scelta ricordata") ma
- * separato dai filtri di ricerca — cambiare vista non cambia i risultati.
+ * How to show the map and list from day 8: one of the two, or both side by
+ * side. Pure UI state, persisted ("with the choice remembered") but
+ * separate from the search filters — changing the view does not change the
+ * results.
  */
 export type StationsViewMode = 'map' | 'list' | 'split'
 
