@@ -10,9 +10,9 @@ import type { Connector, ReferenceData, ReferenceEntry, Station } from '#shared/
 const OCM_BASE_URL = 'https://api.openchargemap.io/v3'
 
 /**
- * Errore di dominio per qualunque fallimento nel parlare con OCM: le rotte
- * API lo mappano su un errore HTTP proprio (vedi server/api/stations/*),
- * senza mai propagare la risposta o lo stack grezzo di OCM al client.
+ * Domain error for any failure talking to OCM: the API routes map it onto an
+ * HTTP error of their own (see server/api/stations/*), never propagating
+ * OCM's raw response or stack to the client.
  */
 export class OcmClientError extends Error {
   constructor(
@@ -26,10 +26,10 @@ export class OcmClientError extends Error {
 }
 
 /**
- * GET verso OCM con timeout e retry a backoff esponenziale (300ms, 600ms,
- * 1200ms) solo su errori transitori (timeout, rete, 5xx, 429) — mai su 4xx,
- * dove ritentare non cambierebbe l'esito. Non chiama mai un endpoint di
- * scrittura: OCM è un database reale della community.
+ * GET to OCM with a timeout and exponential-backoff retry (300ms, 600ms,
+ * 1200ms) only on transient errors (timeout, network, 5xx, 429) — never on
+ * 4xx, where retrying would not change the outcome. Never calls a write
+ * endpoint: OCM is a real community database.
  */
 async function ocmGet<T>(
   path: string,
@@ -54,16 +54,16 @@ async function ocmGet<T>(
     })
   } catch (error) {
     if (error instanceof Error && error.name === 'TimeoutError') {
-      throw new OcmClientError('Timeout nella richiesta a Open Charge Map.', 'timeout', error)
+      throw new OcmClientError('Timeout on the request to Open Charge Map.', 'timeout', error)
     }
     if (isFetchError(error) && typeof error.statusCode === 'number') {
       throw new OcmClientError(
-        `Open Charge Map ha risposto con stato ${error.statusCode}.`,
+        `Open Charge Map responded with status ${error.statusCode}.`,
         'upstream_error',
         error
       )
     }
-    throw new OcmClientError('Impossibile raggiungere Open Charge Map.', 'network', error)
+    throw new OcmClientError('Could not reach Open Charge Map.', 'network', error)
   }
 }
 
@@ -157,7 +157,7 @@ async function fetchStationsUncached(filters: StationsFilters): Promise<Station[
   const parsed = ocmPoiListSchema.safeParse(raw)
   if (!parsed.success) {
     throw new OcmClientError(
-      'Risposta di Open Charge Map in un formato inatteso.',
+      'Open Charge Map response in an unexpected format.',
       'invalid_response',
       parsed.error
     )
@@ -172,7 +172,7 @@ async function fetchStationByIdUncached(id: number): Promise<Station | null> {
   const parsed = ocmPoiListSchema.safeParse(raw)
   if (!parsed.success) {
     throw new OcmClientError(
-      'Risposta di Open Charge Map in un formato inatteso.',
+      'Open Charge Map response in an unexpected format.',
       'invalid_response',
       parsed.error
     )
@@ -188,7 +188,7 @@ async function fetchReferenceDataUncached(countryCode: string): Promise<Referenc
   const parsed = ocmReferenceDataSchema.safeParse(raw)
   if (!parsed.success) {
     throw new OcmClientError(
-      'Risposta di Open Charge Map in un formato inatteso.',
+      'Open Charge Map response in an unexpected format.',
       'invalid_response',
       parsed.error
     )
@@ -200,9 +200,9 @@ async function fetchReferenceDataUncached(countryCode: string): Promise<Referenc
 const CACHE_TTL_SECONDS = 60 * 60 * 24
 
 /**
- * Chiave di cache filesystem-safe: `unstorage` la usa come nome file (driver
- * fs), quindi niente `:`/`{}` come produrrebbe `JSON.stringify` — non validi
- * in un path su Windows.
+ * Filesystem-safe cache key: `unstorage` uses it as a file name (fs driver),
+ * so no `:`/`{}` as `JSON.stringify` would produce — invalid in a path on
+ * Windows.
  */
 function stationsFiltersCacheKey(filters: StationsFilters): string {
   return [
@@ -218,7 +218,7 @@ function stationsFiltersCacheKey(filters: StationsFilters): string {
   ].join('_')
 }
 
-/** Registro stazioni: TTL 24h, come da regola d'oro dell'API OCM. */
+/** Station registry: 24h TTL, per the golden rule of the OCM API. */
 export const fetchStations = defineCachedFunction(fetchStationsUncached, {
   maxAge: CACHE_TTL_SECONDS,
   name: 'ocm-stations',
@@ -231,7 +231,7 @@ export const fetchStationById = defineCachedFunction(fetchStationByIdUncached, {
   getKey: (id: number) => String(id)
 })
 
-/** Tabelle di lookup: cambiano raramente, TTL 24h. */
+/** Lookup tables: rarely change, 24h TTL. */
 export const fetchReferenceData = defineCachedFunction(fetchReferenceDataUncached, {
   maxAge: CACHE_TTL_SECONDS,
   name: 'ocm-reference-data',

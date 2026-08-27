@@ -1,29 +1,28 @@
 import { brotliCompressSync, constants, gzipSync } from 'node:zlib'
 
 /**
- * Stesso problema di `compress-html.ts` ma per le risposte JSON di
- * `server/api/**`, che quel plugin esplicitamente non copre (il suo hook
- * `render:response` scatta solo per il documento HTML renderizzato). Trovato
- * misurando `/de/sessions` con Lighthouse dopo il fix del loop di formatter
- * Intl (`useLocaleFormatters.ts`): il TBT è sceso da ~1000ms a ~300ms ma la
- * LCP è rimasta a ~6s — `GET /api/sessions` trasferisce 605KB di JSON non
- * compresso (`curl -H "Accept-Encoding: gzip, br"` conferma nessun
- * `Content-Encoding` in risposta), di gran lunga la risorsa più pesante
- * della pagina.
+ * Same problem as `compress-html.ts` but for the JSON responses of
+ * `server/api/**`, which that plugin explicitly does not cover (its
+ * `render:response` hook only fires for the rendered HTML document). Found
+ * measuring `/de/sessions` with Lighthouse after fixing the Intl formatter
+ * loop (`useLocaleFormatters.ts`): TBT dropped from ~1000ms to ~300ms but
+ * LCP stayed at ~6s — `GET /api/sessions` transfers 605KB of uncompressed
+ * JSON (`curl -H "Accept-Encoding: gzip, br"` confirms no `Content-Encoding`
+ * in the response), by far the heaviest resource on the page.
  *
- * Aggancio sull'hook `beforeResponse` di h3 (Nitro lo inoltra con lo stesso
- * nome): scatta per ogni richiesta, non solo per il render di pagina, con
- * il valore grezzo restituito dall'handler in `response.body` — non ancora
- * serializzato. Filtrato sui path `/api/`: il documento HTML passa già da
- * `compress-html.ts`, e ririscrivere `response.body` qui per una rotta di
- * pagina (una stringa HTML) rischierebbe una doppia gestione (h3 non
- * espone un modo per sapere da qui se `render:response` è già passato).
+ * Hooks onto h3's `beforeResponse` hook (Nitro forwards it under the same
+ * name): fires for every request, not just page render, with the raw value
+ * returned by the handler in `response.body` — not yet serialised. Filtered
+ * on `/api/` paths: the HTML document already goes through
+ * `compress-html.ts`, and rewriting `response.body` here for a page route
+ * (an HTML string) would risk double handling (h3 exposes no way to know
+ * from here whether `render:response` has already run).
  *
- * `val.buffer` (h3, `handleHandlerResponse`) tratta un `Buffer` come
- * risposta già pronta e lo invia direttamente via `send(event, val)` senza
- * type esplicito — per questo il content-type va impostato a mano PRIMA di
- * riassegnare `response.body`, non lasciato al percorso di default (che si
- * aspetterebbe ancora un oggetto/array da serializzare lui stesso).
+ * `val.buffer` (h3, `handleHandlerResponse`) treats a `Buffer` as a
+ * ready-made response and sends it straight via `send(event, val)` with no
+ * explicit type — which is why the content-type must be set by hand BEFORE
+ * reassigning `response.body`, not left to the default path (which would
+ * still expect an object/array for it to serialise itself).
  */
 const MIN_COMPRESSIBLE_BYTES = 1024
 const BROTLI_QUALITY = 5

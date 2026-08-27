@@ -17,13 +17,13 @@ const querySchema = z.object({
 })
 
 /**
- * Dati per i grafici della dashboard (Giorno 14): stessi parametri
- * geografici di `GET /api/stations`/`GET /api/sessions`/`GET /api/kpi`
- * (stesso pool, stessa "realtà" sintetica), più `period` (7/30/90 giorni).
- * Genera le sessioni con gli stessi default di `GET /api/sessions` — non un
- * lookback ristretto al periodo richiesto, vedi la nota in
- * `analytics-aggregator.ts` sul perché periodi oltre 30 giorni mostrano
- * onestamente delle giornate a zero kWh.
+ * Data for the dashboard charts (day 14): same geographic params as
+ * `GET /api/stations` / `GET /api/sessions` / `GET /api/kpi` (same pool,
+ * same synthetic "reality"), plus `period` (7/30/90 days). Generates the
+ * sessions with the same defaults as `GET /api/sessions` — not a lookback
+ * narrowed to the requested period, see the note in
+ * `analytics-aggregator.ts` on why periods beyond 30 days honestly show
+ * some days at zero kWh.
  */
 export default defineEventHandler(async (event) => {
   const parsedQuery = await getValidatedQuery(event, (query) => querySchema.safeParse(query))
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   if (!parsedQuery.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Parametri di ricerca non validi.',
+      statusMessage: 'Invalid search parameters.',
       data: { issues: parsedQuery.error.issues.map((issue) => issue.message) }
     })
   }
@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof OcmClientError) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'Impossibile recuperare le stazioni dal registro Open Charge Map.',
+        statusMessage: 'Could not fetch stations from the Open Charge Map registry.',
         data: { code: error.code }
       })
     }
