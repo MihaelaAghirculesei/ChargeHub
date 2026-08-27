@@ -5,7 +5,7 @@ import { defineComponent } from 'vue'
 import { useNlSearch } from '~/modules/stations/composables/useNlSearch'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
-/** Stesso pattern di useStations.test.ts: useNlSearch usa lo store filtri, che tocca useRoute/useRouter — serve un vero contesto app. */
+/** Same pattern as useStations.test.ts: useNlSearch uses the filters store, which touches useRoute/useRouter — a real app context is needed. */
 const NlSearchHost = defineComponent({
   setup() {
     return useNlSearch()
@@ -21,7 +21,7 @@ afterEach(() => {
 })
 
 describe('useNlSearch', () => {
-  it('applica allo store i soli campi estratti non nulli', async () => {
+  it('applies only the non-null extracted fields to the store', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations/nl-search', {
       method: 'POST',
       handler: () => ({
@@ -43,14 +43,14 @@ describe('useNlSearch', () => {
     expect(filters.search).toBe('schnell')
     expect(filters.connectionTypeId).toBe(25)
     expect(filters.minPowerKw).toBe(50)
-    // I campi restituiti null non vengono scritti: restano al default dello store.
+    // Fields returned as null are not written: they stay at the store default.
     expect(filters.operatorId).toBeUndefined()
     expect(filters.statusTypeId).toBeUndefined()
     expect(wrapper.vm.error).toBeNull()
     expect(wrapper.vm.pending).toBe(false)
   })
 
-  it('somma i criteri estratti ai filtri già attivi: i campi non citati dalla query restano intatti', async () => {
+  it('merges the extracted criteria into the already-active filters: fields the query does not name stay intact', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations/nl-search', {
       method: 'POST',
       handler: () => ({
@@ -65,21 +65,21 @@ describe('useNlSearch', () => {
     })
 
     const store = useStationsFiltersStore()
-    // Impostati "a mano" nella barra filtri classica prima della ricerca NL.
+    // Set "by hand" in the classic filter bar before the NL search.
     store.setFilters({ minPowerKw: 50, statusTypeId: 3 })
 
     const wrapper = await mountSuspended(NlSearchHost)
-    await wrapper.vm.search('stazioni Ionity')
+    await wrapper.vm.search('Ionity stations')
     await flushPromises()
 
     const filters = store.filters
-    expect(filters.operatorId).toBe(10) // estratto dalla query
-    expect(filters.minPowerKw).toBe(50) // non citato: preservato, non azzerato
-    expect(filters.statusTypeId).toBe(3) // non citato: preservato
+    expect(filters.operatorId).toBe(10) // extracted from the query
+    expect(filters.minPowerKw).toBe(50) // not mentioned: preserved, not cleared
+    expect(filters.statusTypeId).toBe(3) // not mentioned: preserved
     expect(wrapper.vm.error).toBeNull()
   })
 
-  it('ignora un secondo search() mentre il primo è ancora in volo (niente doppia POST)', async () => {
+  it('ignores a second search() while the first is still in flight (no double POST)', async () => {
     let calls = 0
     unregisterEndpoint = registerEndpoint('/api/stations/nl-search', {
       method: 'POST',
@@ -98,20 +98,20 @@ describe('useNlSearch', () => {
     })
 
     const wrapper = await mountSuspended(NlSearchHost)
-    // Nessun await sulla prima: la seconda parte mentre `pending` è già true.
-    const first = wrapper.vm.search('query uno')
-    const second = wrapper.vm.search('query due')
+    // No await on the first: the second starts while `pending` is already true.
+    const first = wrapper.vm.search('query one')
+    const second = wrapper.vm.search('query two')
     await Promise.all([first, second])
     await flushPromises()
 
     expect(calls).toBe(1)
   })
 
-  it("una query vuota non chiama l'endpoint", async () => {
+  it('an empty query does not call the endpoint', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations/nl-search', {
       method: 'POST',
       handler: () => {
-        throw new Error('non doveva essere chiamato')
+        throw new Error('should not have been called')
       }
     })
 
@@ -122,11 +122,11 @@ describe('useNlSearch', () => {
     expect(wrapper.vm.error).toBeNull()
   })
 
-  it("null (v-model del campo clearable dopo un click sulla X) non chiama l'endpoint e non esplode", async () => {
+  it('null (the clearable field v-model after a click on the X) does not call the endpoint and does not blow up', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations/nl-search', {
       method: 'POST',
       handler: () => {
-        throw new Error('non doveva essere chiamato')
+        throw new Error('should not have been called')
       }
     })
 
@@ -137,56 +137,56 @@ describe('useNlSearch', () => {
     expect(wrapper.vm.error).toBeNull()
   })
 
-  it('un 429 senza code diventa rate_limited', async () => {
+  it('a 429 with no code becomes rate_limited', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations/nl-search', {
       method: 'POST',
       handler: () => {
-        throw createError({ statusCode: 429, statusMessage: 'Troppe ricerche.' })
+        throw createError({ statusCode: 429, statusMessage: 'Too many searches.' })
       }
     })
 
     const wrapper = await mountSuspended(NlSearchHost)
-    await wrapper.vm.search('query qualunque')
+    await wrapper.vm.search('any query')
     await flushPromises()
 
     expect(wrapper.vm.error).toBe('rate_limited')
   })
 
-  it('un 429 con data.code daily_cap diventa daily_cap, non rate_limited', async () => {
+  it('a 429 with data.code daily_cap becomes daily_cap, not rate_limited', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations/nl-search', {
       method: 'POST',
       handler: () => {
         throw createError({
           statusCode: 429,
-          statusMessage: 'Limite giornaliero.',
+          statusMessage: 'Daily limit.',
           data: { code: 'daily_cap' }
         })
       }
     })
 
     const wrapper = await mountSuspended(NlSearchHost)
-    await wrapper.vm.search('query qualunque')
+    await wrapper.vm.search('any query')
     await flushPromises()
 
     expect(wrapper.vm.error).toBe('daily_cap')
   })
 
-  it('un 503 diventa not_configured', async () => {
+  it('a 503 becomes not_configured', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations/nl-search', {
       method: 'POST',
       handler: () => {
-        throw createError({ statusCode: 503, statusMessage: 'Non configurato.' })
+        throw createError({ statusCode: 503, statusMessage: 'Not configured.' })
       }
     })
 
     const wrapper = await mountSuspended(NlSearchHost)
-    await wrapper.vm.search('query qualunque')
+    await wrapper.vm.search('any query')
     await flushPromises()
 
     expect(wrapper.vm.error).toBe('not_configured')
   })
 
-  it('un errore generico diventa failed', async () => {
+  it('a generic error becomes failed', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations/nl-search', {
       method: 'POST',
       handler: () => {
@@ -195,7 +195,7 @@ describe('useNlSearch', () => {
     })
 
     const wrapper = await mountSuspended(NlSearchHost)
-    await wrapper.vm.search('query qualunque')
+    await wrapper.vm.search('any query')
     await flushPromises()
 
     expect(wrapper.vm.error).toBe('failed')

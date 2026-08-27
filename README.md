@@ -22,6 +22,7 @@ Dashboard zur Verwaltung von Ladeinfrastruktur für Elektrofahrzeuge. Portfolio-
 - **Validierung:** Zod
 - **Karte:** MapLibre GL JS + OpenStreetMap
 - **Diagramme:** Chart.js (`vue-chartjs`)
+- **Freitextsuche:** Claude Haiku 4.5 (`@anthropic-ai/sdk`) mit Structured Output, optional zuschaltbar (siehe [ADR-0007](docs/adr/0007-nl-search.md))
 - **Tests:** Vitest + `@nuxt/test-utils` (Unit/Component) + Playwright (E2E, Chromium/WebKit/mobil) + axe-core (Barrierefreiheit)
 - **i18n:** `@nuxtjs/i18n`, Deutsch (Standard) + Englisch, lokalisiertes Routing (`/de/...`, `/en/...`)
 - **CI/CD:** GitHub Actions — Lint, Typecheck, Unit-Tests mit Coverage-Schwelle, Build, E2E, Lighthouse CI (siehe [`.github/workflows/ci.yml`](.github/workflows/ci.yml)); `main` ist per Branch Protection geschützt (PR + alle 3 Checks grün erforderlich); Deploy auf Vercel automatisch bei jedem Merge, Preview-Deployment für jeden PR
@@ -67,6 +68,17 @@ flowchart TB
 | Pinia nur für Client-State, nie für Server-Daten                              | `useAsyncData` übernimmt bereits Cache/SSR/Dedup — das in einem Store zu duplizieren schafft zwei Wahrheitsquellen                                       | [0005](docs/adr/0005-pinia-state.md)          |
 | Hybrides Rendering pro Route (Prerender/SSR/Client-seitig)                    | Login statisch, Dashboard dynamisch, Stationsdetail SSR — ein einziger Standard hätte einen der drei Fälle geopfert                                      | [0006](docs/adr/0006-rendering-strategy.md)   |
 | Design-System mit semantischen Rollen (nie Farbe allein)                      | Der Status eines Ladepunkts wird über Icon + Text + Farbe zusammen kommuniziert, nicht über Farbe allein — Barrierefreiheits-Anforderung, keine Ästhetik | [0001](docs/adr/0001-design-system.md)        |
+| Freitextsuche über ein Sprachmodell, geerdet in echten OCM-IDs                | Das Zod-Ausgabeschema wird zur Laufzeit aus den geladenen Referenzdaten gebaut — das Modell _kann_ keine IDs erfinden, die Garantie kommt aus dem Schema | [0007](docs/adr/0007-nl-search.md)            |
+
+## Freitextsuche (optional)
+
+Über der klassischen Filterleiste steht eine Suche in natürlicher Sprache: _„schnelle CCS-Ladepunkte von Ionity"_ wird von **Claude Haiku 4.5** in strukturierte Filter übersetzt und in die aktuelle Kartenansicht **eingefügt** — Felder, die die Query nicht nennt, bleiben unangetastet. Details und Abwägungen in [ADR-0007](docs/adr/0007-nl-search.md); die drei Punkte, die dabei am meisten zählen:
+
+- **Keine erfundenen IDs.** Das Zod-Ausgabeschema wird pro Anfrage aus den gerade geladenen OCM-Referenzdaten gebaut: kleine Listen (Steckertyp, Status) als Union echter ID-Literale, sodass das Modell strukturell keine nicht existierende ID zurückgeben _kann_. Betreiber-IDs (984 allein für Deutschland) sprengen die Grammatik des Constrained Decoding und werden stattdessen **nach** der Antwort gegen die echte Liste validiert — dieselbe Garantie, anders erreicht.
+- **Kostenschutz in Schichten:** Antwort-Cache → Rate Limit pro IP (nur bei Cache-Miss) → globaler Tagesdeckel → Claude. Keine dieser In-Prozess-Schichten ist eine harte Garantie (serverless, pro Instanz) — die harte Obergrenze ist das Spend-Limit auf einem dedizierten Anthropic-Workspace. Im README steht das so, weil es die ehrliche Beschreibung ist, nicht die schmeichelhafte.
+- **Eval-Suite statt nur Unit-Tests.** 19 handgelabelte Queries laufen mit `pnpm eval:nl-search` gegen das echte Modell. Unit-Tests, die das SDK mocken, berühren den echten `messages.parse`-Pfad nie — beide realen Bugs dieser Feature waren für sie unsichtbar. Die Eval-Suite kostet echtes Geld und ist nicht vollständig deterministisch, läuft daher bewusst außerhalb des CI-Gates.
+
+**Ohne `NUXT_ANTHROPIC_API_KEY` ist das Feature schlicht aus**: der Endpoint antwortet mit einem expliziten 503, die App bleibt mit der klassischen Filtersuche voll benutzbar. Ein Deploy ohne diesen Key ist ein gültiger Zustand, kein Fehler — der Key steht deshalb absichtlich nicht in `validateEnv()`.
 
 ## Daten: was echt ist, was simuliert ist
 
@@ -88,6 +100,8 @@ Die App validiert die Konfiguration beim Start: ohne gültigen `NUXT_OCM_API_KEY
 
 Für den Login wird außerdem ein `NUXT_SESSION_PASSWORD` (mindestens 32 Zeichen) benötigt — erzeuge deins z. B. mit `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
 
+`NUXT_ANTHROPIC_API_KEY` ist **optional** und schaltet nur die [Freitextsuche](#freitextsuche-optional) frei — ohne ihn startet und läuft die App vollständig. Wer ihn setzt, sollte vorher die Ausgaben absichern (dedizierter Workspace, Spend-Limit, Kosten-Alert): das Vorgehen steht in [`.env.example`](.env.example), die Begründung in [ADR-0007](docs/adr/0007-nl-search.md).
+
 ## Login
 
 **Explizit gemockt: kein echtes Backend/keine Datenbank.** Zwei feste, serverseitig hartkodierte Accounts (`server/utils/auth-session.ts`), nur um Route-Guards und Rechte zu demonstrieren — nicht für den Produktivbetrieb gedacht.
@@ -101,15 +115,16 @@ Die Session ist ein versiegeltes httpOnly-Cookie (signiert + verschlüsselt mit 
 
 ## Skripte
 
-| Befehl                                                 | Beschreibung                                      |
-| ------------------------------------------------------ | ------------------------------------------------- |
-| `pnpm dev`                                             | Dev-Server                                        |
-| `pnpm build`                                           | Produktions-Build                                 |
-| `pnpm lint` / `pnpm lint:fix`                          | ESLint                                            |
-| `pnpm format` / `pnpm format:check`                    | Prettier                                          |
-| `pnpm typecheck`                                       | TypeScript-strict-Typecheck                       |
-| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest (Unit/Component), mit Coverage-Gate        |
-| `pnpm test:e2e`                                        | Playwright — Chromium, WebKit, Pixel 7, iPhone 14 |
+| Befehl                                                 | Beschreibung                                                                                                                                                          |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                                             | Dev-Server                                                                                                                                                            |
+| `pnpm build`                                           | Produktions-Build                                                                                                                                                     |
+| `pnpm lint` / `pnpm lint:fix`                          | ESLint                                                                                                                                                                |
+| `pnpm format` / `pnpm format:check`                    | Prettier                                                                                                                                                              |
+| `pnpm typecheck`                                       | TypeScript-strict-Typecheck                                                                                                                                           |
+| `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` | Vitest (Unit/Component), mit Coverage-Gate                                                                                                                            |
+| `pnpm test:e2e`                                        | Playwright — Chromium, WebKit, Pixel 7, iPhone 14                                                                                                                     |
+| `pnpm eval:nl-search`                                  | Eval-Suite der [Freitextsuche](#freitextsuche-optional) gegen das echte Modell — kostet echtes Geld, braucht `NUXT_ANTHROPIC_API_KEY`, bewusst außerhalb des CI-Gates |
 
 ## Bekannte Grenzen und was ich mit mehr Zeit anders machen würde
 

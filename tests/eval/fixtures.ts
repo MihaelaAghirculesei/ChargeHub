@@ -1,15 +1,15 @@
 import type { ReferenceData } from '#shared/schemas/station'
 
 /**
- * Sottoinsieme curato di dati di riferimento reali (fetchati da OCM per la
- * Germania il 26/08/2026 — id veri, non inventati). La Germania reale ha 43
- * tipi di connettore e **984 operatori**: usarli tutti qui appesantirebbe
- * l'eval senza aggiungere valore (il grosso sono varianti internazionali
- * dello stesso brand, es. "Shell Recharge (IN)", irrilevanti per una query
- * in tedesco su stazioni tedesche) — 6 connettori e 8 operatori riconoscibili
- * bastano a verificare il grounding sugli id reali. Non è la lista mandata
- * in produzione (quella resta quella intera, vedi ADR-0007), solo un
- * fixture realistico e leggibile per questa suite.
+ * A curated subset of real reference data (fetched from OCM for Germany on
+ * 2026-08-26 — real ids, not invented). Real Germany has 43 connection types
+ * and **984 operators**: using them all here would bloat the eval without
+ * adding value (most are international variants of the same brand, e.g.
+ * "Shell Recharge (IN)", irrelevant for a German-language query about German
+ * stations) — 6 recognisable connectors and 8 operators are enough to check
+ * the grounding on real ids. This is not the list sent to production (that
+ * stays the whole thing, see ADR-0007), just a realistic and readable
+ * fixture for this suite.
  */
 export const evalReferenceData: ReferenceData = {
   connectionTypes: [
@@ -42,15 +42,14 @@ export const evalReferenceData: ReferenceData = {
 }
 
 /**
- * Caso di regressione (Giorno 26, seconda continuazione): la Germania reale
- * su OCM ha **984 operatori** — con `operatorId` costruito come union di
- * literal (come lo erano tutti e tre i campi id all'inizio), l'API rifiuta
- * la richiesta con 400 "The compiled grammar is too large" prima ancora di
- * arrivare a un `parsed_output`. Trovato con una chiamata reale, non da un
- * test (tutti i test unitari mockano l'SDK). Questo fixture riproduce la
- * scala del problema (500 operatori sintetici, l'id/titolo esatto non
- * conta — conta solo la dimensione dell'union) per assicurarsi che
- * `operatorId` non torni mai a essere costruito come union di literal.
+ * Regression case (day 26, second follow-up): real Germany on OCM has **984
+ * operators** — with `operatorId` built as a literal union (as all three id
+ * fields were at first), the API rejects the request with 400 "The compiled
+ * grammar is too large" before even reaching a `parsed_output`. Found with a
+ * real call, not a test (all unit tests mock the SDK). This fixture
+ * reproduces the scale of the problem (500 synthetic operators; the exact
+ * id/title does not matter — only the size of the union does) to make sure
+ * `operatorId` is never built as a literal union again.
  */
 export const evalReferenceDataManyOperators: ReferenceData = {
   ...evalReferenceData,

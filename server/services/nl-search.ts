@@ -6,10 +6,9 @@ import type { ExtractedStationFilters, ReferenceData } from '#shared/schemas/sta
 const MODEL = 'claude-haiku-4-5'
 
 /**
- * Errore di dominio per qualunque fallimento nel parlare con Claude — stesso
- * pattern di OcmClientError (ocm-client.ts): le rotte non propagano mai il
- * messaggio/stack grezzo del provider, solo un codice mappato su un errore
- * HTTP proprio.
+ * Domain error for any failure talking to Claude — same pattern as
+ * OcmClientError (ocm-client.ts): routes never propagate the provider's raw
+ * message/stack, only a code mapped onto an HTTP error of our own.
  */
 export class NlSearchError extends Error {
   constructor(
@@ -25,28 +24,27 @@ export class NlSearchError extends Error {
 export type { ExtractedStationFilters }
 
 /**
- * Unione di literal numerici da una lista di id reali — non un `z.number()`
- * generico. Claude può quindi restituire *solo* un id che esiste davvero
- * nei dati di riferimento appena recuperati da OCM (o `null`), niente id
- * inventati o di un altro paese: la garanzia viene dallo schema stesso, non
- * da un'istruzione nel prompt che il modello potrebbe ignorare.
+ * A union of numeric literals from a list of real ids — not a generic
+ * `z.number()`. Claude can then return *only* an id that actually exists in
+ * the reference data just fetched from OCM (or `null`), never an invented id
+ * or one from another country: the guarantee comes from the schema itself,
+ * not from a prompt instruction the model could ignore.
  *
- * **Solo per liste piccole** (connectionTypes ~30, statusTypes ~10):
- * `operatorId` NON usa più questo helper — per la Germania OCM restituisce
- * centinaia di operatori, e l'API rifiuta la richiesta con 400 ("The
- * compiled grammar is too large") quando l'union di literal diventa troppo
- * grande. Trovato con una chiamata reale (nessun test qui sotto lo
- * intercettava: mockano l'SDK, quindi il path `messages.parse` +
- * `output_config` vero non veniva mai esercitato) — vedi la eval suite per
- * il caso di regressione con una lista operatori grande. Per `operatorId`
- * la stessa garanzia ("nessun id inventato") si ottiene validando la
- * risposta *dopo* averla ricevuta, non vincolando la grammatica in anticipo
- * — vedi `extractStationFilters`.
+ * **Small lists only** (connectionTypes ~30, statusTypes ~10): `operatorId`
+ * no longer uses this helper — for Germany OCM returns hundreds of
+ * operators, and the API rejects the request with 400 ("The compiled
+ * grammar is too large") once the literal union gets too big. Found with a
+ * real call (no test below caught it: they mock the SDK, so the real
+ * `messages.parse` + `output_config` path was never exercised) — see the
+ * eval suite for the regression case with a large operator list. For
+ * `operatorId` the same guarantee ("no invented id") is obtained by
+ * validating the response *after* receiving it, not by constraining the
+ * grammar up front — see `extractStationFilters`.
  */
 export function idLiteralUnion(ids: number[]) {
   if (ids.length === 0) {
     throw new NlSearchError(
-      'Nessun dato di riferimento disponibile da Open Charge Map per costruire lo schema di estrazione.',
+      'No reference data available from Open Charge Map to build the extraction schema.',
       'invalid_response'
     )
   }
@@ -66,30 +64,32 @@ export function buildExtractionSchema(referenceData: ReferenceData) {
       .string()
       .nullable()
       .describe(
-        'Parole chiave libere non coperte dagli altri campi (frammenti di nome stazione/operatore, indirizzo). null se non resta nulla di libero.'
+        'Free keywords not covered by the other fields (fragments of a station/operator name, an address). null if nothing free-form is left.'
       ),
     connectionTypeId: idLiteralUnion(referenceData.connectionTypes.map((c) => c.id))
       .nullable()
       .describe(
-        'Tipo di connettore richiesto, come id dalla lista fornita. null se non specificato.'
+        'The requested connector type, as an id from the list provided. null if not specified.'
       ),
-    // z.number() semplice, non idLiteralUnion (vedi il commento su
-    // idLiteralUnion) — validato contro referenceData.operators dopo la
-    // risposta, in extractStationFilters.
+    // Plain z.number(), not idLiteralUnion (see the comment on
+    // idLiteralUnion) — validated against referenceData.operators after the
+    // response, in extractStationFilters.
     operatorId: z
       .number()
       .int()
       .nullable()
-      .describe('Operatore richiesto, come id dalla lista fornita. null se non specificato.'),
+      .describe('The requested operator, as an id from the list provided. null if not specified.'),
     statusTypeId: idLiteralUnion(referenceData.statusTypes.map((s) => s.id))
       .nullable()
-      .describe('Stato operativo richiesto, come id dalla lista fornita. null se non specificato.'),
+      .describe(
+        'The requested operational status, as an id from the list provided. null if not specified.'
+      ),
     minPowerKw: z
       .number()
       .nonnegative()
       .nullable()
       .describe(
-        'Se la query cita un numero esplicito di kW, usa SEMPRE quel numero, mai un valore stimato. Solo se non c\'è un numero esplicito, stima da un termine vago (es. "veloce" ~50, "ultra veloce" ~150). null se non c\'è alcun riferimento alla potenza.'
+        'If the query states an explicit number of kW, ALWAYS use that number, never an estimated value. Only when there is no explicit number, estimate from a vague term (e.g. "fast"/"schnell" ~50, "ultra fast"/"ultraschnell" ~150). null if there is no reference to power at all.'
       )
   })
 }
@@ -99,34 +99,39 @@ function formatReferenceList(entries: { id: number; title: string }[]): string {
 }
 
 /**
- * La posizione (lat/lon/raggio) non è tra i campi estratti apposta: è già
- * lo stato corrente della mappa/store filtri (Giorno 6-8), la ricerca in
- * linguaggio naturale aggiunge criteri sopra, non li sostituisce — vedi
- * ADR-0007. Geocodificare nomi di città dal testo libero è un problema
- * diverso (serve un servizio di geocoding a parte), esplicitamente fuori
- * scope qui.
+ * Position (lat/lon/radius) is deliberately not among the extracted fields:
+ * it is already the current map / filter-store state (days 6-8), and the
+ * natural-language search adds criteria on top, it does not replace them —
+ * see ADR-0007. Geocoding city names from free text is a different problem
+ * (needs a separate geocoding service), explicitly out of scope here.
+ *
+ * The prompt is English while the queries it handles are German or English:
+ * the instruction language and the input language are independent, and
+ * English keeps it consistent with the rest of the codebase. Any edit here
+ * is a behaviour change — re-run `pnpm eval:nl-search` (real model, 19
+ * labelled cases) before merging it.
  */
 function buildSystemPrompt(referenceData: ReferenceData): string {
-  return `Estrai criteri di ricerca strutturati da una query in linguaggio naturale (tedesco o inglese) su stazioni di ricarica per veicoli elettrici in Germania.
+  return `Extract structured search criteria from a natural-language query (German or English) about electric vehicle charging stations in Germany.
 
-Tipi di connettore disponibili (id: titolo):
+Available connector types (id: title):
 ${formatReferenceList(referenceData.connectionTypes)}
 
-Operatori disponibili (id: titolo):
+Available operators (id: title):
 ${formatReferenceList(referenceData.operators)}
 
-Stati operativi disponibili (id: titolo):
+Available operational statuses (id: title):
 ${formatReferenceList(referenceData.statusTypes)}
 
-Usa SOLO gli id elencati sopra. Se la query non specifica un criterio, restituisci null per quel campo — non indovinare.
+Use ONLY the ids listed above. If the query does not specify a criterion, return null for that field — do not guess.
 
-Qualunque riferimento a una località/città (es. "a Berlino", "vicino a Monaco") va IGNORATO PER INTERO — non copiarlo nel campo "search", la posizione della ricerca è già gestita altrove. Il campo "search" è solo per frammenti di nome stazione/operatore o indirizzo che non sono un nome di città, non per la città stessa.`
+Any reference to a place or city (e.g. "in Berlin", "near Munich") must be IGNORED ENTIRELY — do not copy it into the "search" field, the search location is already handled elsewhere. The "search" field is only for fragments of a station/operator name or an address that are not a city name, never for the city itself.`
 }
 
 export function assertConfigured(apiKey: string): void {
   if (!apiKey) {
     throw new NlSearchError(
-      'ANTHROPIC_API_KEY non configurata — vedi .env.example.',
+      'ANTHROPIC_API_KEY is not configured — see .env.example.',
       'not_configured'
     )
   }
@@ -147,9 +152,9 @@ function getClient(): Anthropic {
 export async function extractStationFilters(
   query: string,
   referenceData: ReferenceData,
-  // Parametro di default valutato pigramente solo se omesso: la rotta reale
-  // non lo passa mai (usa getClient()), i test passano un client finto e
-  // così non toccano mai useRuntimeConfig()/il guard assertConfigured.
+  // Default parameter evaluated lazily only when omitted: the real route
+  // never passes it (uses getClient()), tests pass a fake client and so
+  // never touch useRuntimeConfig() / the assertConfigured guard.
   client: Anthropic = getClient()
 ): Promise<ExtractedStationFilters> {
   const schema = buildExtractionSchema(referenceData)
@@ -163,10 +168,11 @@ export async function extractStationFilters(
         {
           type: 'text',
           text: buildSystemPrompt(referenceData),
-          // I dati di riferimento sono cachati 24h lato OCM (defineCachedFunction,
-          // stesso TTL) e non cambiano tra una ricerca e l'altra nella stessa
-          // finestra — cache_control evita di ripagare l'intero prompt (che
-          // include l'elenco di tutti gli operatori) a ogni singola query.
+          // The reference data is cached 24h on the OCM side
+          // (defineCachedFunction, same TTL) and does not change between one
+          // search and the next in the same window — cache_control avoids
+          // paying for the whole prompt (which includes the full operator
+          // list) on every single query.
           cache_control: { type: 'ephemeral' }
         }
       ],
@@ -176,45 +182,41 @@ export async function extractStationFilters(
   } catch (error) {
     if (error instanceof Anthropic.APIError) {
       throw new NlSearchError(
-        'Estrazione filtri fallita (Claude non raggiungibile).',
+        'Filter extraction failed (Claude unreachable).',
         'upstream_error',
         error
       )
     }
-    // Ogni altro errore dell'SDK (`Anthropic.AnthropicError` è la classe
-    // base di `APIError`): output non-JSON, validazione Zod dell'output
-    // fallita, risposta troncata da `max_tokens`. `messages.parse()` lancia
-    // un `AnthropicError` grezzo in questi casi — senza questo ramo
-    // risalirebbe come 500 col messaggio del provider, rompendo l'invariante
-    // di questo file. È un problema di *forma* della risposta, stesso codice
-    // del ramo `!parsed_output` più sotto.
+    // Any other SDK error (`Anthropic.AnthropicError` is the base class of
+    // `APIError`): non-JSON output, failed Zod validation of the output, a
+    // response truncated by `max_tokens`. `messages.parse()` throws a bare
+    // `AnthropicError` in these cases — without this branch it would
+    // propagate as a 500 with the provider's message, breaking this file's
+    // invariant. It is a *shape* problem with the response, same code as the
+    // `!parsed_output` branch below.
     if (error instanceof Anthropic.AnthropicError) {
-      throw new NlSearchError(
-        'Risposta di Claude in un formato inatteso.',
-        'invalid_response',
-        error
-      )
+      throw new NlSearchError('Claude response in an unexpected format.', 'invalid_response', error)
     }
     throw error
   }
 
   if (!response.parsed_output) {
-    throw new NlSearchError('Risposta di Claude in un formato inatteso.', 'invalid_response')
+    throw new NlSearchError('Claude response in an unexpected format.', 'invalid_response')
   }
 
   const parsed = response.parsed_output
-  // `operatorId` non è vincolato dallo schema (vedi idLiteralUnion) — la
-  // garanzia "nessun id inventato" si applica qui, non in anticipo:
-  // un id fuori dalla lista reale diventa null, mai propagato.
+  // `operatorId` is not constrained by the schema (see idLiteralUnion) — the
+  // "no invented id" guarantee applies here, not up front: an id outside the
+  // real list becomes null, never propagated.
   const operatorId =
     parsed.operatorId != null &&
     referenceData.operators.some((operator) => operator.id === parsed.operatorId)
       ? parsed.operatorId
       : null
 
-  // `parsed_output` tipizza i campi `nullable()` come anche opzionali (un
-  // dettaglio dell'helper `zodOutputFormat`, non del nostro schema) —
-  // normalizzato qui per rispettare `ExtractedStationFilters`.
+  // `parsed_output` types the `nullable()` fields as optional too (a detail
+  // of the `zodOutputFormat` helper, not of our schema) — normalised here to
+  // satisfy `ExtractedStationFilters`.
   return {
     search: parsed.search ?? null,
     connectionTypeId: parsed.connectionTypeId ?? null,
