@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { OcmClientError, fetchStationById } from '~~/server/services/ocm-client'
 import { computeStationTelemetry } from '~~/server/services/telemetry-simulator'
 
-/** Batch ragionevole per una singola richiesta: niente scan illimitate. */
+/** A reasonable batch for a single request: no unbounded scans. */
 const MAX_STATION_IDS = 20
 
 const querySchema = z.object({
@@ -13,10 +13,11 @@ const querySchema = z.object({
 })
 
 /**
- * Snapshot di telemetria simulata per una o più stazioni (`?stationId=1,2`).
- * Le specifiche dei connettori (potenza massima) vengono da OCM tramite la
- * stessa cache di `GET /api/stations/:id`; lo stato dinamico è calcolato al
- * volo da `computeStationTelemetry`, vedi docs/adr/0002-telemetry-simulation.md.
+ * Snapshot of simulated telemetry for one or more stations
+ * (`?stationId=1,2`). The connector specs (max power) come from OCM via the
+ * same cache as `GET /api/stations/:id`; the dynamic state is computed on
+ * the fly by `computeStationTelemetry`, see
+ * docs/adr/0002-telemetry-simulation.md.
  */
 export default defineEventHandler(async (event) => {
   const parsedQuery = await getValidatedQuery(event, (query) => querySchema.safeParse(query))
@@ -24,7 +25,7 @@ export default defineEventHandler(async (event) => {
   if (!parsedQuery.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Parametro stationId non valido: usare un ID o una lista separata da virgole.'
+      statusMessage: 'Invalid stationId parameter: use an ID or a comma-separated list.'
     })
   }
 
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof OcmClientError) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'Impossibile recuperare le stazioni dal registro Open Charge Map.',
+        statusMessage: 'Could not fetch stations from the Open Charge Map registry.',
         data: { code: error.code }
       })
     }

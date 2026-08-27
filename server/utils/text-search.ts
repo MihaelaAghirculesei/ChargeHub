@@ -1,9 +1,9 @@
 /**
- * `true` se `query` compare (case-insensitive) in almeno uno dei campi
- * passati. Usata per il filtro di ricerca testuale di `GET /api/stations`:
- * OCM non offre una ricerca full-text nella sua API di ricerca geografica,
- * quindi il BFF la implementa qui sopra il risultato già cachato — stesso
- * principio di `server/utils/paginate.ts` per pagina/ordinamento.
+ * `true` if `query` appears (case-insensitive) in at least one of the
+ * fields passed. Used for the text-search filter of `GET /api/stations`:
+ * OCM offers no full-text search in its geographic search API, so the BFF
+ * implements it here on top of the already-cached result — same principle
+ * as `server/utils/paginate.ts` for page/sort.
  */
 export function matchesText(fields: (string | null | undefined)[], query: string): boolean {
   const needle = query.trim().toLowerCase()

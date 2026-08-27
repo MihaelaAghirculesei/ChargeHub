@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   if (!parsedQuery.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Parametri non validi.'
+      statusMessage: 'Invalid parameters.'
     })
   }
 
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof OcmClientError) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'Impossibile recuperare le tabelle di riferimento da Open Charge Map.',
+        statusMessage: 'Could not fetch the reference tables from Open Charge Map.',
         data: { code: error.code }
       })
     }
