@@ -1,14 +1,14 @@
 import { z } from 'zod'
 
 /**
- * Tipi di dominio ChargeHub, normalizzati dalla forma grezza di OCM
- * (shared/schemas/ocm.ts). Sono quelli che il frontend vede davvero.
+ * ChargeHub domain types, normalised from OCM's raw shape
+ * (shared/schemas/ocm.ts). These are what the frontend actually sees.
  *
- * `operationalStatus` riflette lo stato del registro OCM (impianto
- * pianificato/operativo/rimosso), non lo stato live del punto di ricarica:
- * quest'ultimo arriva dal simulatore di telemetria (Giorno 10) ed è un
- * concetto separato, per non confondere "esiste ed è in funzione secondo il
- * registro" con "sta caricando in questo momento".
+ * `operationalStatus` reflects the OCM registry status (site
+ * planned/operational/removed), not the live status of the charge point:
+ * the latter comes from the telemetry simulator (day 10) and is a separate
+ * concept, so as not to confuse "exists and is in service per the registry"
+ * with "is charging right now".
  */
 
 export const connectorSchema = z.object({
@@ -26,7 +26,7 @@ export const stationAddressSchema = z.object({
   town: z.string().nullable(),
   postcode: z.string().nullable(),
   country: z.string().nullable(),
-  /** Note libere di chi ha censito la stazione — vedi shared/schemas/ocm.ts. */
+  /** Free-form notes from whoever recorded the station — see shared/schemas/ocm.ts. */
   accessComments: z.string().nullable()
 })
 
@@ -44,7 +44,7 @@ export const stationSchema = z.object({
   operationalStatus: z.string(),
   isOperational: z.boolean().nullable(),
   lastVerified: z.string().nullable(),
-  /** "Public"/"Public - Membership Required"/... — vedi shared/schemas/ocm.ts. */
+  /** "Public"/"Public - Membership Required"/... — see shared/schemas/ocm.ts. */
   usageType: z.string().nullable()
 })
 
@@ -72,14 +72,15 @@ export type ReferenceEntry = z.infer<typeof referenceEntrySchema>
 export type ReferenceData = z.infer<typeof referenceDataSchema>
 
 /**
- * Colonne su cui `GET /api/stations` sa ordinare. OCM non pagina/ordina la
- * sua ricerca geografica: il BFF lo fa lui sopra il risultato già cachato
- * (vedi server/utils/paginate.ts), quindi l'elenco è vincolato ai campi che
- * quel livello sa leggere da `Station` — non è un contratto di OCM.
+ * Columns `GET /api/stations` knows how to sort by. OCM does not
+ * paginate/sort its geographic search: the BFF does it on top of the
+ * already-cached result (see server/utils/paginate.ts), so the list is
+ * bound to the fields that layer can read from `Station` — it is not an OCM
+ * contract.
  */
 export type StationSortKey = 'name' | 'operator' | 'town' | 'maxPowerKw' | 'operationalStatus'
 
-/** Risposta paginata di `GET /api/stations`: non è dati OCM, non serve Zod. */
+/** Paginated response of `GET /api/stations`: not OCM data, no need for Zod. */
 export interface StationsPage {
   items: Station[]
   total: number
