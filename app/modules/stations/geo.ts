@@ -6,10 +6,10 @@ export interface LatLng {
 const EARTH_RADIUS_KM = 6371
 
 /**
- * Distanza in km sulla superficie terrestre (formula haversine). Usata da
- * `StationsMap.vue` per derivare un raggio di ricerca dal viewport corrente
- * della mappa (centro → angolo nord-est) quando l'utente sposta/zooma —
- * OCM non ha una ricerca per bounding box, solo per raggio.
+ * Distance in km over the Earth's surface (haversine formula). Used by
+ * `StationsMap.vue` to derive a search radius from the map's current
+ * viewport (centre → north-east corner) when the user pans/zooms — OCM has
+ * no bounding-box search, only radius.
  */
 export function haversineDistanceKm(a: LatLng, b: LatLng): number {
   const toRad = (deg: number) => (deg * Math.PI) / 180

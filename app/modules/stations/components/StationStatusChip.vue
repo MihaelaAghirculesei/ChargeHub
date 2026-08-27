@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
- * `isOperational` (booleano OCM) decide colore/icona; `label` è il testo
- * effettivo del registro (es. "Operational", "Planned for Future Date") — non
- * lo reinventiamo, così non serve mappare a mano ogni stringa che OCM usa.
- * Colore mai da solo: icona + testo sempre presenti (requisito di
- * accessibilità, vedi docs/adr/0001-design-system.md).
+ * `isOperational` (OCM boolean) decides colour/icon; `label` is the
+ * registry's actual text (e.g. "Operational", "Planned for Future Date") —
+ * we do not reinvent it, so there is no need to map every string OCM uses
+ * by hand. Colour never alone: icon + text always present (an accessibility
+ * requirement, see docs/adr/0001-design-system.md).
  */
 const props = defineProps<{
   isOperational: boolean | null

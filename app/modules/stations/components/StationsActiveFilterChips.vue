@@ -5,8 +5,8 @@ import type { StationFilterKey } from '~/modules/stations/types'
 
 const { t } = useI18n()
 const filtersStore = useStationsFiltersStore()
-// Stessa chiave di useAsyncData della barra filtri: niente richiesta in più,
-// solo il valore già cachato.
+// Same useAsyncData key as the filter bar: no extra request, just the
+// already-cached value.
 const { data: referenceData } = useStationReferenceData()
 
 function titleFor(entries: { id: number; title: string }[] | undefined, id: number): string {

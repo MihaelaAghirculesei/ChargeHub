@@ -1,12 +1,12 @@
 import type { StationFilters } from '~/modules/stations/types'
 
 /**
- * Traduzione tra i filtri condivisibili (barra filtri del Giorno 6 + area di
- * ricerca della mappa del Giorno 8) e i query param dell'URL, così una
- * ricerca è condivisibile via link e sopravvive al refresh — separata da
- * `stationRepository`/`toQuery()` perché questa è la forma per *l'indirizzo
- * del browser*, non per la richiesta a `/api/stations` (nomi uguali per
- * semplicità, ma sono due contratti diversi: uno guarda l'URL, l'altro l'API).
+ * Translation between the shareable filters (day-6 filter bar + day-8 map
+ * search area) and the URL query params, so a search is shareable via link
+ * and survives a refresh — separate from `stationRepository`/`toQuery()`
+ * because this is the shape for *the browser's address*, not for the
+ * request to `/api/stations` (same names for simplicity, but two different
+ * contracts: one looks at the URL, the other at the API).
  */
 type RouteQueryValue = string | (string | null)[] | null | undefined
 type RouteQuery = Record<string, RouteQueryValue>
@@ -30,7 +30,7 @@ function parsePositiveNumber(value: RouteQueryValue): number | undefined {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
 }
 
-/** Lat/lon possono essere negativi o 0 (equatore/meridiano di Greenwich): niente `positive`. */
+/** Lat/lon can be negative or 0 (equator/Greenwich meridian): no `positive`. */
 function parseBoundedNumber(value: RouteQueryValue, min: number, max: number): number | undefined {
   const raw = firstValue(value)
   if (raw === undefined) return undefined
@@ -38,7 +38,7 @@ function parseBoundedNumber(value: RouteQueryValue, min: number, max: number): n
   return Number.isFinite(parsed) && parsed >= min && parsed <= max ? parsed : undefined
 }
 
-/** `undefined` per ogni campo assente dall'URL: il chiamante decide i default. */
+/** `undefined` for every field absent from the URL: the caller decides the defaults. */
 export function parseFiltersFromQuery(query: RouteQuery): Partial<StationFilters> {
   const search = firstValue(query.search)
   return {
@@ -54,9 +54,9 @@ export function parseFiltersFromQuery(query: RouteQuery): Partial<StationFilters
 }
 
 /**
- * `undefined` invece di omettere la chiave: Vue Router rimuove dall'URL i
- * param con valore `undefined`/`null`, quindi resettare un filtro passa da
- * qui, non da un `delete` a mano.
+ * `undefined` instead of omitting the key: Vue Router strips params with
+ * value `undefined`/`null` from the URL, so resetting a filter goes through
+ * here, not through a manual `delete`.
  */
 export function filtersToQuery(filters: StationFilters): RouteQuery {
   return {

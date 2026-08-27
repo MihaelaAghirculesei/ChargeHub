@@ -7,15 +7,15 @@ import type {
 
 interface UseLiveTelemetryOptions {
   transport?: TelemetryTransport
-  /** Iniettabile solo per i test: di norma è `useDocumentVisibility()` vero. */
+  /** Injectable for tests only: normally it is the real `useDocumentVisibility()`. */
   visibility?: Ref<DocumentVisibilityState>
 }
 
 /**
- * Polling ogni 5s (dietro `TelemetryTransport`, vedi
- * docs/adr/0003-live-updates.md) per gli id indicati, con pausa automatica
- * quando la scheda non è visibile: nessuna chiamata al server per una scheda
- * in background, ripresa non appena torna visibile.
+ * Polling every 5s (behind `TelemetryTransport`, see
+ * docs/adr/0003-live-updates.md) for the given ids, with an automatic pause
+ * when the tab is not visible: no call to the server for a background tab,
+ * resumed as soon as it becomes visible again.
  */
 export function useLiveTelemetry(
   stationIds: MaybeRefOrGetter<number[]>,
@@ -29,9 +29,9 @@ export function useLiveTelemetry(
   let stopTransport: (() => void) | null = null
 
   function startPolling() {
-    // Solo lato client: durante SSR non ha senso aprire un ciclo di polling
-    // che sopravvive oltre la risposta della singola richiesta (vedi il
-    // vincolo serverless già discusso per il simulatore, ADR-0002).
+    // Client-side only: during SSR it makes no sense to open a polling loop
+    // that outlives the single request's response (see the serverless
+    // constraint already discussed for the simulator, ADR-0002).
     if (!import.meta.client || stopTransport) return
     const ids = toValue(stationIds)
     if (ids.length === 0) return
