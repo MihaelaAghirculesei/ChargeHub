@@ -9,13 +9,12 @@ const FILTERS_COOKIE_NAME = 'chargehub-station-filters'
 const VIEW_MODE_COOKIE_NAME = 'chargehub-station-view-mode'
 
 /**
- * Wolfsburg come default: nessuna geolocalizzazione ancora costruita al
- * primo avvio, quindi serve un centro di ricerca sensato piuttosto che
- * coordinate 0,0 — da qui in poi (Giorno 8) la mappa stessa aggiorna
- * `latitude`/`longitude`/`radiusKm` quando l'utente la sposta. `maxResults:
- * 100` (tetto di OCM) perché è "quanti risultati tenere cachati per
- * paginarci sopra", non più "quanti mostrarne" — vedi `itemsPerPage` in
- * `StationsTableOptions`.
+ * Wolfsburg as the default: no geolocation is built yet at first load, so a
+ * sensible search centre is needed rather than coordinates 0,0 — from here
+ * on (day 8) the map itself updates `latitude`/`longitude`/`radiusKm` when
+ * the user pans it. `maxResults: 100` (OCM's cap) because it is "how many
+ * results to keep cached to paginate over", not "how many to show" — see
+ * `itemsPerPage` in `StationsTableOptions`.
  */
 function defaultFilters(): StationFilters {
   return {
@@ -40,17 +39,17 @@ function useFiltersCookie() {
 }
 
 /**
- * `parseFiltersFromQuery` restituisce sempre tutte le chiavi (`undefined`
- * per quelle assenti dall'URL) — utile per i test, ma qui servono solo i
- * campi *presenti* nell'URL: uno spread diretto sovrascriverebbe con
- * `undefined` i valori validi del cookie (es. `radiusKm`) ogni volta che
- * l'URL non li contiene, il che è quasi sempre.
+ * `parseFiltersFromQuery` always returns every key (`undefined` for the
+ * ones absent from the URL) — useful for tests, but here we only want the
+ * fields *present* in the URL: a direct spread would overwrite valid cookie
+ * values (e.g. `radiusKm`) with `undefined` every time the URL does not
+ * contain them, which is almost always.
  */
 function withoutUndefined<T extends object>(value: T): Partial<T> {
   return Object.fromEntries(Object.entries(value).filter(([, v]) => v !== undefined)) as Partial<T>
 }
 
-/** Cookie separato dai filtri apposta: è una preferenza di UI, non un criterio di ricerca. */
+/** A cookie separate from the filters on purpose: it is a UI preference, not a search criterion. */
 function useViewModeCookie() {
   return useCookie<StationsViewMode>(VIEW_MODE_COOKIE_NAME, {
     default: () => 'split',
@@ -60,26 +59,24 @@ function useViewModeCookie() {
 }
 
 /**
- * Stato di *UI*: filtri di ricerca, stato della tabella (pagina/ordinamento),
- * modalità di visualizzazione mappa/lista, stazione selezionata e stazione
- * in hover. Persistiamo filtri e modalità di visualizzazione (via cookie,
- * leggibile anche in SSR) — non la pagina/ordinamento correnti (resettare
- * la vista tabella ad ogni sessione è il comportamento giusto, non un
- * difetto) e mai la lista delle stazioni, che è dominio e va sempre
- * rifetchata (vedi `useStationsStore`).
+ * *UI* state: search filters, table state (page/sort), map/list view mode,
+ * selected station and hovered station. We persist filters and view mode
+ * (via cookie, readable in SSR too) — not the current page/sort (resetting
+ * the table view every session is the right behaviour, not a defect) and
+ * never the station list, which is domain and must always be re-fetched
+ * (see `useStationsStore`).
  *
- * I filtri condivisibili (barra filtri del Giorno 6 + area di ricerca della
- * mappa del Giorno 8: `latitude`/`longitude`/`radiusKm`/`search`/...)
- * sincronizzano anche con i query param dell'URL, così una ricerca è
- * condivisibile via link — quelli hanno priorità sul cookie al primo
- * caricamento (un link condiviso deve ricostruire la vista di chi lo apre,
- * non quella salvata nel suo browser). La sync è a senso unico (le nostre
- * modifiche scrivono su URL+cookie): non c'è un watcher che legga l'URL
- * dopo il mount, per evitare un ping-pong reattivo URL→filtri→URL. Vuol
- * dire che avanti/indietro del browser non naviga la cronologia dei filtri
- * all'interno della pagina — solo un refresh o un nuovo caricamento la
- * rilegge, che è esattamente il criterio "Fatto quando" del piano (copi
- * l'URL, lo apri altrove, stessa vista).
+ * The shareable filters (day-6 filter bar + day-8 map search area:
+ * `latitude`/`longitude`/`radiusKm`/`search`/...) also sync with the URL
+ * query params, so a search is shareable via link — those take priority
+ * over the cookie on first load (a shared link must rebuild the view for
+ * whoever opens it, not the one saved in their browser). The sync is
+ * one-way (our changes write to URL+cookie): there is no watcher reading
+ * the URL after mount, to avoid a reactive URL→filters→URL ping-pong. That
+ * means browser back/forward does not navigate the filter history within
+ * the page — only a refresh or a fresh load re-reads it, which is exactly
+ * the plan's "Done when" criterion (copy the URL, open it elsewhere, same
+ * view).
  */
 export const useStationsFiltersStore = defineStore('stations-filters', () => {
   const route = useRoute()
@@ -94,7 +91,7 @@ export const useStationsFiltersStore = defineStore('stations-filters', () => {
   const tableOptions = ref<StationsTableOptions>(defaultTableOptions())
   const viewMode = ref<StationsViewMode>(viewModeCookie.value)
   const selectedStationId = ref<number | null>(null)
-  /** Stazione sotto il puntatore (riga della tabella o marker della mappa) — evidenziazione transitoria, non selezione. */
+  /** Station under the pointer (table row or map marker) — a transient highlight, not a selection. */
   const hoveredStationId = ref<number | null>(null)
 
   watch(
@@ -112,8 +109,8 @@ export const useStationsFiltersStore = defineStore('stations-filters', () => {
 
   function setFilters(patch: Partial<StationFilters>) {
     filters.value = { ...filters.value, ...patch }
-    // Filtri diversi = risultati diversi: restare sulla pagina precedente
-    // potrebbe non avere più senso (es. pagina 5 di una lista ora di 2 pagine).
+    // Different filters = different results: staying on the previous page
+    // may no longer make sense (e.g. page 5 of a list that is now 2 pages).
     tableOptions.value = { ...tableOptions.value, page: 1 }
   }
 

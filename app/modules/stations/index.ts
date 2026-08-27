@@ -1,7 +1,7 @@
 /**
- * Unico punto di export pubblico del modulo stazioni. `stationRepository`
- * resta volutamente privato: solo `useStationsStore` lo chiama, così un
- * componente non può bypassare lo store e parlare di HTTP per conto suo.
+ * The single public export point of the stations module. `stationRepository`
+ * stays deliberately private: only `useStationsStore` calls it, so a
+ * component cannot bypass the store and talk HTTP on its own.
  */
 export { useNlSearch } from '~/modules/stations/composables/useNlSearch'
 export { useStation } from '~/modules/stations/composables/useStation'

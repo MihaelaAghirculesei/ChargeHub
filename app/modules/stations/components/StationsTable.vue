@@ -8,10 +8,10 @@ const { t } = useI18n()
 const { stations, total, pending, error, refresh, updateOptions } = useStations()
 const filtersStore = useStationsFiltersStore()
 
-// Skeleton solo al primo caricamento (nessun dato ancora in mano): per un
-// refetch di pagina/ordinamento basta il loading inline di v-data-table,
-// sostituire tutta la tabella con uno skeleton ad ogni click sarebbe un
-// salto visivo peggiore del semplice spinner.
+// Skeleton only on first load (no data in hand yet): for a page/sort
+// re-fetch v-data-table's inline loading is enough, replacing the whole
+// table with a skeleton on every click would be a worse visual jump than
+// the plain spinner.
 const isFirstLoad = computed(() => pending.value && stations.value.length === 0)
 
 const headers = computed(() => [
@@ -38,11 +38,11 @@ function onUpdateOptions(options: StationsTableUpdate) {
 }
 
 /**
- * Hover riga ↔ marker (Giorno 8): la riga scrive nello store al passaggio
- * del mouse, e si evidenzia anche quando è la mappa a impostare l'hover —
- * stessa `hoveredStationId` in entrambe le direzioni, vedi StationsMap.vue.
- * Click naviga al dettaglio (Giorno 9) — senza, il popup della mappa
- * resterebbe l'unico modo di raggiungerlo.
+ * Row ↔ marker hover (day 8): the row writes to the store on mouseover, and
+ * highlights itself when the map is the one setting the hover — the same
+ * `hoveredStationId` in both directions, see StationsMap.vue. Click
+ * navigates to the detail (day 9) — without it, the map popup would be the
+ * only way to reach it.
  */
 const localePath = useLocalePath()
 

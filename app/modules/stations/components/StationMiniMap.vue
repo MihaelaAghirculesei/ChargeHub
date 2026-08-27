@@ -1,40 +1,39 @@
 <script setup lang="ts">
 /**
- * Wrapper leggero, reso anche in SSR (Giorno 9) — non `StationsMap.vue`
- * semplificata: niente clustering, niente sync hover con una tabella,
- * niente viewport che scrive sui filtri di ricerca. Sono concetti che qui
- * non hanno senso, mescolarli avrebbe reso `StationsMap` più complicata
- * per un caso d'uso che non le appartiene.
+ * A lightweight wrapper, rendered in SSR too (day 9) — not a simplified
+ * `StationsMap.vue`: no clustering, no hover sync with a table, no viewport
+ * writing to the search filters. Those are concepts that make no sense
+ * here; mixing them in would have made `StationsMap` more complicated for a
+ * use case that is not its own.
  *
- * La mappa vera vive in `StationMiniMapCanvas.vue`, caricato con
- * `defineAsyncComponent` solo al click su "Mostra mappa" (Giorno 24) — non
- * un `import('maplibre-gl')` diretto qui dentro, neanche dietro
- * `IntersectionObserver`/`requestIdleCallback` (tentativi precedenti nello
- * stesso giorno, misurati con Lighthouse in locale sulla stessa build
- * della CI: Performance 47 -> 52, insufficiente). Il vero motivo per cui
- * quei tentativi non bastavano, verificato leggendo l'HTML SSR reale: un
- * `import()` presente nel codice di un componente reso in SSR — anche se
- * la funzione che lo contiene non viene mai chiamata lato server — finisce
- * comunque nei `<link rel="prefetch">` che Nuxt genera per ogni import
- * dinamico raggiungibile da un modulo toccato dal render SSR
- * (`vue-bundle-renderer`, non un bug: prefetch pensato per gli import
- * dinamici che POI verranno eseguiti quasi sempre, non per uno dietro un
- * click esplicito). Risultato: ~960 kB di maplibre-gl scaricati comunque,
- * click o no. Spostando l'import in un file MAI toccato da SSR (montato
- * solo client-side da `defineAsyncComponent` dopo il click), quel file non
- * compare tra i moduli SSR analizzati e il suo import dinamico non viene
- * più prefetchato — verificato di nuovo sull'HTML SSR reale dopo questo
- * cambio.
+ * The real map lives in `StationMiniMapCanvas.vue`, loaded with
+ * `defineAsyncComponent` only on the click on "Show map" (day 24) — not a
+ * direct `import('maplibre-gl')` in here, not even behind
+ * `IntersectionObserver`/`requestIdleCallback` (earlier attempts the same
+ * day, measured with Lighthouse locally on the same build as CI:
+ * Performance 47 -> 52, not enough). The real reason those attempts fell
+ * short, verified by reading the actual SSR HTML: an `import()` present in
+ * the code of a component rendered in SSR — even if the function containing
+ * it is never called server-side — still ends up in the
+ * `<link rel="prefetch">` tags Nuxt generates for every dynamic import
+ * reachable from a module touched by the SSR render (`vue-bundle-renderer`,
+ * not a bug: prefetch is meant for dynamic imports that WILL almost always
+ * run later, not for one behind an explicit click). Result: ~960 kB of
+ * maplibre-gl downloaded anyway, click or not. By moving the import into a
+ * file NEVER touched by SSR (mounted client-side only by
+ * `defineAsyncComponent` after the click), that file does not appear among
+ * the analysed SSR modules and its dynamic import is no longer prefetched
+ * — verified again on the actual SSR HTML after this change.
  */
 const props = defineProps<{ latitude: number; longitude: number }>()
 
 const { t } = useI18n()
 const mapLoaded = ref(false)
 
-// Nessun `loadingComponent` (Giorno 24): il chunk di questo componente è
-// pochi kB, si risolve in pratica subito — resta comunque il contenitore
-// vuoto durante il vero fetch di maplibre-gl dentro `initMap()`, come già
-// prima di questo cambio.
+// No `loadingComponent` (day 24): this component's chunk is a few kB, it
+// resolves practically instantly — the empty container still stays during
+// the real fetch of maplibre-gl inside `initMap()`, as it did before this
+// change.
 const MapCanvas = defineAsyncComponent(
   () => import('~/modules/stations/components/StationMiniMapCanvas.vue')
 )

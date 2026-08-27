@@ -6,9 +6,9 @@ const { t } = useI18n()
 const filtersStore = useStationsFiltersStore()
 const { data: referenceData, pending: referenceDataPending } = useStationReferenceData()
 
-// Input locale per il feedback immediato mentre si digita; il filtro vero
-// (che rifetcha e riscrive l'URL) si aggiorna solo 300ms dopo l'ultima
-// battitura, come richiesto dal piano — niente richiesta ad ogni carattere.
+// Local input for immediate feedback while typing; the real filter (which
+// re-fetches and rewrites the URL) updates only 300ms after the last
+// keystroke, as the plan requires — no request on every character.
 const searchInput = ref(filtersStore.filters.search ?? '')
 const searchDebounced = refDebounced(searchInput, 300)
 watch(searchDebounced, (value) => {

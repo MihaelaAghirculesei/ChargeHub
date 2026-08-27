@@ -1,22 +1,22 @@
 /**
- * KPI aggregato per la dashboard (Giorno 13), dato non-OCM: composto da
- * registro stazioni (Giorno 3-9) + telemetria simulata (Giorno 10-11) +
- * sessioni sintetiche (Giorno 12), non un nuovo simulatore. Vedi
+ * Aggregated KPI for the dashboard (day 13), non-OCM data: composed from the
+ * station registry (days 3-9) + simulated telemetry (days 10-11) + synthetic
+ * sessions (day 12), not a new simulator. See
  * server/services/kpi-aggregator.ts.
  *
- * Nessuna etichetta testuale qui (Giorno 17): il server non conosce la
- * lingua dell'utente, quindi restituisce solo `key` — il client traduce
- * `dashboard.kpi.<key>` con i18n. Un'etichetta tedesca cablata nella
- * risposta API resterebbe tedesca anche con l'interfaccia in inglese.
+ * No text labels here (day 17): the server does not know the user's
+ * language, so it returns only `key` — the client translates
+ * `dashboard.kpi.<key>` via i18n. A German label baked into the API
+ * response would stay German even with the UI in English.
  */
 export interface KpiSeries {
   key: string
   value: number
   unit: string
-  /** Variazione percentuale tra 7 giorni fa e oggi. */
+  /** Percentage change between 7 days ago and today. */
   trendPercent: number
-  /** Un trend positivo è una buona notizia per questo KPI? (falso per "guasti": più guasti non è mai un bene). */
+  /** Is a positive trend good news for this KPI? (false for "faulted": more faults is never good). */
   higherIsBetter: boolean
-  /** Una cifra per giorno, gli ultimi 7 giorni (oggi per ultima). */
+  /** One figure per day, the last 7 days (today last). */
   series: number[]
 }

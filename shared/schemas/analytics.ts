@@ -1,9 +1,9 @@
 import type { ChargePointStatus } from '#shared/schemas/telemetry'
 
 /**
- * Dati per i grafici della dashboard (Giorno 14), dato non-OCM: composti da
- * sessioni sintetiche (Giorno 12) e telemetria simulata (Giorno 10), non un
- * nuovo simulatore. Vedi server/services/analytics-aggregator.ts.
+ * Data for the dashboard charts (day 14), non-OCM data: composed from
+ * synthetic sessions (day 12) and simulated telemetry (day 10), not a new
+ * simulator. See server/services/analytics-aggregator.ts.
  */
 export interface DailyEnergyPoint {
   /** YYYY-MM-DD. */

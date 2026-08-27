@@ -44,10 +44,10 @@ function toQuery(filters: StationFilters, table: StationsTableOptions): Stations
 }
 
 /**
- * Unico punto del codice client che sa che le stazioni vivono dietro
- * `/api/stations`: store e composable parlano solo di `StationFilters`/
- * `StationsTableOptions`/`Station`, mai di query string o di `$fetch`.
- * Cambiare rotta o forma della richiesta tocca solo questo file.
+ * The only place in the client code that knows stations live behind
+ * `/api/stations`: store and composable speak only of `StationFilters`/
+ * `StationsTableOptions`/`Station`, never of a query string or `$fetch`.
+ * Changing the route or the request shape touches only this file.
  */
 export const stationRepository = {
   list(filters: StationFilters, table: StationsTableOptions): Promise<StationsPage> {
@@ -55,9 +55,9 @@ export const stationRepository = {
   },
 
   /**
-   * `null` per "non trovata" (stesso contratto di `fetchStationById` lato
-   * server), non un'eccezione: al chiamante non deve importare che sotto sia
-   * successo un 404 HTTP. Qualunque altro errore (rete, 502 da OCM) risale.
+   * `null` for "not found" (same contract as `fetchStationById` on the
+   * server), not an exception: the caller should not care that a 404 HTTP
+   * happened underneath. Any other error (network, 502 from OCM) propagates.
    */
   async getById(id: number): Promise<Station | null> {
     try {
@@ -68,7 +68,7 @@ export const stationRepository = {
     }
   },
 
-  /** Tabelle di lookup (tipi di connettore, operatori, stati) per i dropdown della barra filtri. */
+  /** Lookup tables (connector types, operators, statuses) for the filter bar dropdowns. */
   referenceData(countryCode: string): Promise<ReferenceData> {
     return $fetch<ReferenceData>('/api/reference-data', { query: { countrycode: countryCode } })
   },
