@@ -1,13 +1,12 @@
 import { z } from 'zod'
 
 /**
- * Forma grezza delle risposte di Open Charge Map (v3 API).
+ * Raw shape of Open Charge Map responses (v3 API).
  *
- * Solo i campi che ci servono davvero: uno schema Zod "stretto" (senza
- * `.passthrough()`) scarta automaticamente tutto il resto, quindi funge
- * anche da primo passo di normalizzazione. Non passare mai questi tipi
- * al frontend: sono la forma di OCM, non il dominio di ChargeHub
- * (vedi shared/schemas/station.ts).
+ * Only the fields we actually need: a "strict" Zod schema (no
+ * `.passthrough()`) automatically drops everything else, so it also acts as
+ * a first normalisation step. Never pass these types to the frontend: they
+ * are OCM's shape, not ChargeHub's domain (see shared/schemas/station.ts).
  */
 
 const ocmRefEntrySchema = z.object({
@@ -30,9 +29,9 @@ const ocmAddressInfoSchema = z.object({
   Country: ocmCountrySchema.nullable().optional(),
   Latitude: z.number(),
   Longitude: z.number(),
-  // Note libere di chi ha censito la stazione — spesso l'unica indicazione
-  // di orari/accesso che OCM offre davvero (es. "durchgehend nutzbar"):
-  // non esiste un campo "OpeningTimes" strutturato nell'API.
+  // Free-form notes from whoever recorded the station — often the only
+  // hint about hours/access OCM really offers (e.g. "durchgehend nutzbar"):
+  // there is no structured "OpeningTimes" field in the API.
   AccessComments: z.string().nullable().optional()
 })
 
@@ -68,8 +67,8 @@ export const ocmPoiSchema = z.object({
   AddressInfo: ocmAddressInfoSchema,
   OperatorInfo: ocmOperatorInfoSchema.nullable().optional(),
   StatusType: ocmStatusTypeSchema.nullable().optional(),
-  // Tipo di accesso ("Public", "Public - Membership Required", "Private - ..."):
-  // il proxy più vicino a "orari/chi può usarla" che OCM offra davvero.
+  // Access type ("Public", "Public - Membership Required", "Private - ..."):
+  // the closest proxy to "hours / who can use it" that OCM really offers.
   UsageType: ocmRefEntrySchema.nullable().optional(),
   Connections: z.array(ocmConnectionSchema).nullable().optional(),
   NumberOfPoints: z.number().nullable().optional(),
