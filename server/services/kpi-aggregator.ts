@@ -5,11 +5,11 @@ import { countByStatus, dayKey, lastNDays } from '~~/server/utils/telemetry-aggr
 import { round } from '~~/server/utils/number'
 
 /**
- * Compone dati già esistenti (registro stazioni, telemetria simulata,
- * sessioni sintetiche) in KPI con trend/sparkline — non un nuovo simulatore.
- * Lo storico a 7 giorni per i KPI "live" (disponibili/in ricarica/guasti/
- * utilizzo) sfrutta `server/utils/telemetry-aggregation.ts` (stessa logica
- * di campionamento riusata dai grafici del Giorno 14).
+ * Composes data that already exists (station registry, simulated telemetry,
+ * synthetic sessions) into KPIs with trend/sparkline — not a new simulator.
+ * The 7-day history for the "live" KPIs (available/charging/faulted/
+ * utilisation) leans on `server/utils/telemetry-aggregation.ts` (the same
+ * sampling logic reused by the day-14 charts).
  */
 
 const TREND_DAYS = 7

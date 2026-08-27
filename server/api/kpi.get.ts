@@ -12,11 +12,11 @@ const querySchema = z.object({
 })
 
 /**
- * KPI della dashboard per il pool di stazioni nell'area indicata (stessi
- * parametri geografici di `GET /api/stations`/`GET /api/sessions`). Genera
- * le sessioni con gli stessi default di `GET /api/sessions` (non un
- * lookback ristretto ad hoc): stessa "realtà" sintetica vista dalla pagina
- * Sitzungen, qui solo aggregata sugli ultimi 7 giorni.
+ * Dashboard KPIs for the pool of stations in the given area (same
+ * geographic params as `GET /api/stations` / `GET /api/sessions`).
+ * Generates the sessions with the same defaults as `GET /api/sessions` (not
+ * an ad-hoc narrowed lookback): the same synthetic "reality" seen by the
+ * Sitzungen page, only aggregated here over the last 7 days.
  */
 export default defineEventHandler(async (event) => {
   const parsedQuery = await getValidatedQuery(event, (query) => querySchema.safeParse(query))
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   if (!parsedQuery.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Parametri di ricerca non validi.',
+      statusMessage: 'Invalid search parameters.',
       data: { issues: parsedQuery.error.issues.map((issue) => issue.message) }
     })
   }
@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof OcmClientError) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'Impossibile recuperare le stazioni dal registro Open Charge Map.',
+        statusMessage: 'Could not fetch stations from the Open Charge Map registry.',
         data: { code: error.code }
       })
     }

@@ -5,33 +5,33 @@ import { round } from '~~/server/utils/number'
 import { hashString, mulberry32 } from '~~/server/utils/random'
 
 /**
- * Vercel è serverless (decisione bloccata, vedi ChargeHub.md §0): un'istanza
- * di funzione non sopravvive in modo affidabile tra un'invocazione e
- * l'altra, quindi non possiamo tenere una macchina a stati mutabile in
- * memoria guidata da `setInterval`. Il simulatore è invece una funzione pura
- * di (seed del connettore, timestamp corrente): niente da persistere, ma i
- * valori restano continui e credibili perché derivano dallo stesso seed e
- * dal tempo reale che passa. Vedi docs/adr/0002-telemetry-simulation.md.
+ * Vercel is serverless (locked decision, see ChargeHub.md §0): a function
+ * instance does not reliably survive between one invocation and the next, so
+ * we cannot keep a mutable state machine in memory driven by `setInterval`.
+ * The simulator is instead a pure function of (connector seed, current
+ * timestamp): nothing to persist, but the values stay continuous and
+ * believable because they derive from the same seed and from real time
+ * passing. See docs/adr/0002-telemetry-simulation.md.
  *
- * Hash/PRNG e curva di potenza sono in `server/utils/` perché il
- * simulatore di sessioni storiche (Giorno 12, `session-simulator.ts`) li
- * riusa: stessa "forma" di ricarica plausibile, non due curve inventate
- * separatamente.
+ * Hash/PRNG and the power curve live in `server/utils/` because the
+ * historical session simulator (day 12, `session-simulator.ts`) reuses
+ * them: the same plausible charging "shape", not two curves invented
+ * separately.
  */
 
-/** Potenza (kW) usata per simulare connettori senza un PowerKW noto da OCM. */
+/** Power (kW) used to simulate connectors with no PowerKW known from OCM. */
 const DEFAULT_POWER_KW = 11
 
 interface ConnectorProfile {
-  /** Durata di un ciclo completo Available → Charging → coda, in secondi. */
+  /** Length of a full Available → Charging → tail cycle, in seconds. */
   cycleLengthSeconds: number
-  /** Quota del ciclo in stato Available prima della ricarica. */
+  /** Share of the cycle spent Available before charging. */
   availableFraction: number
-  /** Quota del ciclo passata a ricaricare. */
+  /** Share of the cycle spent charging. */
   chargingFraction: number
-  /** Sfasa il ciclo di questo connettore rispetto agli altri (0..100000s). */
+  /** Offsets this connector's cycle relative to the others (0..100000s). */
   phaseOffsetSeconds: number
-  /** Determina, nella coda del ciclo, se questo connettore è meno affidabile. */
+  /** Decides, in the cycle tail, whether this connector is less reliable. */
   reliabilityRoll: number
 }
 
@@ -46,9 +46,9 @@ function deriveProfile(seedKey: string): ConnectorProfile {
   }
 }
 
-/** Percentuale del ciclo sotto la quale il roll di affidabilità causa un guasto. */
+/** Reliability-roll value below which the connector is Faulted. */
 const FAULTED_THRESHOLD = 0.06
-/** Percentuale del ciclo sotto la quale il roll di affidabilità causa un offline. */
+/** Reliability-roll value below which the connector is Offline. */
 const OFFLINE_THRESHOLD = 0.1
 
 export function computeChargePointTelemetry(
@@ -91,8 +91,8 @@ export function computeChargePointTelemetry(
     }
   }
 
-  // Coda del ciclo: per lo più Available, occasionalmente Faulted/Offline in
-  // base al roll (stabile per questo connettore, deciso dal seed).
+  // Cycle tail: mostly Available, occasionally Faulted/Offline based on the
+  // roll (stable for this connector, decided by the seed).
   if (profile.reliabilityRoll < FAULTED_THRESHOLD) {
     return {
       connectorId,
