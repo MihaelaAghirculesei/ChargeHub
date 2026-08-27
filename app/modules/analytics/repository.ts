@@ -20,8 +20,8 @@ function toQuery(pool: AnalyticsPool) {
 }
 
 /**
- * Unico punto del codice client che sa che KPI e grafici vivono dietro
- * `/api/kpi`/`/api/analytics` — stesso ruolo di `stationRepository`/
+ * The only place in the client code that knows KPIs and charts live behind
+ * `/api/kpi`/`/api/analytics` — the same role as `stationRepository`/
  * `sessionRepository`.
  */
 export const analyticsRepository = {

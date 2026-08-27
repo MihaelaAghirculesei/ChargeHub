@@ -4,9 +4,9 @@ import { useStationsFiltersStore } from '~/modules/stations'
 export type AnalyticsPeriodDays = 7 | 30 | 90
 
 /**
- * Riusa l'area di ricerca già attiva per le stazioni come pool (stessa
- * logica di `useKpis`/`useSessions`). `period` è reattivo: cambiare il
- * selettore 7/30/90 giorni rifetcha da solo.
+ * Reuses the search area already active for stations as the pool (the same
+ * logic as `useKpis`/`useSessions`). `period` is reactive: changing the
+ * 7/30/90-day selector re-fetches on its own.
  */
 export function useAnalytics(period: MaybeRefOrGetter<AnalyticsPeriodDays>) {
   const stationsFiltersStore = useStationsFiltersStore()

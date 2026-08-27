@@ -1,8 +1,8 @@
 import type { AuthUser } from '#shared/schemas/auth'
 
 /**
- * Unico punto del codice client che sa che login/logout vivono dietro
- * `/api/auth/*` — stesso ruolo di `stationRepository`.
+ * The only place in the client code that knows login/logout live behind
+ * `/api/auth/*` — the same role as `stationRepository`.
  */
 export const authRepository = {
   login(username: string, password: string): Promise<AuthUser> {

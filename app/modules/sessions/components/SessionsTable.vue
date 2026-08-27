@@ -7,16 +7,16 @@ const { t } = useI18n()
 const { formatDateTime, formatCurrency } = useLocaleFormatters()
 
 /**
- * `v-data-table-virtual`, non `-server`: le sessioni sono già tutte in
- * memoria (nessuna paginazione server, vedi `server/api/sessions.get.ts`) —
- * è la virtualizzazione client a reggere lo scroll su migliaia di righe,
- * non un fetch a pagine.
+ * `v-data-table-virtual`, not `-server`: the sessions are all in memory
+ * already (no server pagination, see `server/api/sessions.get.ts`) — it is
+ * client virtualisation that carries the scroll over thousands of rows, not
+ * a paged fetch.
  *
- * Righe pre-formattate in un `computed` (non slot per colonna `#item.chiave`):
- * i nomi di slot con un punto sono una convenzione di Vuetify che
- * `eslint-plugin-vue` non riconosce (li tratta come modificatori non
- * supportati su `v-slot`, `vue/valid-v-slot`) — pre-formattare evita lo
- * scontro con il linter e tiene il componente tabella "muto".
+ * Rows pre-formatted in a `computed` (not per-column `#item.key` slots):
+ * slot names with a dot are a Vuetify convention that `eslint-plugin-vue`
+ * does not recognise (it treats them as unsupported modifiers on `v-slot`,
+ * `vue/valid-v-slot`) — pre-formatting avoids the clash with the linter and
+ * keeps the table component "dumb".
  */
 const headers = computed(() => [
   { title: t('sessions.table.station'), key: 'stationName' },

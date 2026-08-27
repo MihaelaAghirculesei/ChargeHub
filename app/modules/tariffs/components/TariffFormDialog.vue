@@ -39,11 +39,11 @@ const validation = computed(() => tariffInputSchema.safeParse(form.value))
 const isValid = computed(() => validation.value.success)
 
 /**
- * Traduce in base al campo, non al testo del messaggio Zod: lo schema di
- * dominio (`tariff.ts`) resta la sola fonte di verità sulla condizione di
- * validità, ma il suo messaggio è interno/difensivo (il form valida già
- * prima di poter salvare) — qui serve solo sapere "questo campo ha un
- * problema", non ripetere il messaggio Zod parola per parola.
+ * Translates by field, not by the Zod message text: the domain schema
+ * (`tariff.ts`) stays the single source of truth on the validity
+ * condition, but its message is internal/defensive (the form validates
+ * before you can even save) — here we only need to know "this field has a
+ * problem", not repeat the Zod message word for word.
  */
 function errorsFor(field: keyof TariffInput): string[] {
   if (validation.value.success) return []

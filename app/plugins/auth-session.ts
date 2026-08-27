@@ -2,15 +2,15 @@ import type { AuthUser } from '#shared/schemas/auth'
 import { useAuthUser } from '~/modules/auth/composables/useAuthUser'
 
 /**
- * Popola lo stato di sessione **prima** che qualunque middleware di rotta
- * giri (i plugin Nuxt vengono eseguiti prima della navigazione iniziale) —
- * è quello che rende possibile un redirect lato server, senza flash di
- * contenuto protetto (criterio "Fatto quando" del Giorno 16).
+ * Populates the session state **before** any route middleware runs (Nuxt
+ * plugins run before the initial navigation) — that is what makes a
+ * server-side redirect possible, with no flash of protected content (the
+ * day-16 "Done when" criterion).
  *
- * `useRequestFetch()`, non `$fetch` diretto: lato server serve inoltrare
- * l'header Cookie della richiesta originale alla chiamata interna verso
- * `/api/auth/session` (il cookie di sessione è httpOnly, quindi il client
- * non può leggerlo da solo) — `$fetch` puro non lo farebbe.
+ * `useRequestFetch()`, not `$fetch` directly: server-side we need to
+ * forward the original request's Cookie header to the internal call to
+ * `/api/auth/session` (the session cookie is httpOnly, so the client cannot
+ * read it itself) — plain `$fetch` would not do that.
  */
 export default defineNuxtPlugin(async () => {
   const user = useAuthUser()

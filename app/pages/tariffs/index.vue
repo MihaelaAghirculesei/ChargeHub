@@ -7,10 +7,11 @@ import { useTariffsStore } from '~/modules/tariffs'
 import { useAuth } from '~/modules/auth'
 
 /**
- * "operator" può gestire tariffe, "viewer" no (piano, Giorno 16): l'intera
- * rotta richiede solo di essere autenticati (`middleware: 'auth'`), la
- * distinzione tra i due ruoli è nella UI qui sotto (`isOperator`), non nel
- * middleware — un viewer può guardare tariffe e calcolatore, non modificarli.
+ * "operator" can manage tariffs, "viewer" cannot (plan, day 16): the whole
+ * route only requires being authenticated (`middleware: 'auth'`), the
+ * distinction between the two roles is in the UI below (`isOperator`), not
+ * in the middleware — a viewer can look at tariffs and the calculator, not
+ * edit them.
  */
 definePageMeta({ middleware: 'auth' })
 
@@ -28,10 +29,10 @@ const dialogOpen = ref(false)
 const editingTariff = ref<Tariff | null>(null)
 
 /**
- * Il dialog è controllato da fuori (`v-model`, non `activator`): Vuetify
- * non sa quindi a quale elemento restituire il focus alla chiusura. Lo
- * teniamo noi — l'elemento attivo al momento dell'apertura è sempre quello
- * che ha attivato l'azione (click o Invio/Spazio da tastiera).
+ * The dialog is controlled from outside (`v-model`, not `activator`): so
+ * Vuetify does not know which element to return focus to on close. We keep
+ * it ourselves — the active element at open time is always the one that
+ * triggered the action (click or Enter/Space from the keyboard).
  */
 let triggerElement: HTMLElement | null = null
 

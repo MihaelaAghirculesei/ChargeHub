@@ -1,12 +1,12 @@
 import { z } from 'zod'
 
 /**
- * Le 4 grandezze richieste dal piano per una tariffa: nome, prezzo €/kWh,
- * tariffa di blocco (Blockiergebühr, €/minuto — comune nel mercato tedesco
- * per scoraggiare di lasciare l'auto collegata dopo fine ricarica) e canone
- * mensile. Validata con Zod perché è l'unico punto di ingresso di dati
- * inseriti a mano dall'utente in questo modulo (a differenza dei dati OCM,
- * mai validati con lo schema "sbagliato").
+ * The 4 quantities the plan requires for a tariff: name, price €/kWh,
+ * blocking fee (Blockiergebühr, €/minute — common in the German market to
+ * discourage leaving the car plugged in after charging ends) and monthly
+ * fee. Validated with Zod because it is the only entry point for
+ * hand-entered user data in this module (unlike the OCM data, never
+ * validated with the "wrong" schema).
  */
 export const tariffInputSchema = z.object({
   name: z.string().trim().min(1, 'Name ist erforderlich'),

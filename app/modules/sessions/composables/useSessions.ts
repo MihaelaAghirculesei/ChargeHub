@@ -2,33 +2,32 @@ import { useStationsFiltersStore } from '~/modules/stations'
 import { sessionRepository } from '~/modules/sessions/repository'
 
 /**
- * Riusa l'area di ricerca già attiva per le stazioni (stesso store del
- * Giorno 4) come pool da cui generare le sessioni sintetiche: "le sessioni
- * delle stazioni che stai già guardando", non un'area di ricerca
- * indipendente. Si osservano solo i campi geografici del pool, non l'intero
- * store — cambiare la ricerca testuale delle stazioni (che non tocca il
- * pool) non deve far ripartire il fetch delle sessioni.
+ * Reuses the search area already active for stations (the same store as day
+ * 4) as the pool to generate the synthetic sessions from: "the sessions of
+ * the stations you are already looking at", not an independent search area.
+ * Only the pool's geographic fields are watched, not the whole store —
+ * changing the stations text search (which does not touch the pool) must
+ * not restart the sessions fetch.
  *
- * `server: false`: le ~2000 righe misurano circa 600KB di JSON — inutile
- * gonfiare l'HTML/payload SSR di ogni caricamento con dati che servono solo
- * alla tabella virtualizzata lato client, senza alcun valore SEO/condivisione
- * a differenza del dettaglio stazione (Giorno 9). Il fetch parte dopo
- * l'hydration, `pending` guida lo stato di caricamento della tabella.
+ * `server: false`: the ~2000 rows measure about 600KB of JSON — no point
+ * bloating the SSR HTML/payload of every load with data that only feeds the
+ * client-side virtualised table, with no SEO/sharing value unlike the
+ * station detail (day 9). The fetch starts after hydration, `pending`
+ * drives the table's loading state.
  *
- * `pending` esposto qui non è il `pending` grezzo di `useAsyncData`: con
- * `server: false` il fetch non parte mai lato server, quindi l'HTML SSR
- * viene generato con `pending === false` — ma lato client Nuxt lo pianifica
- * in `onBeforeMount` (per non bloccare il primo render), che scatta
- * *prima* del confronto di idratazione di Vue. Il risultato: al momento
- * dell'idratazione `pending` è già `true`, mentre l'HTML ricevuto dal
- * server riflette ancora `false` — un mismatch di idratazione reale
- * (`v-data-table--loading` presente/assente), trovato con un warning Vue
- * in console, non a occhio. `hydrated` (falso finché `onMounted` non
- * scatta, cioè dopo che l'idratazione è già completata) tiene `pending`
- * forzato a `false` per il primissimo render — identico a quanto l'HTML
- * SSR ha già mostrato — e lascia che rifletta lo stato reale solo da lì in
- * poi, quando un aggiornamento reattivo post-mount non è più un confronto
- * di idratazione.
+ * The `pending` exposed here is not `useAsyncData`'s raw `pending`: with
+ * `server: false` the fetch never starts server-side, so the SSR HTML is
+ * generated with `pending === false` — but client-side Nuxt schedules it in
+ * `onBeforeMount` (to avoid blocking the first render), which fires
+ * *before* Vue's hydration comparison. The result: at hydration time
+ * `pending` is already `true`, while the HTML received from the server
+ * still reflects `false` — a real hydration mismatch
+ * (`v-data-table--loading` present/absent), found via a Vue console
+ * warning, not by eye. `hydrated` (false until `onMounted` fires, i.e.
+ * after hydration is already complete) keeps `pending` forced to `false`
+ * for the very first render — identical to what the SSR HTML already showed
+ * — and lets it reflect the real state only from there on, when a reactive
+ * post-mount update is no longer a hydration comparison.
  */
 export function useSessions() {
   const stationsFiltersStore = useStationsFiltersStore()

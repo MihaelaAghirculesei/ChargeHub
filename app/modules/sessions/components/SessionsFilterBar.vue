@@ -2,10 +2,10 @@
 import type { ChargingSession } from '#shared/schemas/session'
 
 /**
- * Filtra sul dataset già caricato interamente dal client (vedi
- * `GET /api/sessions`, che non accetta filtri apposta): nessun round-trip
- * di rete per stazione/periodo, il modello viene passato al genitore che
- * applica il filtro in un `computed` su un array già in memoria.
+ * Filters over the dataset already loaded in full by the client (see
+ * `GET /api/sessions`, which accepts no filters on purpose): no network
+ * round trip per station/period, the model is passed up to the parent
+ * which applies the filter in a `computed` over an array already in memory.
  */
 const props = defineProps<{ sessions: ChargingSession[] }>()
 
