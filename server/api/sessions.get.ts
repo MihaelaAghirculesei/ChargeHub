@@ -11,13 +11,13 @@ const querySchema = z.object({
 })
 
 /**
- * Storico sintetico di sessioni per il pool di stazioni nell'area indicata
- * (stessi parametri geografici di `GET /api/stations`, così è "le sessioni
- * delle stazioni che stai già guardando"). Nessun filtro di periodo/stazione
- * qui: il client carica l'intero set una volta sola (è il punto della
- * tabella virtualizzata, Giorno 12) e filtra in memoria — un giro al
- * server per ogni cambio di filtro sarebbe superfluo quando i dati sono
- * già tutti lì.
+ * Synthetic session history for the pool of stations in the given area
+ * (same geographic params as `GET /api/stations`, so it is "the sessions of
+ * the stations you are already looking at"). No period/station filter here:
+ * the client loads the whole set once (that is the point of the virtualised
+ * table, day 12) and filters in memory — a round trip to the server for
+ * every filter change would be redundant when the data is all there
+ * already.
  */
 export default defineEventHandler(async (event) => {
   const parsedQuery = await getValidatedQuery(event, (query) => querySchema.safeParse(query))
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   if (!parsedQuery.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Parametri di ricerca non validi.',
+      statusMessage: 'Invalid search parameters.',
       data: { issues: parsedQuery.error.issues.map((issue) => issue.message) }
     })
   }
@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof OcmClientError) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'Impossibile recuperare le stazioni dal registro Open Charge Map.',
+        statusMessage: 'Could not fetch stations from the Open Charge Map registry.',
         data: { code: error.code }
       })
     }

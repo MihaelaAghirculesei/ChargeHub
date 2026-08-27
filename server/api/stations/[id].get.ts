@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   if (!parsedParams.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID stazione non valido.'
+      statusMessage: 'Invalid station ID.'
     })
   }
 
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     if (!station) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Stazione non trovata.'
+        statusMessage: 'Station not found.'
       })
     }
 
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof OcmClientError) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'Impossibile recuperare la stazione dal registro Open Charge Map.',
+        statusMessage: 'Could not fetch the station from the Open Charge Map registry.',
         data: { code: error.code }
       })
     }

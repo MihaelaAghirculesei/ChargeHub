@@ -11,11 +11,11 @@ export interface Page<Item> {
 }
 
 /**
- * Pagina e ordina un array già in memoria. Usata da `GET /api/stations`:
- * OCM non offre paginazione/ordinamento nella sua API di ricerca geografica,
- * quindi il BFF li implementa qui sopra l'intero risultato (già cachato 24h
- * da `fetchStations`), invece di rifare una query a OCM per ogni pagina —
- * un solo fetch upstream serve tutte le pagine.
+ * Paginates and sorts an array already in memory. Used by
+ * `GET /api/stations`: OCM offers no pagination/sorting in its geographic
+ * search API, so the BFF implements them here on top of the full result
+ * (already cached 24h by `fetchStations`), instead of re-querying OCM for
+ * each page — a single upstream fetch serves all pages.
  */
 export function paginate<Item, SortKey extends string>(
   items: readonly Item[],
@@ -29,9 +29,8 @@ export function paginate<Item, SortKey extends string>(
     sorted = [...items].sort((a, b) => {
       const valueA = getSortValue(a, sortBy)
       const valueB = getSortValue(b, sortBy)
-      // I valori nulli finiscono sempre in coda, indipendentemente dal verso
-      // dell'ordinamento: "nessun dato" non è né il più piccolo né il più
-      // grande, è un'assenza.
+      // Null values always go to the end, regardless of sort direction:
+      // "no data" is neither the smallest nor the largest, it is an absence.
       if (valueA === valueB) return 0
       if (valueA === null) return 1
       if (valueB === null) return -1

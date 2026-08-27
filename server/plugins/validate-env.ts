@@ -1,7 +1,7 @@
-// In dev, Nitro riesegue i plugin ad ogni reload (modifiche a server/,
-// nuxt.config.ts, .env, ecc.), non solo al primo avvio. Se usciamo con
-// process.exit(1) ad ogni esecuzione rischiamo di terminare il server
-// per un reload innocuo; usciamo quindi solo al primo boot del processo.
+// In dev, Nitro re-runs plugins on every reload (changes to server/,
+// nuxt.config.ts, .env, etc.), not just on first start. If we exit with
+// process.exit(1) on every run we risk killing the server on a harmless
+// reload; so we only exit on the process's first boot.
 const globalKey = '__chargehubEnvValidatedOnce'
 
 export default defineNitroPlugin(() => {
@@ -10,8 +10,8 @@ export default defineNitroPlugin(() => {
   } catch (error) {
     console.error(error instanceof Error ? error.message : error)
     if (!(globalThis as Record<string, unknown>)[globalKey]) {
-      // Le eccezioni sincrone nei plugin Nitro non arrestano il dev server:
-      // usciamo esplicitamente per un fallimento immediato e leggibile al boot.
+      // Synchronous exceptions in Nitro plugins do not stop the dev server:
+      // exit explicitly for an immediate, readable failure at boot.
       process.exit(1)
     }
     return
