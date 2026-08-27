@@ -4,24 +4,24 @@ import { extractStationFilters } from '~~/server/services/nl-search'
 import { evalReferenceData, evalReferenceDataManyOperators } from './fixtures'
 
 /**
- * Eval suite per l'estrazione filtri (ADR-0007): 18 query etichettate a
- * mano contro i veri id di `evalReferenceData`, eseguite sul modello reale
- * (Claude Haiku 4.5) — non mockato, a differenza di
- * tests/unit/server/services/nl-search.test.ts (che testa la logica dello
- * schema/normalizzazione, non l'accuratezza dell'estrazione in sé). Costa
- * denaro reale (~18 chiamate) e non è deterministico al 100% — per questo
- * è fuori da `pnpm test`/dal gate CI, si esegue a mano con
- * `pnpm eval:nl-search` quando si cambia il prompt o il modello.
+ * Eval suite for filter extraction (ADR-0007): 18 hand-labelled queries
+ * against the real ids of `evalReferenceData`, run on the real model
+ * (Claude Haiku 4.5) — not mocked, unlike
+ * tests/unit/server/services/nl-search.test.ts (which tests the schema /
+ * normalisation logic, not extraction accuracy itself). It costs real money
+ * (~18 calls) and is not 100% deterministic — that is why it is outside
+ * `pnpm test` / the CI gate, run by hand with `pnpm eval:nl-search` when the
+ * prompt or the model changes.
  *
- * `it.each` così ogni caso appare come una riga di report separata
- * (X passati/Y falliti), non un singolo blob pass/fail — è il punto di una
- * eval suite: sapere *quali* query falliscono, non solo se la suite passa.
+ * `it.each` so each case shows up as its own report row (X passed / Y
+ * failed), not a single pass/fail blob — that is the point of an eval suite:
+ * knowing *which* queries fail, not just whether the suite passes.
  *
- * `client` costruito qui, non `getClient()` del servizio: quest'ultimo
- * legge `useRuntimeConfig()`, che nell'ambiente vitest "nuxt" non espone i
- * campi privati di runtimeConfig (comportamento realistico lato client,
- * vedi nota in nl-search.test.ts) — uno script che gira fuori da una vera
- * richiesta Nitro legge la chiave direttamente da `process.env`.
+ * `client` built here, not the service's `getClient()`: the latter reads
+ * `useRuntimeConfig()`, which under the vitest "nuxt" env does not expose the
+ * private runtimeConfig fields (realistic client-side behaviour, see the note
+ * in nl-search.test.ts) — a script running outside a real Nitro request
+ * reads the key straight from `process.env`.
  */
 let client: Anthropic
 
@@ -29,7 +29,7 @@ beforeAll(() => {
   const apiKey = process.env.NUXT_ANTHROPIC_API_KEY
   if (!apiKey) {
     throw new Error(
-      "NUXT_ANTHROPIC_API_KEY non impostata nell'ambiente — esporta la stessa chiave di .env prima di lanciare `pnpm eval:nl-search`."
+      'NUXT_ANTHROPIC_API_KEY is not set in the environment — export the same key as in .env before running `pnpm eval:nl-search`.'
     )
   }
   client = new Anthropic({ apiKey })
@@ -37,7 +37,7 @@ beforeAll(() => {
 
 interface Case {
   query: string
-  /** `toEqual` se `strict`, `toMatchObject` altrimenti (solo i campi elencati contano — vedi i casi ambigui più sotto). */
+  /** `toEqual` when `strict`, `toMatchObject` otherwise (only the listed fields matter — see the ambiguous cases below). */
   expected:
     | {
         search: string | null
@@ -95,7 +95,7 @@ const cases: Case[] = [
     query: 'verfügbare Ladesäulen von EnBW',
     expected: { operatorId: 86, statusTypeId: 10 },
     strict: false,
-    note: 'statusTypeId potrebbe essere 10 o 50 a seconda di come Claude legge "verfügbar" — controlliamo solo i campi rilevanti.'
+    note: 'statusTypeId could be 10 or 50 depending on how Claude reads "verfügbar" — we only check the relevant fields.'
   },
   {
     query: 'alle Stationen',
@@ -107,13 +107,13 @@ const cases: Case[] = [
       minPowerKw: null
     },
     strict: true,
-    note: 'Nessun criterio: verifica che il modello non inventi filtri quando non ce ne sono.'
+    note: 'No criterion: checks the model does not invent filters when there are none.'
   },
   {
     query: 'Ladestationen in Berlin',
     expected: { search: null },
     strict: false,
-    note: 'La località va ignorata per intero (ADR-0007), non finire in "search" come testo libero.'
+    note: 'The location must be ignored entirely (ADR-0007), not end up in "search" as free text.'
   },
   {
     query: 'CHAdeMO Ladepunkte von Allego',
@@ -145,7 +145,7 @@ const cases: Case[] = [
     query: 'FastNed Schnelllader',
     expected: { operatorId: 74 },
     strict: false,
-    note: '"Schnelllader" non ha una soglia kW esplicita — non forziamo un valore minPowerKw specifico.'
+    note: '"Schnelllader" has no explicit kW threshold — we do not force a specific minPowerKw value.'
   },
   {
     query: 'fast chargers over 100kW',
@@ -157,7 +157,7 @@ const cases: Case[] = [
       minPowerKw: 100
     },
     strict: true,
-    note: 'Query in inglese — il prompt dichiara di accettare sia tedesco sia inglese.'
+    note: 'English query — the prompt states it accepts both German and English.'
   },
   {
     query: 'Shell Recharge Ladestationen',
@@ -196,13 +196,13 @@ const cases: Case[] = [
       minPowerKw: 50
     },
     strict: true,
-    note: 'Tre criteri combinati nella stessa query.'
+    note: 'Three criteria combined in the same query.'
   },
   {
     query: 'kaputte Ladesäulen',
     expected: { statusTypeId: 100 },
     strict: false,
-    note: 'Sinonimo colloquiale di "nicht funktionieren", non il termine ufficiale OCM.'
+    note: 'Colloquial synonym of "nicht funktionieren", not the official OCM term.'
   },
   {
     query: 'Hauptstraße 5',
@@ -214,11 +214,11 @@ const cases: Case[] = [
       minPowerKw: null
     },
     strict: true,
-    note: 'Nessun criterio strutturato riconoscibile: deve ricadere per intero su "search" come testo libero.'
+    note: 'No recognisable structured criterion: must fall back entirely to "search" as free text.'
   }
 ]
 
-describe('eval: estrazione filtri in linguaggio naturale', () => {
+describe('eval: natural-language filter extraction', () => {
   it.each(cases)('$query', async ({ query, expected, strict }) => {
     const result = await extractStationFilters(query, evalReferenceData, client)
 
@@ -230,8 +230,8 @@ describe('eval: estrazione filtri in linguaggio naturale', () => {
   })
 })
 
-describe('eval: regressione — lista operatori grande (500, scala reale ~984 per la Germania)', () => {
-  it('non fallisce con 400 "grammar too large" e ignora un id fuori lista', async () => {
+describe('eval: regression — large operator list (500, real scale ~984 for Germany)', () => {
+  it('does not fail with 400 "grammar too large" and ignores an id outside the list', async () => {
     const result = await extractStationFilters(
       'Ladestationen mit CCS Typ 2',
       evalReferenceDataManyOperators,

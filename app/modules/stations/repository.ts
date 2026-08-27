@@ -73,7 +73,7 @@ export const stationRepository = {
     return $fetch<ReferenceData>('/api/reference-data', { query: { countrycode: countryCode } })
   },
 
-  /** Ricerca stazioni in linguaggio naturale (ADR-0007): estrae filtri, non stazioni — il chiamante li applica allo store esistente. */
+  /** Natural-language station search (ADR-0007): extracts filters, not stations — the caller applies them to the existing store. */
   nlSearch(query: string, countryCode: string): Promise<{ filters: ExtractedStationFilters }> {
     return $fetch<{ filters: ExtractedStationFilters }>('/api/stations/nl-search', {
       method: 'POST',

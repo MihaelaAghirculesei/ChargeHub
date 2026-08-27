@@ -5,10 +5,9 @@ import type { ReferenceData } from '#shared/schemas/station'
 const { parseMock } = vi.hoisted(() => ({ parseMock: vi.fn() }))
 
 vi.mock('@anthropic-ai/sdk', () => {
-  // Rispecchia la gerarchia reale dell'SDK: APIError estende AnthropicError
-  // (la classe base). `messages.parse()` lancia un AnthropicError grezzo, non
-  // un APIError, quando l'output del modello non è JSON valido o non passa la
-  // validazione Zod.
+  // Mirrors the real SDK hierarchy: APIError extends AnthropicError (the base
+  // class). `messages.parse()` throws a bare AnthropicError, not an APIError,
+  // when the model output is not valid JSON or fails Zod validation.
   class MockAnthropicError extends Error {}
   class MockAPIError extends MockAnthropicError {}
   class MockAnthropic {
@@ -31,9 +30,9 @@ const {
   NlSearchError
 } = await import('~~/server/services/nl-search')
 
-// Finto client passato esplicitamente a extractStationFilters(): bypassa
-// getClient()/useRuntimeConfig() del tutto, non serve una vera chiave — vedi
-// il parametro `client` opzionale sulla funzione.
+// Fake client passed explicitly to extractStationFilters(): bypasses
+// getClient()/useRuntimeConfig() entirely, no real key needed — see the
+// optional `client` parameter on the function.
 const mockClient = new Anthropic({ apiKey: 'unused-in-tests' })
 
 const referenceData: ReferenceData = {
@@ -46,26 +45,26 @@ const referenceData: ReferenceData = {
 }
 
 describe('idLiteralUnion', () => {
-  it('accetta un id valido e rifiuta uno non nella lista', () => {
+  it('accepts a valid id and rejects one not in the list', () => {
     const schema = idLiteralUnion([25, 2])
     expect(schema.safeParse(25).success).toBe(true)
     expect(schema.safeParse(2).success).toBe(true)
     expect(schema.safeParse(999).success).toBe(false)
   })
 
-  it('con un solo id, accetta solo quello', () => {
+  it('with a single id, accepts only that one', () => {
     const schema = idLiteralUnion([10])
     expect(schema.safeParse(10).success).toBe(true)
     expect(schema.safeParse(11).success).toBe(false)
   })
 
-  it('lancia NlSearchError se la lista è vuota', () => {
+  it('throws NlSearchError when the list is empty', () => {
     expect(() => idLiteralUnion([])).toThrow(NlSearchError)
   })
 })
 
 describe('buildExtractionSchema', () => {
-  it('accetta solo gli id davvero presenti nei dati di riferimento', () => {
+  it('accepts only ids actually present in the reference data', () => {
     const schema = buildExtractionSchema(referenceData)
 
     const valid = schema.safeParse({
@@ -79,7 +78,7 @@ describe('buildExtractionSchema', () => {
 
     const invalid = schema.safeParse({
       search: null,
-      connectionTypeId: 999, // non nella lista di riferimento
+      connectionTypeId: 999, // not in the reference list
       operatorId: 10,
       statusTypeId: 50,
       minPowerKw: 50
@@ -87,19 +86,19 @@ describe('buildExtractionSchema', () => {
     expect(invalid.success).toBe(false)
   })
 
-  it('operatorId non è vincolato dallo schema (a differenza di connectionTypeId/statusTypeId): la grammatica di structured output resterebbe troppo grande con centinaia di operatori reali — la garanzia "nessun id inventato" si applica dopo, in extractStationFilters', () => {
+  it('operatorId is not constrained by the schema (unlike connectionTypeId/statusTypeId): the structured-output grammar would be too large with hundreds of real operators — the "no invented id" guarantee applies later, in extractStationFilters', () => {
     const schema = buildExtractionSchema(referenceData)
     const result = schema.safeParse({
       search: null,
       connectionTypeId: null,
-      operatorId: 999999, // non nella lista, ma lo schema non lo respinge qui
+      operatorId: 999999, // not in the list, but the schema does not reject it here
       statusTypeId: null,
       minPowerKw: null
     })
     expect(result.success).toBe(true)
   })
 
-  it('accetta tutti i campi null (nessun criterio riconosciuto)', () => {
+  it('accepts all fields null (no criterion recognised)', () => {
     const schema = buildExtractionSchema(referenceData)
     const result = schema.safeParse({
       search: null,
@@ -113,7 +112,7 @@ describe('buildExtractionSchema', () => {
 })
 
 describe('assertConfigured', () => {
-  it('lancia NlSearchError con code not_configured per una chiave vuota', () => {
+  it('throws NlSearchError with code not_configured for an empty key', () => {
     expect(() => assertConfigured('')).toThrow(NlSearchError)
     try {
       assertConfigured('')
@@ -123,7 +122,7 @@ describe('assertConfigured', () => {
     }
   })
 
-  it('non lancia per una chiave presente', () => {
+  it('does not throw for a present key', () => {
     expect(() => assertConfigured('sk-ant-test')).not.toThrow()
   })
 })
@@ -133,16 +132,16 @@ describe('extractStationFilters', () => {
     parseMock.mockClear()
   })
 
-  it('normalizza i campi undefined del provider in null', async () => {
+  it("normalises the provider's undefined fields to null", async () => {
     parseMock.mockResolvedValueOnce({
       parsed_output: {
         search: 'schnell',
         connectionTypeId: 25
-        // operatorId/statusTypeId/minPowerKw omessi apposta, come farebbe l'SDK per i campi nullable
+        // operatorId/statusTypeId/minPowerKw omitted on purpose, as the SDK would for nullable fields
       }
     })
 
-    const result = await extractStationFilters('ricarica veloce CCS', referenceData, mockClient)
+    const result = await extractStationFilters('fast CCS charging', referenceData, mockClient)
 
     expect(result).toEqual({
       search: 'schnell',
@@ -153,55 +152,55 @@ describe('extractStationFilters', () => {
     })
   })
 
-  it('azzera operatorId a null se Claude restituisce un id fuori dalla lista di riferimento reale', async () => {
+  it('resets operatorId to null when Claude returns an id outside the real reference list', async () => {
     parseMock.mockResolvedValueOnce({
       parsed_output: {
         search: null,
         connectionTypeId: null,
-        operatorId: 999999, // non presente in referenceData.operators (solo id 10)
+        operatorId: 999999, // not present in referenceData.operators (only id 10)
         statusTypeId: null,
         minPowerKw: null
       }
     })
 
-    const result = await extractStationFilters('query qualunque', referenceData, mockClient)
+    const result = await extractStationFilters('any query', referenceData, mockClient)
 
     expect(result.operatorId).toBeNull()
   })
 
-  it('lancia NlSearchError invalid_response se parsed_output è assente', async () => {
+  it('throws NlSearchError invalid_response when parsed_output is absent', async () => {
     parseMock.mockResolvedValueOnce({ parsed_output: null })
 
     await expect(
-      extractStationFilters('query qualunque', referenceData, mockClient)
+      extractStationFilters('any query', referenceData, mockClient)
     ).rejects.toMatchObject({
       code: 'invalid_response'
     })
   })
 
-  it('mappa un errore Anthropic.APIError su NlSearchError upstream_error', async () => {
+  it('maps an Anthropic.APIError to NlSearchError upstream_error', async () => {
     parseMock.mockRejectedValueOnce(new Anthropic.APIError('boom'))
 
     await expect(
-      extractStationFilters('query qualunque', referenceData, mockClient)
+      extractStationFilters('any query', referenceData, mockClient)
     ).rejects.toMatchObject({
       code: 'upstream_error'
     })
   })
 
-  it('mappa un Anthropic.AnthropicError non-APIError (output malformato/troncato) su NlSearchError invalid_response, non lo lascia risalire grezzo', async () => {
+  it('maps a non-APIError Anthropic.AnthropicError (malformed/truncated output) to NlSearchError invalid_response, does not let it propagate raw', async () => {
     parseMock.mockRejectedValueOnce(
       new Anthropic.AnthropicError('Failed to parse structured output: ...')
     )
 
     await expect(
-      extractStationFilters('query qualunque', referenceData, mockClient)
+      extractStationFilters('any query', referenceData, mockClient)
     ).rejects.toMatchObject({
       code: 'invalid_response'
     })
   })
 
-  it('passa il contenuto della query e usa cache_control sul system prompt', async () => {
+  it('passes the query content and uses cache_control on the system prompt', async () => {
     parseMock.mockResolvedValueOnce({
       parsed_output: {
         search: null,
@@ -212,10 +211,10 @@ describe('extractStationFilters', () => {
       }
     })
 
-    await extractStationFilters('ricarica a Wolfsburg', referenceData, mockClient)
+    await extractStationFilters('charging in Wolfsburg', referenceData, mockClient)
 
     const call = parseMock.mock.calls[0]?.[0]
-    expect(call.messages).toEqual([{ role: 'user', content: 'ricarica a Wolfsburg' }])
+    expect(call.messages).toEqual([{ role: 'user', content: 'charging in Wolfsburg' }])
     expect(call.system[0].cache_control).toEqual({ type: 'ephemeral' })
   })
 })

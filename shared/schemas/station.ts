@@ -86,12 +86,12 @@ export interface StationsPage {
 }
 
 /**
- * Filtri estratti da `POST /api/stations/nl-search` (ADR-0007) — sottoinsieme
- * di `StationFilters` (app/modules/stations/types), la posizione non c'è
- * apposta: la ricerca in linguaggio naturale aggiunge criteri sopra la vista
- * corrente, non la sposta. Condiviso client+server così server/services/
- * nl-search.ts e il repository lato client restano sulla stessa forma senza
- * duplicarla.
+ * Filters extracted by `POST /api/stations/nl-search` (ADR-0007) — a subset
+ * of `StationFilters` (app/modules/stations/types); position is deliberately
+ * absent: the natural-language search adds criteria on top of the current
+ * view, it does not move it. Shared client+server so server/services/
+ * nl-search.ts and the client repository stay on the same shape without
+ * duplicating it.
  */
 export const extractedStationFiltersSchema = z.object({
   search: z.string().nullable(),

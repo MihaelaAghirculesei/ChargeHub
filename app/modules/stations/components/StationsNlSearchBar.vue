@@ -12,22 +12,22 @@ const errorText = computed(() => {
 })
 
 function onSubmit() {
-  // `clearable` di Vuetify azzera il v-model a `null`, non a `''` — normalizzato
-  // qui così `search()` riceve sempre una stringa.
+  // Vuetify's `clearable` resets the v-model to `null`, not `''` — normalised
+  // here so `search()` always receives a string.
   search(query.value ?? '')
 }
 </script>
 
 <template>
   <div class="mb-4">
-    <!-- `@submit.prevent` senza handler: previene solo un eventuale reload di
-         pagina da submit implicito del form. L'azione parte da UNA sola via
-         per input — `@keydown.enter` sul campo, `@click` sul bottone (niente
-         `type="submit"`): dentro `#append-inner` il submit nativo del form
-         non scatta in modo affidabile — VField intercetta il mousedown — e
-         tenere sia il submit del form sia i due handler manderebbe ogni
-         ricerca doppia (2 chiamate Claude). `search()` ignora comunque da sé
-         una chiamata mentre `pending` è true, come rete di sicurezza. -->
+    <!-- `@submit.prevent` with no handler: only prevents a possible page
+         reload from the form's implicit submit. The action fires from ONE
+         path per input — `@keydown.enter` on the field, `@click` on the
+         button (no `type="submit"`): inside `#append-inner` the form's
+         native submit does not fire reliably — VField intercepts the
+         mousedown — and keeping both the form submit and the two handlers
+         would send every search twice (2 Claude calls). `search()` also
+         ignores a call while `pending` is true, as a safety net. -->
     <v-form @submit.prevent>
       <v-text-field
         v-model="query"

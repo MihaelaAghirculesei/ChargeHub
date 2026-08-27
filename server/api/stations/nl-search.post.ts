@@ -4,12 +4,12 @@ import { NlSearchError, extractStationFilters } from '~~/server/services/nl-sear
 
 const bodySchema = z.object({
   query: z.string().trim().min(1).max(300),
-  // Deve essere un vero codice paese alpha-2: `z.string().length(2)` da solo
-  // lasciava passare "12" o "!!" fino a `fetchReferenceData()` e come chiave
-  // della cache di riferimento (24h), che accumulerebbe voci spazzatura.
+  // Must be a real ISO alpha-2 country code: `z.string().length(2)` alone
+  // let "12" or "!!" through to `fetchReferenceData()` and as a key of the
+  // 24h reference-data cache, which would accumulate junk entries.
   countrycode: z
     .string()
-    .regex(/^[a-z]{2}$/i, 'Codice paese non valido.')
+    .regex(/^[a-z]{2}$/i, 'Invalid country code.')
     .default('DE')
 })
 
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
 
   const parsedBody = await readValidatedBody(event, (body) => bodySchema.safeParse(body))
   if (!parsedBody.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Query non valida.' })
+    throw createError({ statusCode: 400, statusMessage: 'Invalid query.' })
   }
 
   const { query, countrycode } = parsedBody.data
@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
     const reservation = nlSearchRateLimiter.reserve(clientIp)
     if (reservation.blocked) {
       setResponseHeader(event, 'Retry-After', reservation.retryAfterSeconds)
-      throw createError({ statusCode: 429, statusMessage: 'Troppe ricerche. Riprova tra poco.' })
+      throw createError({ statusCode: 429, statusMessage: 'Too many searches. Try again shortly.' })
     }
   }
 
@@ -72,8 +72,7 @@ export default defineEventHandler(async (event) => {
       setResponseHeader(event, 'Retry-After', daily.retryAfterSeconds)
       throw createError({
         statusCode: 429,
-        statusMessage:
-          'Limite giornaliero di ricerche in linguaggio naturale raggiunto. Usa i filtri classici.',
+        statusMessage: 'Daily natural-language search limit reached. Use the classic filters.',
         data: { code: 'daily_cap' }
       })
     }
@@ -99,7 +98,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof OcmClientError) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'Impossibile recuperare le tabelle di riferimento da Open Charge Map.',
+        statusMessage: 'Could not fetch the reference tables from Open Charge Map.',
         data: { code: error.code }
       })
     }

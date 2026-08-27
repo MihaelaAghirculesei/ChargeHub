@@ -2,26 +2,27 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitest/config'
 
 /**
- * Config separata da vitest.config.ts apposta: quella esclude tests/eval
- * (chiama davvero l'API Claude, costo reale e non deterministico — non va
- * eseguita nella suite normale né nel gate CI). Questa la include e basta.
+ * A config separate from vitest.config.ts on purpose: that one excludes
+ * tests/eval (it really calls the Claude API — real cost, non-deterministic
+ * — and must not run in the normal suite or the CI gate). This one just
+ * includes it.
  *
- * `environment: 'node'`, non "nuxt" come il resto del progetto: il codice
- * sotto test qui è concettualmente server-side puro (nessun componente,
- * nessuna DOM), e l'ambiente "nuxt" porta con sé i globali di un browser
- * simulato (jsdom) — l'SDK Anthropic li rileva e rifiuta di costruire un
- * client con una chiave reale per sicurezza ("It looks like you're running
- * in a browser-like environment"), correttamente: quel controllo esiste per
- * evitare di esporre una chiave vera nel bundle di un'app client-side, non
- * per bloccare uno script locale. Alias risolti a mano perché l'ambiente
- * "nuxt" li darebbe gratis, "node" no.
+ * `environment: 'node'`, not "nuxt" like the rest of the project: the code
+ * under test here is conceptually pure server-side (no component, no DOM),
+ * and the "nuxt" env brings the globals of a simulated browser (jsdom) —
+ * the Anthropic SDK detects them and refuses to build a client with a real
+ * key for safety ("It looks like you're running in a browser-like
+ * environment"), correctly: that check exists to avoid exposing a real key
+ * in the bundle of a client-side app, not to block a local script. Aliases
+ * resolved by hand because the "nuxt" env would give them for free, "node"
+ * would not.
  */
 export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/eval/**/*.eval.ts'],
-    // Chiamate reali all'API, non batch di unit test: un timeout generoso
-    // per caso evita falsi negativi da latenza di rete normale.
+    // Real API calls, not a batch of unit tests: a generous timeout avoids
+    // false negatives from normal network latency.
     testTimeout: 30_000
   },
   resolve: {
