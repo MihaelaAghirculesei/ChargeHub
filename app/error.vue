@@ -2,9 +2,9 @@
 import type { NuxtError } from '#app'
 
 /**
- * Sostituisce l'intero albero di `app.vue` quando Nuxt intercetta un errore
- * fatale (404 compreso) — non passa da `<NuxtLayout>`, serve il proprio
- * `<v-app>` per il contesto Vuetify, altrimenti i componenti non hanno tema.
+ * Replaces the whole `app.vue` tree when Nuxt intercepts a fatal error (404
+ * included) — it does not go through `<NuxtLayout>`, it needs its own
+ * `<v-app>` for the Vuetify context, otherwise components have no theme.
  */
 const props = defineProps<{ error: NuxtError }>()
 

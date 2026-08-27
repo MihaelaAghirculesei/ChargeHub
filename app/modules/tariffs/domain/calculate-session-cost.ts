@@ -10,17 +10,17 @@ function round(value: number, decimals: number): number {
 }
 
 /**
- * Costo di UNA sessione con una tariffa: energia × prezzo/kWh, più eventuali
- * minuti di sosta oltre la fine della ricarica × tariffa di blocco.
- * `overstayMinutes` è manuale (default 0): le sessioni sintetiche (Giorno
- * 12) non modellano quanto un'auto resta collegata dopo la ricarica, quindi
- * inventare quel numero dai dati sarebbe falsificarlo — meglio lasciarlo
- * esplicito a chi usa il calcolatore.
+ * Cost of ONE session with a tariff: energy × price/kWh, plus any minutes
+ * parked past the end of charging × blocking fee. `overstayMinutes` is
+ * manual (default 0): the synthetic sessions (day 12) do not model how long
+ * a car stays plugged in after charging, so inventing that number from the
+ * data would falsify it — better to leave it explicit to whoever uses the
+ * calculator.
  *
- * Il canone mensile della tariffa **non** entra in questo calcolo: è un
- * costo ricorrente indipendente da qualunque sessione, non "quanto costa
- * questa ricarica" — confonderli sarebbe un errore di dominio, non solo di
- * implementazione.
+ * The tariff's monthly fee does **not** enter this calculation: it is a
+ * recurring cost independent of any session, not "how much this charge
+ * costs" — conflating them would be a domain error, not just an
+ * implementation one.
  */
 export function calculateSessionCost(
   session: SessionCostInput,

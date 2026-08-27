@@ -2,11 +2,11 @@ import { analyticsRepository } from '~/modules/analytics/repository'
 import { useStationsFiltersStore } from '~/modules/stations'
 
 /**
- * Riusa l'area di ricerca già attiva per le stazioni (Giorno 4) come pool
- * per i KPI — stessa logica di `useSessions` (Giorno 12). A differenza
- * delle sessioni, il payload è piccolo (6 KPI × 7 punti di serie): SSR di
- * default, coerente con l'idea di una dashboard che mostra subito contenuto
- * reale nella prima risposta.
+ * Reuses the search area already active for stations (day 4) as the pool
+ * for the KPIs — the same logic as `useSessions` (day 12). Unlike the
+ * sessions, the payload is small (6 KPIs × 7 series points): SSR by
+ * default, consistent with the idea of a dashboard that shows real content
+ * in the first response right away.
  */
 export function useKpis() {
   const stationsFiltersStore = useStationsFiltersStore()

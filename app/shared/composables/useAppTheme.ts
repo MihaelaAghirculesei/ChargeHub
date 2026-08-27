@@ -11,8 +11,9 @@ function useThemeCookie() {
 }
 
 /**
- * Tema chiaro/scuro persistito via cookie (letto anche in SSR), così il primo
- * paint arriva già nel tema corretto e non c'è flash al reload.
+ * Light/dark theme persisted via cookie (read in SSR too), so the first
+ * paint already arrives in the correct theme and there is no flash on
+ * reload.
  */
 export function useAppTheme() {
   const theme = useTheme()

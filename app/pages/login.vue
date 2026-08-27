@@ -9,8 +9,8 @@ useSeoMeta({ title: t('auth.seoTitle') })
 const route = useRoute()
 const { isLoggedIn, login } = useAuth()
 
-// Già autenticato (es. link riaperto dopo login): non ha senso mostrare di
-// nuovo il form, si va dove si sarebbe andati comunque.
+// Already authenticated (e.g. link reopened after login): no point showing
+// the form again, go where you would have gone anyway.
 if (isLoggedIn.value) {
   const target =
     typeof route.query.redirectTo === 'string' ? route.query.redirectTo : localePath('/')

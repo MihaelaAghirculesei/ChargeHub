@@ -12,11 +12,11 @@ if (!Number.isInteger(parsedId) || parsedId <= 0) {
   throw createError({ statusCode: 404, statusMessage: t('stations.notFound'), fatal: true })
 }
 
-// `await` qui (non `lazy`) è quello che fa arrivare il contenuto già
-// nell'HTML della prima risposta — "Fatto quando" del Giorno 9 — e non solo
-// dopo l'idratazione: sia in SSR che in navigazione client, il resto dello
-// script (compreso il check del 404 sotto) non gira finché il fetch non è
-// risolto.
+// `await` here (not `lazy`) is what makes the content arrive in the HTML
+// of the first response — the day-9 "Done when" — and not only after
+// hydration: in SSR and in client navigation alike, the rest of the script
+// (including the 404 check below) does not run until the fetch is
+// resolved.
 const { station, error: fetchError } = await useStation(parsedId)
 
 if (fetchError.value) {
@@ -30,8 +30,8 @@ if (!station.value) {
   throw createError({ statusCode: 404, statusMessage: t('stations.notFound'), fatal: true })
 }
 
-// Da qui in poi `station.value` è verificato non-null: fissato in una
-// costante così il resto dello script non deve ridiscuterlo.
+// From here on `station.value` is verified non-null: pinned in a constant
+// so the rest of the script does not have to re-argue it.
 const currentStation = station.value
 
 useSeoMeta({

@@ -3,9 +3,9 @@ import { tariffInputSchema, type Tariff, type TariffInput } from '~/modules/tari
 const TARIFFS_COOKIE_NAME = 'chargehub-tariffs'
 
 /**
- * Persistenza via `useCookie`, come dark mode (Giorno 2) e filtri stazioni
- * (Giorno 4) — nessuna dipendenza nuova (es. `pinia-plugin-persistedstate`)
- * per uno store che deve solo sopravvivere al reload di un browser.
+ * Persistence via `useCookie`, like dark mode (day 2) and station filters
+ * (day 4) — no new dependency (e.g. `pinia-plugin-persistedstate`) for a
+ * store that only needs to survive a browser reload.
  */
 function useTariffsCookie() {
   return useCookie<Tariff[]>(TARIFFS_COOKIE_NAME, {
@@ -16,10 +16,10 @@ function useTariffsCookie() {
 }
 
 /**
- * CRUD tariffe interamente locale (nessun server coinvolto, a differenza di
- * ogni altro store del progetto): `tariffInputSchema` valida ogni
- * inserimento/modifica prima che entri nello stato, perché qui i dati
- * arrivano da un form compilato a mano, non da OCM già normalizzato.
+ * Fully local tariff CRUD (no server involved, unlike every other store in
+ * the project): `tariffInputSchema` validates every insert/edit before it
+ * enters the state, because here the data comes from a hand-filled form,
+ * not from already-normalised OCM.
  */
 export const useTariffsStore = defineStore('tariffs', () => {
   const cookie = useTariffsCookie()

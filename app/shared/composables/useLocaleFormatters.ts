@@ -1,20 +1,20 @@
 /**
- * Formattazione numeri/date/valuta per lingua attiva (Giorno 17): un solo
- * punto invece di `'de-DE'` sparso e scritto a mano in una dozzina di
- * componenti. `localeProperties.language` è il tag BCP-47 già dichiarato in
- * `nuxt.config.ts` per ciascuna lingua (`de-DE`/`en-US`) — non serve una
- * mappa a parte.
+ * Number/date/currency formatting for the active language (day 17): a
+ * single place instead of `'de-DE'` scattered and hand-written in a dozen
+ * components. `localeProperties.language` is the BCP-47 tag already declared
+ * in `nuxt.config.ts` for each language (`de-DE`/`en-US`) — no separate map
+ * needed.
  *
- * Cache dei formatter a livello di modulo (non per chiamata): costruire un
- * `Intl.NumberFormat`/`Intl.DateTimeFormat` è un'operazione misurabilmente
- * costosa (risoluzione locale/plurali), non un semplice costruttore. La
- * tabella sessioni (Giorno 12, ~2000 righe) ne ricreava uno per riga —
- * trovato con Lighthouse: Performance 52 e Total Blocking Time >1000ms
- * contro Performance 83-88 delle altre pagine, che chiamano questi stessi
- * formatter ma su poche righe. Un formatter è immutabile/senza stato una
- * volta creato, quindi riusarlo tra chiamate (anche di componenti diversi)
- * è sicuro — la chiave include il tag lingua, così un cambio lingua non
- * riusa mai il formatter sbagliato.
+ * Module-level formatter cache (not per call): building an
+ * `Intl.NumberFormat`/`Intl.DateTimeFormat` is a measurably expensive
+ * operation (locale/plural resolution), not a plain constructor. The
+ * sessions table (day 12, ~2000 rows) recreated one per row — found with
+ * Lighthouse: Performance 52 and Total Blocking Time >1000ms against
+ * Performance 83-88 on the other pages, which call these same formatters but
+ * on few rows. A formatter is immutable/stateless once created, so reusing
+ * it across calls (even from different components) is safe — the key
+ * includes the language tag, so a language change never reuses the wrong
+ * formatter.
  */
 const numberFormatterCache = new Map<string, Intl.NumberFormat>()
 const dateTimeFormatterCache = new Map<string, Intl.DateTimeFormat>()
@@ -50,7 +50,7 @@ export function useLocaleFormatters() {
     return getNumberFormatter(tag.value, options).format(value)
   }
 
-  /** L'app resta per il mercato tedesco (EUR sempre), solo la formattazione segue la lingua: "12,50 €" in tedesco, "€12.50" in inglese. */
+  /** The app stays for the German market (EUR always), only the formatting follows the language: "12,50 €" in German, "€12.50" in English. */
   function formatCurrency(value: number): string {
     return getNumberFormatter(tag.value, { style: 'currency', currency: 'EUR' }).format(value)
   }

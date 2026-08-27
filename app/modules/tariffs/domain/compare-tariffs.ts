@@ -10,7 +10,7 @@ export interface TariffComparisonResult {
   costEur: number
 }
 
-/** Costo della stessa sessione su più tariffe, ordinato dalla più economica. */
+/** Cost of the same session across several tariffs, sorted from cheapest. */
 export function compareTariffs(
   session: SessionCostInput,
   tariffs: Tariff[],

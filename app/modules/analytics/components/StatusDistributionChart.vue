@@ -15,7 +15,7 @@ function statusLabel(status: StatusDistributionPoint['status']): string {
   return t(`chargePointStatus.${status}`)
 }
 
-/** Stessi ruoli semantici della palette di dominio, docs/adr/0001-design-system.md. */
+/** The same semantic roles as the domain palette, docs/adr/0001-design-system.md. */
 const STATUS_COLOR_KEYS: Record<StatusDistributionPoint['status'], string> = {
   Available: 'success',
   Charging: 'info',

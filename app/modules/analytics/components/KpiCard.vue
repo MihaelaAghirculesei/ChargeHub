@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * Componente del design system (non copia-incolla per ogni KPI, come
- * richiesto dal piano): valore, trend e sparkline generici, guidati da
- * `higherIsBetter` per sapere se un trend positivo è una buona notizia
- * (non lo è per "guasti") — la card non conosce il significato del KPI
- * specifico, solo come mostrarlo in modo coerente col design system
- * (ruoli semantici di ADR-0001: success/error, mai colore da solo).
+ * A design-system component (not copy-paste for each KPI, as the plan
+ * requires): generic value, trend and sparkline, driven by `higherIsBetter`
+ * to know whether a positive trend is good news (it is not for "faulted") —
+ * the card does not know the meaning of the specific KPI, only how to show
+ * it consistently with the design system (ADR-0001 semantic roles:
+ * success/error, never colour alone).
  */
 const props = defineProps<{
   label: string
@@ -26,16 +26,16 @@ const trendColor = computed<'success' | 'error' | 'grey'>(() => {
 })
 
 /**
- * Valore CSS diretto, non il nome di classe `grey` (Giorno 25, gate
- * Lighthouse Performance su /de/stations/47109): `$color-pack: false` in
- * app/assets/vuetify-settings.scss toglie dal CSS globale le migliaia di
- * classi `.bg-*`/`.text-*` generate per ogni colore Material Design ×
- * variante (243 KB su 248 KB di `entry.css`, 98% inutilizzato su quella
- * pagina secondo l'audit Lighthouse "unused-css-rules") — restano solo le
- * utility legate al tema (primary/success/error/... e le emphasis,
- * sempre generate). Stesso identico colore di `text-medium-emphasis` qui
- * sotto, passato come valore CSS invece che come nome di classe che non
- * esisterebbe più.
+ * A direct CSS value, not the class name `grey` (day 25, Lighthouse
+ * Performance gate on /de/stations/47109): `$color-pack: false` in
+ * app/assets/vuetify-settings.scss removes from the global CSS the
+ * thousands of `.bg-*`/`.text-*` classes generated for every Material
+ * Design colour × variant (243 KB of 248 KB of `entry.css`, 98% unused on
+ * that page per the Lighthouse "unused-css-rules" audit) — only the
+ * theme-bound utilities remain (primary/success/error/... and the
+ * emphasis, always generated). The exact same colour as
+ * `text-medium-emphasis` below, passed as a CSS value instead of a class
+ * name that would no longer exist.
  */
 const NEUTRAL_TREND_COLOR = 'rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity))'
 const trendIconColor = computed(() =>

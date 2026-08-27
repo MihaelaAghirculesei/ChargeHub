@@ -1,8 +1,8 @@
 /**
- * Colori dei grafici letti dal tema Vuetify attivo, mai hardcoded (richiesto
- * dal piano) — stesso pattern già usato per i marker della mappa
- * (`StationsMap.vue`, Giorno 7): `theme.current.value.colors[chiave]`,
- * reattivo al cambio light/dark.
+ * Chart colours read from the active Vuetify theme, never hardcoded
+ * (required by the plan) — the same pattern already used for the map
+ * markers (`StationsMap.vue`, day 7): `theme.current.value.colors[key]`,
+ * reactive to the light/dark switch.
  */
 export function useChartThemeColors() {
   const theme = useTheme()

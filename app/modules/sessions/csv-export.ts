@@ -20,18 +20,18 @@ function sessionToRow(session: ChargingSession): (string | number)[] {
 }
 
 /**
- * Solo la parte pura (testabile senza DOM): stringa CSV, non il download.
- * `headers` è un parametro (non una costante fissa) apposta: le intestazioni
- * sono testo tradotto (Giorno 17) e questa funzione non ha contesto Nuxt per
- * chiamare `useI18n()` da sola — resta una funzione pura, il chiamante
- * (la pagina) passa le stringhe già tradotte per la lingua attiva.
+ * Only the pure part (testable without a DOM): the CSV string, not the
+ * download. `headers` is a parameter (not a fixed constant) on purpose: the
+ * headers are translated text (day 17) and this function has no Nuxt
+ * context to call `useI18n()` itself — it stays a pure function, the caller
+ * (the page) passes the strings already translated for the active language.
  */
 export function sessionsToCsv(sessions: ChargingSession[], headers: string[]): string {
   const rows = [headers, ...sessions.map(sessionToRow)]
   return rows.map((row) => row.map(escapeCsvField).join(',')).join('\r\n')
 }
 
-/** Innesca il download nel browser — non testabile senza un DOM vero, vedi `sessionsToCsv` sopra per la logica. */
+/** Triggers the download in the browser — not testable without a real DOM, see `sessionsToCsv` above for the logic. */
 export function downloadCsv(csv: string, filename: string): void {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)

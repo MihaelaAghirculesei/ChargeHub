@@ -1,13 +1,13 @@
 import { useAuthUser } from '~/modules/auth/composables/useAuthUser'
 
 /**
- * Middleware con nome (non `.global.ts`): protegge solo le rotte che lo
- * richiamano esplicitamente via `definePageMeta({ middleware: 'auth' })` —
- * il resto dell'app (dashboard, stazioni, sessioni, grafici) resta
- * pubblico. Gira anche in SSR (i middleware di Nuxt non sono client-only di
- * default), quindi una rotta protetta senza sessione valida reindirizza
- * **prima** che l'HTML della pagina protetta venga generato — nessun flash
- * di contenuto, criterio "Fatto quando" del piano.
+ * A named middleware (not `.global.ts`): protects only the routes that
+ * invoke it explicitly via `definePageMeta({ middleware: 'auth' })` — the
+ * rest of the app (dashboard, stations, sessions, charts) stays public. It
+ * runs in SSR too (Nuxt middleware is not client-only by default), so a
+ * protected route without a valid session redirects **before** the HTML of
+ * the protected page is generated — no flash of content, the plan's "Done
+ * when" criterion.
  */
 export default defineNuxtRouteMiddleware((to) => {
   const user = useAuthUser()

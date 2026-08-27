@@ -7,7 +7,7 @@ const emit = defineEmits<{ edit: [tariff: Tariff]; remove: [id: string] }>()
 const { t } = useI18n()
 const { formatNumber } = useLocaleFormatters()
 
-/** Solo il numero, locale-aware — l'unità (€/kWh, €/Min, €/Monat) è già nell'intestazione di colonna. */
+/** Just the number, locale-aware — the unit (€/kWh, €/Min, €/Monat) is already in the column header. */
 function formatAmount(value: number): string {
   return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }

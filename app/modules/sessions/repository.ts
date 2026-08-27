@@ -19,9 +19,9 @@ function toQuery(pool: SessionsPool) {
 }
 
 /**
- * Unico punto del codice client che sa che le sessioni vivono dietro
- * `/api/sessions` — stesso ruolo di `stationRepository` per le stazioni
- * (Giorno 4).
+ * The only place in the client code that knows sessions live behind
+ * `/api/sessions` — the same role as `stationRepository` for stations
+ * (day 4).
  */
 export const sessionRepository = {
   list(pool: SessionsPool): Promise<ChargingSession[]> {

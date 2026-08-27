@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * `<html lang>` non è gestito da solo: senza, resta assente dall'HTML
- * qualunque sia la lingua attiva (verificato con un `curl` grezzo) — un
- * problema di accessibilità reale (screen reader/pronuncia), non solo SEO.
+ * `<html lang>` is not handled on its own: without this, it stays absent
+ * from the HTML whatever the active language (verified with a raw `curl`) —
+ * a real accessibility problem (screen reader/pronunciation), not just SEO.
  */
 const { locale } = useI18n()
 useHead({ htmlAttrs: { lang: locale } })
@@ -13,14 +13,13 @@ useHead({ htmlAttrs: { lang: locale } })
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <!--
-        Skeleton durante la navigazione (Giorno 9): una pagina con un
-        `await` a livello di script (es. app/pages/stations/[id].vue) ha un
-        setup asincrono, quindi Vue la monta dentro un confine Suspense —
-        `<NuxtPage>` non espone un `#fallback` proprio in questa versione,
-        va avvolta a mano nel `#default` per intercettarlo. Pagine senza
-        `await` a livello di script (es. la lista stazioni, che fa il fetch
-        dentro un componente figlio) risolvono subito e non mostrano mai
-        questo fallback.
+        Skeleton during navigation (day 9): a page with a script-level
+        `await` (e.g. app/pages/stations/[id].vue) has an async setup, so
+        Vue mounts it inside a Suspense boundary — `<NuxtPage>` does not
+        expose a `#fallback` of its own in this version, it must be wrapped
+        by hand in `#default` to intercept it. Pages without a script-level
+        `await` (e.g. the station list, which fetches inside a child
+        component) resolve immediately and never show this fallback.
       -->
       <NuxtPage>
         <template #default="{ Component, route }">
