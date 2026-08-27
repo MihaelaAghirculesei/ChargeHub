@@ -10,16 +10,16 @@ import { countByStatus, dayKey, lastNDays } from '~~/server/utils/telemetry-aggr
 import { round } from '~~/server/utils/number'
 
 /**
- * Dati per i 3 grafici del Giorno 14, composti da dati già esistenti
- * (sessioni sintetiche, Giorno 12; telemetria simulata, Giorno 10) — nessun
- * nuovo simulatore, stesso principio del KPI aggregator (Giorno 13).
+ * Data for the 3 day-14 charts, composed from data that already exists
+ * (synthetic sessions, day 12; simulated telemetry, day 10) — no new
+ * simulator, same principle as the KPI aggregator (day 13).
  */
 
 /**
- * kWh/giorno per gli ultimi `periodDays`. Il nostro storico sintetico di
- * sessioni esiste solo per gli ultimi 30 giorni (`generateSessions`, default
- * `lookbackDays: 30`, Giorno 12): selezionare 90 giorni mostra
- * correttamente zero prima di quella finestra, non lo inventiamo.
+ * kWh/day for the last `periodDays`. Our synthetic session history only
+ * exists for the last 30 days (`generateSessions`, default `lookbackDays:
+ * 30`, day 12): selecting 90 days correctly shows zero before that window,
+ * we do not fabricate it.
  */
 function computeEnergyByDay(sessions: ChargingSession[], days: Date[]): DailyEnergyPoint[] {
   const energyByDay = new Map<string, number>()
@@ -35,9 +35,9 @@ function computeEnergyByDay(sessions: ChargingSession[], days: Date[]): DailyEne
 }
 
 /**
- * Distribuzione attuale degli stati dei connettori: sempre "adesso", non
- * dipende dal periodo selezionato — è uno scatto puntuale, non un aggregato
- * su una finestra di tempo (a differenza degli altri due grafici).
+ * Current distribution of connector statuses: always "now", does not depend
+ * on the selected period — a point-in-time snapshot, not an aggregate over a
+ * time window (unlike the other two charts).
  */
 function computeStatusDistribution(stations: Station[], now: Date): StatusDistributionPoint[] {
   const counts = countByStatus(stations, now)
@@ -50,10 +50,10 @@ function computeStatusDistribution(stations: Station[], now: Date): StatusDistri
 }
 
 /**
- * Utilizzo medio per ora del giorno (0-23), mediato sui giorni del periodo
- * selezionato: per ogni ora, campiona la telemetria a quell'ora in ciascun
- * giorno e fa la media — una "giornata tipo", più stabile con periodi più
- * lunghi (90 giorni smussa più rumore di 7).
+ * Average utilisation per hour of day (0-23), averaged over the days of the
+ * selected period: for each hour, sample telemetry at that hour on each day
+ * and average — a "typical day", more stable with longer periods (90 days
+ * smooths more noise than 7).
  */
 function computeUtilizationByHour(stations: Station[], days: Date[]): HourlyUtilizationPoint[] {
   const points: HourlyUtilizationPoint[] = []

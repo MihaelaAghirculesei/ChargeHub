@@ -1,13 +1,13 @@
 /**
- * Curva di potenza condivisa da telemetria live (Giorno 10) e sessioni
- * storiche sintetiche (Giorno 12): stessa "forma" di ricarica plausibile in
- * entrambi i casi, non due curve inventate separatamente.
+ * Power curve shared by live telemetry (day 10) and synthetic historical
+ * sessions (day 12): the same plausible charging "shape" in both cases, not
+ * two curves invented separately.
  */
 
 /**
- * Frazione della potenza massima in funzione dell'avanzamento (0..1) della
- * sessione: alta e quasi piatta fino all'80%, poi decresce più ripida
- * (curva di ricarica plausibile, non lineare fino alla fine).
+ * Fraction of max power as a function of session progress (0..1): high and
+ * nearly flat up to 80%, then falls more steeply (a plausible charging
+ * curve, not linear all the way to the end).
  */
 export function chargingPowerFraction(progress: number): number {
   const clamped = Math.min(Math.max(progress, 0), 1)
@@ -18,12 +18,12 @@ export function chargingPowerFraction(progress: number): number {
 }
 
 /**
- * Energia (kWh) accumulata integrando numericamente la curva di potenza tra
- * 0 e `elapsedSeconds` di una sessione lunga `chargingDurationSeconds`
- * (integrazione trapezoidale, 60 campioni: economica e evita di doversi
- * fidare di un integrale in forma chiusa scritto a mano). Passare
- * `elapsedSeconds === chargingDurationSeconds` dà l'energia dell'intera
- * sessione.
+ * Energy (kWh) accumulated by numerically integrating the power curve
+ * between 0 and `elapsedSeconds` of a session of length
+ * `chargingDurationSeconds` (trapezoidal integration, 60 samples: cheap and
+ * avoids having to trust a hand-written closed-form integral). Passing
+ * `elapsedSeconds === chargingDurationSeconds` gives the energy of the whole
+ * session.
  */
 export function integrateEnergyKwh(
   elapsedSeconds: number,

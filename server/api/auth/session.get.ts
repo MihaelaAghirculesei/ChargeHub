@@ -2,8 +2,8 @@ import type { AuthUser } from '#shared/schemas/auth'
 import { getAuthSession } from '~~/server/utils/auth-session'
 
 /**
- * Il client scopre lo stato della sessione da qui, non leggendo il cookie
- * lui stesso — è httpOnly per design (vedi auth-session.ts).
+ * The client discovers the session state from here, not by reading the
+ * cookie itself — it is httpOnly by design (see auth-session.ts).
  */
 export default defineEventHandler(async (event): Promise<AuthUser | null> => {
   const session = await getAuthSession(event)

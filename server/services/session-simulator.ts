@@ -5,22 +5,22 @@ import { round } from '~~/server/utils/number'
 import { hashString, mulberry32 } from '~~/server/utils/random'
 
 /**
- * Storico sintetico di sessioni concluse per la tabella del Giorno 12 — non
- * un'estensione del simulatore di telemetria live (Giorno 10, un solo stato
- * "adesso" per connettore): qui serve un volume di righe indipendente dal
- * numero di connettori reali, per dimostrare la virtualizzazione della
- * tabella. Ogni sessione è generata da un indice (0..count-1) con lo stesso
- * approccio a seed di `telemetry-simulator.ts` — deterministica, non
- * accumulata in uno stato — e riusa la stessa curva di potenza
- * (`chargingPowerFraction`/`integrateEnergyKwh`) per restare coerente con
- * quello che la telemetria live mostra per una ricarica in corso.
+ * Synthetic history of completed sessions for the day-12 table — not an
+ * extension of the live telemetry simulator (day 10, a single "now" state
+ * per connector): here we need a row volume independent of the number of
+ * real connectors, to demonstrate table virtualisation. Each session is
+ * generated from an index (0..count-1) with the same seed approach as
+ * `telemetry-simulator.ts` — deterministic, not accumulated in state — and
+ * reuses the same power curve
+ * (`chargingPowerFraction`/`integrateEnergyKwh`) to stay consistent with
+ * what live telemetry shows for a charge in progress.
  */
 
-/** Numero di sessioni target: è il numero citato dal criterio "Fatto quando" del piano (scroll fluido su 2000 righe), non una stima di occupazione realistica. */
+/** Target number of sessions: the figure cited by the plan's "Done when" criterion (smooth scroll over 2000 rows), not a realistic occupancy estimate. */
 const DEFAULT_SESSION_COUNT = 2000
 const DEFAULT_LOOKBACK_DAYS = 30
 const DEFAULT_POWER_KW = 11
-/** Placeholder finché non esiste un modulo tariffe reale (Giorno 15). */
+/** Placeholder until a real tariffs module exists (day 15). */
 const PRICE_PER_KWH_EUR = 0.45
 
 const MIN_DURATION_MINUTES = 10
@@ -61,8 +61,8 @@ export function generateSessions(
     const endedAt = new Date(startedAt.getTime() + durationSeconds * 1000)
 
     const maxPowerKw = connector.powerKw ?? DEFAULT_POWER_KW
-    // Elapsed === durata: integra sull'intera sessione, non su un istante
-    // intermedio come fa la telemetria live per una ricarica in corso.
+    // Elapsed === duration: integrate over the whole session, not over an
+    // intermediate instant like live telemetry does for a charge in progress.
     const energyKwh = integrateEnergyKwh(durationSeconds, durationSeconds, maxPowerKw)
     const averagePowerKw = (energyKwh * 3600) / durationSeconds
     const peakPowerKw = maxPowerKw * chargingPowerFraction(0)

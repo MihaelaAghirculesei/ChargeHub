@@ -2,10 +2,10 @@ import type { Station } from '#shared/schemas/station'
 import { computeStationTelemetry } from '~~/server/services/telemetry-simulator'
 
 /**
- * Helper di campionamento condivisi da chi aggrega la telemetria simulata nel
- * tempo (KPI, Giorno 13; grafici, Giorno 14): `computeStationTelemetry` è una
- * funzione pura di (stazione, istante), quindi campionarla a istanti diversi
- * produce uno storico plausibile senza persistere nulla (ADR-0002).
+ * Sampling helpers shared by whoever aggregates simulated telemetry over
+ * time (KPIs, day 13; charts, day 14): `computeStationTelemetry` is a pure
+ * function of (station, instant), so sampling it at different instants
+ * produces a plausible history without persisting anything (ADR-0002).
  */
 
 export interface StatusCounts {
@@ -35,7 +35,7 @@ export function countByStatus(stations: Station[], at: Date): StatusCounts {
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-/** Gli ultimi `days` giorni fino a `now` incluso (`now` è l'ultimo elemento). */
+/** The last `days` days up to and including `now` (`now` is the last element). */
 export function lastNDays(days: number, now: Date): Date[] {
   const dates: Date[] = []
   for (let i = days - 1; i >= 0; i -= 1) {
@@ -44,7 +44,7 @@ export function lastNDays(days: number, now: Date): Date[] {
   return dates
 }
 
-/** Chiave di raggruppamento giornaliero da un ISO 8601: YYYY-MM-DD. */
+/** Daily grouping key from an ISO 8601 string: YYYY-MM-DD. */
 export function dayKey(iso: string): string {
   return iso.slice(0, 10)
 }

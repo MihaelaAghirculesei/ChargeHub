@@ -5,13 +5,13 @@ const envSchema = z.object({
     .string()
     .min(
       1,
-      'NUXT_OCM_API_KEY mancante: registrati su https://openchargemap.org/site/develop/api e impostala in .env'
+      'NUXT_OCM_API_KEY missing: register at https://openchargemap.org/site/develop/api and set it in .env'
     ),
   sessionPassword: z
     .string()
     .min(
       32,
-      'NUXT_SESSION_PASSWORD mancante o troppo corta (minimo 32 caratteri): impostala in .env — usata per sigillare il cookie di sessione (h3 useSession)'
+      'NUXT_SESSION_PASSWORD missing or too short (minimum 32 characters): set it in .env — used to seal the session cookie (h3 useSession)'
     )
 })
 
@@ -27,7 +27,7 @@ export function validateEnv(): ValidatedEnv {
 
   if (!result.success) {
     const details = result.error.issues.map((issue) => `- ${issue.message}`).join('\n')
-    throw new Error(`Configurazione ambiente non valida:\n${details}`)
+    throw new Error(`Invalid environment configuration:\n${details}`)
   }
 
   return result.data

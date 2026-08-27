@@ -1,9 +1,9 @@
 /**
- * Utilità deterministiche condivise da qualunque simulatore (telemetria,
- * Giorno 10; sessioni, Giorno 12): stesso seed → stessa sequenza, sempre.
+ * Deterministic utilities shared by any simulator (telemetry, day 10;
+ * sessions, day 12): same seed → same sequence, always.
  */
 
-/** Hash stringa → intero 32 bit, FNV-1a. Deterministico, nessuna dipendenza. */
+/** String hash → 32-bit integer, FNV-1a. Deterministic, no dependency. */
 export function hashString(value: string): number {
   let hash = 2166136261
   for (let index = 0; index < value.length; index += 1) {
@@ -13,7 +13,7 @@ export function hashString(value: string): number {
   return hash >>> 0
 }
 
-/** PRNG Mulberry32: da un seed intero produce una sequenza deterministica in [0,1). */
+/** Mulberry32 PRNG: from an integer seed produces a deterministic sequence in [0,1). */
 export function mulberry32(seed: number): () => number {
   let state = seed
   return () => {

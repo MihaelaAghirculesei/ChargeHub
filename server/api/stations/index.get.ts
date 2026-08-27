@@ -3,8 +3,8 @@ import type { Station, StationSortKey } from '#shared/schemas/station'
 import { OcmClientError, fetchStations } from '~~/server/services/ocm-client'
 
 /**
- * Accessor per colonna: tengono `paginate()` generico (server/utils/paginate.ts)
- * senza fargli conoscere la forma di `Station`.
+ * Per-column accessors: keep `paginate()` generic
+ * (server/utils/paginate.ts) without making it know the shape of `Station`.
  */
 const sortAccessors: Record<StationSortKey, (station: Station) => string | number | null> = {
   name: (station) => station.name,
@@ -19,16 +19,16 @@ const querySchema = z.object({
   lon: z.coerce.number().min(-180).max(180),
   radius: z.coerce.number().positive().max(100).default(25),
   countrycode: z.string().length(2).default('DE'),
-  // Quanti risultati chiedere a OCM (tetto reale dell'API: 100), non quanti
-  // mostrarne per pagina — vedi itemsperpage per quello. Un solo fetch (24h
-  // di cache) copre tutte le pagine.
+  // How many results to ask OCM for (the API's real cap: 100), not how many
+  // to show per page — see itemsperpage for that. A single fetch (24h of
+  // cache) covers all pages.
   maxresults: z.coerce.number().int().positive().max(100).default(100),
   connectiontypeid: z.coerce.number().int().positive().optional(),
   operatorid: z.coerce.number().int().positive().optional(),
   statustypeid: z.coerce.number().int().positive().optional(),
   minpowerkw: z.coerce.number().positive().optional(),
-  // Filtro nostro, non di OCM: non tocca il fetch/la cache verso OCM, si
-  // applica dopo, sul risultato già cachato — vedi fuori dallo schema.
+  // Our filter, not OCM's: does not touch the fetch/cache to OCM, applied
+  // afterwards on the already-cached result — see outside the schema.
   search: z.string().trim().min(1).optional(),
   page: z.coerce.number().int().positive().default(1),
   itemsperpage: z.coerce.number().int().positive().max(100).default(10),
@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
   if (!parsedQuery.success) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Parametri di ricerca non validi.',
+      statusMessage: 'Invalid search parameters.',
       data: { issues: parsedQuery.error.issues.map((issue) => issue.message) }
     })
   }
@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
     if (error instanceof OcmClientError) {
       throw createError({
         statusCode: 502,
-        statusMessage: 'Impossibile recuperare le stazioni dal registro Open Charge Map.',
+        statusMessage: 'Could not fetch stations from the Open Charge Map registry.',
         data: { code: error.code }
       })
     }
