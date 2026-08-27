@@ -64,12 +64,12 @@ export function buildExtractionSchema(referenceData: ReferenceData) {
       .string()
       .nullable()
       .describe(
-        'Parole chiave libere non coperte dagli altri campi (frammenti di nome stazione/operatore, indirizzo). null se non resta nulla di libero.'
+        'Free keywords not covered by the other fields (fragments of a station/operator name, an address). null if nothing free-form is left.'
       ),
     connectionTypeId: idLiteralUnion(referenceData.connectionTypes.map((c) => c.id))
       .nullable()
       .describe(
-        'Tipo di connettore richiesto, come id dalla lista fornita. null se non specificato.'
+        'The requested connector type, as an id from the list provided. null if not specified.'
       ),
     // Plain z.number(), not idLiteralUnion (see the comment on
     // idLiteralUnion) — validated against referenceData.operators after the
@@ -78,16 +78,18 @@ export function buildExtractionSchema(referenceData: ReferenceData) {
       .number()
       .int()
       .nullable()
-      .describe('Operatore richiesto, come id dalla lista fornita. null se non specificato.'),
+      .describe('The requested operator, as an id from the list provided. null if not specified.'),
     statusTypeId: idLiteralUnion(referenceData.statusTypes.map((s) => s.id))
       .nullable()
-      .describe('Stato operativo richiesto, come id dalla lista fornita. null se non specificato.'),
+      .describe(
+        'The requested operational status, as an id from the list provided. null if not specified.'
+      ),
     minPowerKw: z
       .number()
       .nonnegative()
       .nullable()
       .describe(
-        'Se la query cita un numero esplicito di kW, usa SEMPRE quel numero, mai un valore stimato. Solo se non c\'è un numero esplicito, stima da un termine vago (es. "veloce" ~50, "ultra veloce" ~150). null se non c\'è alcun riferimento alla potenza.'
+        'If the query states an explicit number of kW, ALWAYS use that number, never an estimated value. Only when there is no explicit number, estimate from a vague term (e.g. "fast"/"schnell" ~50, "ultra fast"/"ultraschnell" ~150). null if there is no reference to power at all.'
       )
   })
 }
@@ -103,27 +105,27 @@ function formatReferenceList(entries: { id: number; title: string }[]): string {
  * see ADR-0007. Geocoding city names from free text is a different problem
  * (needs a separate geocoding service), explicitly out of scope here.
  *
- * NOTE: the prompt string below and the `.describe()` strings above are
- * still Italian on purpose — they are tuned prompt content covered by the
- * eval suite (`pnpm eval:nl-search`), not code comments. Translating them is
- * a behaviour change and needs the eval suite re-run to confirm no
- * regression; tracked as a separate follow-up.
+ * The prompt is English while the queries it handles are German or English:
+ * the instruction language and the input language are independent, and
+ * English keeps it consistent with the rest of the codebase. Any edit here
+ * is a behaviour change — re-run `pnpm eval:nl-search` (real model, 19
+ * labelled cases) before merging it.
  */
 function buildSystemPrompt(referenceData: ReferenceData): string {
-  return `Estrai criteri di ricerca strutturati da una query in linguaggio naturale (tedesco o inglese) su stazioni di ricarica per veicoli elettrici in Germania.
+  return `Extract structured search criteria from a natural-language query (German or English) about electric vehicle charging stations in Germany.
 
-Tipi di connettore disponibili (id: titolo):
+Available connector types (id: title):
 ${formatReferenceList(referenceData.connectionTypes)}
 
-Operatori disponibili (id: titolo):
+Available operators (id: title):
 ${formatReferenceList(referenceData.operators)}
 
-Stati operativi disponibili (id: titolo):
+Available operational statuses (id: title):
 ${formatReferenceList(referenceData.statusTypes)}
 
-Usa SOLO gli id elencati sopra. Se la query non specifica un criterio, restituisci null per quel campo — non indovinare.
+Use ONLY the ids listed above. If the query does not specify a criterion, return null for that field — do not guess.
 
-Qualunque riferimento a una località/città (es. "a Berlino", "vicino a Monaco") va IGNORATO PER INTERO — non copiarlo nel campo "search", la posizione della ricerca è già gestita altrove. Il campo "search" è solo per frammenti di nome stazione/operatore o indirizzo che non sono un nome di città, non per la città stessa.`
+Any reference to a place or city (e.g. "in Berlin", "near Munich") must be IGNORED ENTIRELY — do not copy it into the "search" field, the search location is already handled elsewhere. The "search" field is only for fragments of a station/operator name or an address that are not a city name, never for the city itself.`
 }
 
 export function assertConfigured(apiKey: string): void {

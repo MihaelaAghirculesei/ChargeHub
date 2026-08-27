@@ -6,7 +6,7 @@ import {
 } from '~~/server/utils/rate-limiter'
 
 describe('createRateLimiter', () => {
-  it('permette fino a maxAttempts tentativi, poi blocca', () => {
+  it('allows up to maxAttempts attempts, then blocks', () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 3 })
     const now = 0
 
@@ -17,21 +17,21 @@ describe('createRateLimiter', () => {
     expect(limiter.reserve('1.2.3.4', now).blocked).toBe(true)
   })
 
-  it('riporta il tempo di attesa residuo fino alla fine della finestra', () => {
+  it('reports the remaining wait until the end of the window', () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 1 })
     limiter.reserve('1.2.3.4', 0)
 
     expect(limiter.status('1.2.3.4', 45_000).retryAfterSeconds).toBe(15)
   })
 
-  it('si sblocca da sola una volta scaduta la finestra', () => {
+  it('unblocks itself once the window has expired', () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 1 })
     limiter.reserve('1.2.3.4', 0)
 
     expect(limiter.status('1.2.3.4', 60_000).blocked).toBe(false)
   })
 
-  it('un successo resetta il contatore, indipendentemente dai tentativi precedenti', () => {
+  it('a success resets the counter, regardless of previous attempts', () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 2 })
     limiter.reserve('1.2.3.4', 0)
     limiter.reserve('1.2.3.4', 1_000)
@@ -40,36 +40,36 @@ describe('createRateLimiter', () => {
     expect(limiter.status('1.2.3.4', 2_000).blocked).toBe(false)
   })
 
-  it('release() restituisce un solo tentativo prenotato, senza scendere sotto zero', () => {
+  it('release() gives back exactly one reserved attempt, without going below zero', () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 2 })
     limiter.reserve('k', 0)
     limiter.reserve('k', 0)
     expect(limiter.status('k', 0).blocked).toBe(true)
 
     limiter.release('k', 0)
-    expect(limiter.status('k', 0).blocked).toBe(false) // di nuovo sotto soglia
-    expect(limiter.reserve('k', 0).blocked).toBe(false) // e c'è spazio per un altro
+    expect(limiter.status('k', 0).blocked).toBe(false) // back under the threshold
+    expect(limiter.reserve('k', 0).blocked).toBe(false) // and there is room for another
 
     limiter.release('k', 0)
     limiter.release('k', 0)
-    limiter.release('k', 0) // extra oltre lo zero: non deve andare in negativo
+    limiter.release('k', 0) // extra releases past zero: must not go negative
     limiter.reserve('k', 0)
     limiter.reserve('k', 0)
-    expect(limiter.reserve('k', 0).blocked).toBe(true) // soglia ancora a 2, non "sbloccata" da un conteggio negativo
+    expect(limiter.reserve('k', 0).blocked).toBe(true) // still a threshold of 2, not "unlocked" by a negative count
   })
 
-  it('release() è un no-op se la finestra è già scaduta (nessun bucket vivo)', () => {
+  it('release() is a no-op when the window has already expired (no live bucket)', () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 1 })
     limiter.reserve('k', 0)
     limiter.release('k', 60_001)
 
-    // Nuova finestra: il contatore riparte comunque da zero, il release non
-    // ha "regalato" un tentativo alla finestra vecchia né a quella nuova.
+    // New window: the counter restarts from zero anyway, the release did not
+    // "gift" an attempt to the old window nor to the new one.
     expect(limiter.reserve('k', 60_001).blocked).toBe(false)
     expect(limiter.reserve('k', 60_001).blocked).toBe(true)
   })
 
-  it('tiene i contatori separati per chiave', () => {
+  it('keeps counters separate per key', () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 1 })
     limiter.reserve('1.2.3.4', 0)
 
@@ -77,48 +77,48 @@ describe('createRateLimiter', () => {
     expect(limiter.status('5.6.7.8', 0).blocked).toBe(false)
   })
 
-  it('evita una crescita illimitata della mappa: oltre maxSize evince il bucket più vecchio', () => {
+  it('avoids unbounded map growth: past maxSize it evicts the oldest bucket', () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 1, maxSize: 2 })
     limiter.reserve('a', 0)
     limiter.reserve('b', 0)
     limiter.reserve('c', 0)
 
-    // 'a' era il più vecchio: evinto per far posto a 'c', quindi risbloccato.
+    // 'a' was the oldest: evicted to make room for 'c', hence unblocked again.
     expect(limiter.status('a', 0).blocked).toBe(false)
     expect(limiter.status('b', 0).blocked).toBe(true)
     expect(limiter.status('c', 0).blocked).toBe(true)
   })
 
-  it('reserve() controlla e incrementa in una sola chiamata sincrona: N chiamate consecutive bloccano esattamente alla Nesima', () => {
-    // Copre un bug reale trovato in code review: un check e un incremento
-    // separati da un `await` (status() poi recordFailure() dopo aver letto
-    // il body) lasciavano passare più tentativi concorrenti di maxAttempts,
-    // perché nessuna delle due chiamate incrementava subito il contatore.
+  it('reserve() checks and increments in a single synchronous call: N consecutive calls block exactly at the Nth', () => {
+    // Covers a real bug found in code review: a check and an increment
+    // separated by an `await` (status() then recordFailure() after reading
+    // the body) let more concurrent attempts than maxAttempts through,
+    // because neither call incremented the counter straight away.
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 5 })
     const results = Array.from({ length: 6 }, () => limiter.reserve('1.2.3.4', 0).blocked)
 
     expect(results).toEqual([false, false, false, false, false, true])
   })
 
-  it('un bucket riattivato dopo la scadenza della finestra non viene evinto al posto di uno davvero più vecchio', () => {
+  it('a bucket reactivated after its window expired is not evicted ahead of a genuinely older one', () => {
     const limiter = createRateLimiter({ windowMs: 60_000, maxAttempts: 1, maxSize: 2 })
     limiter.reserve('old', 0)
     limiter.reserve('other', 1)
-    limiter.reserve('old', 60_001) // finestra scaduta, si riattiva: deve "ringiovanire" in ordine
-    limiter.reserve('newest', 60_001) // maxSize=2 superato: deve evincere 'other', non 'old' appena riattivato
+    limiter.reserve('old', 60_001) // window expired, it reactivates: must be "rejuvenated" in order
+    limiter.reserve('newest', 60_001) // maxSize=2 exceeded: must evict 'other', not the just-reactivated 'old'
 
     expect(limiter.status('old', 60_001).blocked).toBe(true)
     expect(limiter.status('other', 60_001).blocked).toBe(false)
   })
 })
 
-describe('nlSearchDailyCap (tetto globale giornaliero, ADR-0007)', () => {
-  // Singleton di modulo: uso una finestra temporale isolata (`base`) lontana
-  // da 0 così questo blocco non interferisce con nessun altro test del file
-  // e viceversa — il bucket resta pieno solo dentro le sue 24h simulate.
+describe('nlSearchDailyCap (global daily ceiling, ADR-0007)', () => {
+  // Module singleton: an isolated time window (`base`) far from 0 so this
+  // block does not interfere with any other test in the file and vice versa
+  // — the bucket stays full only inside its own simulated 24h.
   const base = 10_000_000_000
 
-  it('blocca oltre 200 ricerche al giorno sommando tutte le chiamate, non per IP', () => {
+  it('blocks past 200 searches a day summing all callers together, not per IP', () => {
     for (let call = 0; call < 200; call += 1) {
       expect(nlSearchDailyCap.reserve(NL_SEARCH_DAILY_CAP_KEY, base).blocked).toBe(false)
     }
@@ -126,7 +126,7 @@ describe('nlSearchDailyCap (tetto globale giornaliero, ADR-0007)', () => {
     expect(nlSearchDailyCap.reserve(NL_SEARCH_DAILY_CAP_KEY, base).blocked).toBe(true)
   })
 
-  it('si azzera dopo 24h', () => {
+  it('resets after 24h', () => {
     expect(nlSearchDailyCap.status(NL_SEARCH_DAILY_CAP_KEY, base + 86_400_000).blocked).toBe(false)
   })
 })
