@@ -33,14 +33,14 @@ const HEADERS = [
 ]
 
 describe('sessionsToCsv', () => {
-  it("include l'intestazione (passata dal chiamante) anche con nessuna sessione", () => {
+  it('includes the header (passed by the caller) even with no sessions', () => {
     const csv = sessionsToCsv([], HEADERS)
     expect(csv).toBe(
       'Station,Anschluss,Start,Ende,Dauer (min),Energie (kWh),Ø Leistung (kW),Spitzenleistung (kW),Kosten (€)'
     )
   })
 
-  it('serializza una riga per sessione, nello stesso ordine delle colonne', () => {
+  it('serialises one row per session, in the same order as the columns', () => {
     const csv = sessionsToCsv([makeSession()], HEADERS)
     const lines = csv.split('\r\n')
     expect(lines).toHaveLength(2)
@@ -49,7 +49,7 @@ describe('sessionsToCsv', () => {
     )
   })
 
-  it('mette tra virgolette i campi che contengono una virgola, riscrivendo le virgolette interne', () => {
+  it('quotes fields that contain a comma, escaping the inner quotes', () => {
     const csv = sessionsToCsv([makeSession({ stationName: 'Parkhaus, Ebene 2 "Nord"' })], HEADERS)
     const lines = csv.split('\r\n')
     expect(lines[1]).toContain('"Parkhaus, Ebene 2 ""Nord"""')

@@ -4,10 +4,10 @@ import type { OcmPoi, OcmReferenceData } from '#shared/schemas/ocm'
 const { ofetchMock } = vi.hoisted(() => ({ ofetchMock: vi.fn() }))
 vi.mock('ofetch', () => ({ ofetch: ofetchMock }))
 
-// `defineCachedFunction` è un auto-import di Nitro (server), non disponibile
-// nell'ambiente vitest "nuxt" (pensato per composable/componenti lato app).
-// Lo stubbiamo come pass-through: qui testiamo la logica di normalizzazione
-// ed errori, non il decorator di cache di Nitro (già testato a monte).
+// `defineCachedFunction` is a Nitro (server) auto-import, not available in
+// the vitest "nuxt" environment (meant for app-side composables/components).
+// We stub it as a pass-through: here we test the normalisation and error
+// logic, not Nitro's cache decorator (already tested upstream).
 vi.stubGlobal('defineCachedFunction', (fn: (...args: never[]) => unknown) => fn)
 
 const {
@@ -25,7 +25,7 @@ function makePoi(overrides: Partial<OcmPoi> = {}): OcmPoi {
     ID: 1,
     UUID: 'uuid-1',
     AddressInfo: {
-      Title: 'Stazione test',
+      Title: 'Test station',
       AddressLine1: 'Via Roma 1',
       AddressLine2: null,
       Town: 'Milano',
@@ -46,7 +46,7 @@ function makePoi(overrides: Partial<OcmPoi> = {}): OcmPoi {
 }
 
 describe('normalizeConnector', () => {
-  it('applica i default quando i campi opzionali mancano', () => {
+  it('applies the defaults when the optional fields are missing', () => {
     const connector = normalizeConnector({
       ID: 1,
       ConnectionTypeID: null,
@@ -67,7 +67,7 @@ describe('normalizeConnector', () => {
     })
   })
 
-  it('passa attraverso i valori quando presenti', () => {
+  it('passes values through when present', () => {
     const connector = normalizeConnector({
       ID: 2,
       ConnectionTypeID: 25,
@@ -90,7 +90,7 @@ describe('normalizeConnector', () => {
 })
 
 describe('normalizeStation', () => {
-  it('applica i default quando nome, operatore e stato mancano', () => {
+  it('applies the defaults when name, operator and status are missing', () => {
     const station = normalizeStation(
       makePoi({
         AddressInfo: { ...makePoi().AddressInfo, Title: null },
@@ -105,7 +105,7 @@ describe('normalizeStation', () => {
     expect(station.isOperational).toBeNull()
   })
 
-  it('calcola maxPowerKw come il massimo tra i connettori con potenza nota', () => {
+  it('computes maxPowerKw as the maximum among connectors with a known power', () => {
     const station = normalizeStation(
       makePoi({
         Connections: [
@@ -144,13 +144,13 @@ describe('normalizeStation', () => {
     expect(station.numberOfPoints).toBe(1)
   })
 
-  it('restituisce maxPowerKw null quando nessun connettore ha una potenza nota', () => {
+  it('returns maxPowerKw null when no connector has a known power', () => {
     const station = normalizeStation(makePoi({ Connections: [] }))
 
     expect(station.maxPowerKw).toBeNull()
   })
 
-  it('passa attraverso usageType e le note di accesso, default null se assenti', () => {
+  it('passes usageType and the access notes through, default null if absent', () => {
     const withData = normalizeStation(makePoi())
     expect(withData.usageType).toBe('Public')
 
@@ -164,7 +164,7 @@ describe('normalizeStation', () => {
     expect(withoutData.address.accessComments).toBeNull()
   })
 
-  it('usa il numero di connettori quando NumberOfPoints manca', () => {
+  it('uses the number of connectors when NumberOfPoints is missing', () => {
     const station = normalizeStation(
       makePoi({
         NumberOfPoints: null,
@@ -196,7 +196,7 @@ describe('normalizeStation', () => {
 })
 
 describe('normalizeReferenceData', () => {
-  it('applica il default "Sconosciuto" e passa attraverso isOperational', () => {
+  it('applies the "Sconosciuto" default and passes isOperational through', () => {
     const raw: OcmReferenceData = {
       ConnectionTypes: [{ ID: 1, Title: null }],
       Operators: [{ ID: 2, Title: 'Enel X' }],
@@ -218,7 +218,7 @@ describe('normalizeReferenceData', () => {
 })
 
 describe('fetchStations', () => {
-  it('restituisce le stazioni normalizzate su risposta valida', async () => {
+  it('returns the normalised stations on a valid response', async () => {
     ofetchMock.mockResolvedValueOnce([makePoi({ ID: 101 })])
 
     const stations = await fetchStations({
@@ -233,7 +233,7 @@ describe('fetchStations', () => {
     expect(stations[0]?.id).toBe(101)
   })
 
-  it('lancia OcmClientError con code invalid_response su una risposta malformata', async () => {
+  it('throws OcmClientError with code invalid_response on a malformed response', async () => {
     ofetchMock.mockResolvedValueOnce([{ not: 'a station' }])
 
     await expect(
@@ -241,7 +241,7 @@ describe('fetchStations', () => {
     ).rejects.toMatchObject({ code: 'invalid_response' })
   })
 
-  it('mappa un errore con statusCode su upstream_error', async () => {
+  it('maps an error with a statusCode to upstream_error', async () => {
     ofetchMock.mockRejectedValueOnce(Object.assign(new Error('bad gateway'), { statusCode: 502 }))
 
     await expect(
@@ -249,7 +249,7 @@ describe('fetchStations', () => {
     ).rejects.toMatchObject({ code: 'upstream_error' })
   })
 
-  it('mappa un TimeoutError su timeout', async () => {
+  it('maps a TimeoutError to timeout', async () => {
     const timeoutError = new Error('timed out')
     timeoutError.name = 'TimeoutError'
     ofetchMock.mockRejectedValueOnce(timeoutError)
@@ -259,7 +259,7 @@ describe('fetchStations', () => {
     ).rejects.toMatchObject({ code: 'timeout' })
   })
 
-  it('mappa un errore generico su network', async () => {
+  it('maps a generic error to network', async () => {
     ofetchMock.mockRejectedValueOnce(new Error('ECONNRESET'))
 
     await expect(
@@ -267,7 +267,7 @@ describe('fetchStations', () => {
     ).rejects.toMatchObject({ code: 'network' })
   })
 
-  it("OcmClientError è un'istanza di Error con name proprio", async () => {
+  it('OcmClientError is an instance of Error with its own name', async () => {
     ofetchMock.mockRejectedValueOnce(new Error('ECONNRESET'))
 
     try {
@@ -288,7 +288,7 @@ describe('fetchStations', () => {
 })
 
 describe('fetchStationById', () => {
-  it('restituisce null quando OCM non trova nessuna stazione con quel id', async () => {
+  it('returns null when OCM finds no station with that id', async () => {
     ofetchMock.mockResolvedValueOnce([])
 
     const station = await fetchStationById(999901)
@@ -296,7 +296,7 @@ describe('fetchStationById', () => {
     expect(station).toBeNull()
   })
 
-  it('restituisce la stazione normalizzata quando trovata', async () => {
+  it('returns the normalised station when found', async () => {
     ofetchMock.mockResolvedValueOnce([makePoi({ ID: 999902 })])
 
     const station = await fetchStationById(999902)
@@ -306,7 +306,7 @@ describe('fetchStationById', () => {
 })
 
 describe('fetchReferenceData', () => {
-  it('restituisce le tabelle di riferimento normalizzate', async () => {
+  it('returns the normalised reference tables', async () => {
     ofetchMock.mockResolvedValueOnce({
       ConnectionTypes: [{ ID: 1, Title: 'CCS' }],
       Operators: [{ ID: 2, Title: 'Enel X' }],
@@ -318,7 +318,7 @@ describe('fetchReferenceData', () => {
     expect(referenceData.connectionTypes).toEqual([{ id: 1, title: 'CCS' }])
   })
 
-  it('lancia OcmClientError con code invalid_response su una risposta malformata', async () => {
+  it('throws OcmClientError with code invalid_response on a malformed response', async () => {
     ofetchMock.mockResolvedValueOnce({ not: 'reference data' })
 
     await expect(fetchReferenceData('BE')).rejects.toMatchObject({ code: 'invalid_response' })

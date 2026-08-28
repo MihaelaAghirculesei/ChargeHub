@@ -1,16 +1,16 @@
 import { expect, test } from '@playwright/test'
 import { LoginPage } from './pages/LoginPage'
 
-test('lo skip link è il primo elemento raggiungibile e porta al contenuto principale', async ({
+test('the skip link is the first reachable element and leads to the main content', async ({
   page
 }) => {
   await page.goto('/de')
-  // `/de` è client-side (Giorno 21): la prima risposta è un guscio vuoto,
-  // il layout (skip link incluso) esiste solo dopo l'idratazione.
+  // `/de` is client-side (day 21): the first response is an empty shell,
+  // the layout (skip link included) exists only after hydration.
   const skipLink = page.locator('.skip-link')
   await skipLink.waitFor({ state: 'attached' })
 
-  // Nessun click: solo tastiera, come richiesto dal "Fatto quando" del piano.
+  // No click: keyboard only, as the plan's "Done when" requires.
   await page.keyboard.press('Tab')
   await expect(skipLink).toBeFocused()
 
@@ -18,7 +18,7 @@ test('lo skip link è il primo elemento raggiungibile e porta al contenuto princ
   await expect(page.locator('#main-content')).toBeFocused()
 })
 
-test('il focus resta visibile durante la navigazione da tastiera', async ({ page }) => {
+test('focus stays visible during keyboard navigation', async ({ page }) => {
   await page.goto('/de')
   await page.locator('.skip-link').waitFor({ state: 'attached' })
   await page.keyboard.press('Tab')
@@ -26,24 +26,22 @@ test('il focus resta visibile durante la navigazione da tastiera', async ({ page
 
   const focused = page.locator(':focus')
   await expect(focused).toBeVisible()
-  // outline/box-shadow non a "none": un anello di focus esplicito (vedi
-  // app/assets/css/accessibility.css) resta applicato indipendentemente
-  // da cosa fa internamente Vuetify.
+  // outline/box-shadow not "none": an explicit focus ring (see
+  // app/assets/css/accessibility.css) stays applied regardless of what
+  // Vuetify does internally.
   const outline = await focused.evaluate((el) => getComputedStyle(el).outlineStyle)
   const boxShadow = await focused.evaluate((el) => getComputedStyle(el).boxShadow)
   expect(outline !== 'none' || boxShadow !== 'none').toBe(true)
 })
 
-test('il dialog di creazione tariffa intrappola il focus e lo restituisce alla chiusura', async ({
-  page
-}) => {
+test('the tariff creation dialog traps focus and returns it on close', async ({ page }) => {
   await new LoginPage(page).loginAsOperator()
 
   await page.goto('/de/tariffs')
-  // SSR, non un guscio vuoto: il bottone esiste già nell'HTML iniziale,
-  // quindi `waitFor({ state: 'attached' })` su di lui non aspetterebbe
-  // l'idratazione (stesso problema descritto nel test sopra, causa
-  // diversa) — `networkidle` copre l'attesa reale, stesso pattern di
+  // SSR, not an empty shell: the button already exists in the initial
+  // HTML, so `waitFor({ state: 'attached' })` on it would not wait for
+  // hydration (same problem as the test above, different cause) —
+  // `networkidle` covers the real wait, same pattern as
   // tests/e2e/accessibility.spec.ts.
   await page.waitForLoadState('networkidle')
   const openButton = page.getByRole('button', { name: 'Neuer Tarif' })
@@ -52,7 +50,7 @@ test('il dialog di creazione tariffa intrappola il focus e lo restituisce alla c
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
 
-  // Tab ripetuti non devono mai far uscire il focus dal dialog aperto.
+  // Repeated Tabs must never move the focus out of the open dialog.
   for (let i = 0; i < 10; i += 1) {
     await page.keyboard.press('Tab')
     const focusedInsideDialog = await dialog.locator(':focus').count()
@@ -64,16 +62,16 @@ test('il dialog di creazione tariffa intrappola il focus e lo restituisce alla c
   await expect(openButton).toBeFocused()
 })
 
-test('i pulsanti icona hanno un’area di tocco di almeno 44×44px', async ({ page }) => {
+test('the icon buttons have a touch target of at least 44×44px', async ({ page }) => {
   await new LoginPage(page).loginAsOperator()
 
   await page.goto('/de/tariffs')
-  // Vedi il commento nel test sopra: SSR, serve `networkidle` per
-  // aspettare l'idratazione prima di interagire.
+  // See the comment in the test above: SSR, `networkidle` is needed to
+  // wait for hydration before interacting.
   await page.waitForLoadState('networkidle')
 
-  // Ambiente di test senza cookie pregressi: nessuna tariffa esiste ancora,
-  // quindi i pulsanti icona da misurare non ci sarebbero — se ne crea una.
+  // Test environment with no prior cookies: no tariff exists yet, so the
+  // icon buttons to measure would not be there — create one.
   await page.getByRole('button', { name: 'Neuer Tarif' }).click()
   await page.getByLabel('Name').fill('Test Tarif')
   await page.locator('.v-dialog').getByRole('button', { name: 'Speichern' }).click()

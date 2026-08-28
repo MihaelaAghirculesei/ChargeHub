@@ -13,9 +13,9 @@ export class StationsPage {
   }
 
   get minPowerInput() {
-    // `getByLabel` da solo prende anche il pulsante "pulisci" del campo
-    // (`clearable`, il suo aria-label contiene la stessa label): il campo
-    // vero e proprio ha ruolo `spinbutton` (type="number").
+    // `getByLabel` alone also picks up the field's "clear" button
+    // (`clearable`, its aria-label contains the same label): the field
+    // itself has role `spinbutton` (type="number").
     return this.page.getByRole('spinbutton', { name: 'Min. Leistung (kW)' })
   }
 
@@ -36,10 +36,10 @@ export class StationsPage {
   }
 
   /**
-   * MapLibre viene importato dinamicamente e inizializza un contesto
-   * WebGL/carica lo stile prima di creare il canvas — più lento del solo
-   * `networkidle` che `goto()` già aspetta, specie sotto il carico di più
-   * progetti Playwright in parallelo sullo stesso dev server.
+   * MapLibre is imported dynamically and initialises a WebGL context /
+   * loads the style before creating the canvas — slower than the
+   * `networkidle` that `goto()` already waits for, especially under the
+   * load of several Playwright projects in parallel on the same dev server.
    */
   async waitForMapReady() {
     await this.map.waitFor({ state: 'visible', timeout: 15_000 })
@@ -49,7 +49,7 @@ export class StationsPage {
     return this.table.locator('tbody tr', { hasText: stationName })
   }
 
-  /** Debounce di 300ms sulla ricerca (StationsFilterBar.vue): non un dettaglio da ignorare in un test reale. */
+  /** 300ms debounce on the search (StationsFilterBar.vue): not a detail to ignore in a real test. */
   async search(text: string) {
     await this.searchInput.fill(text)
     await this.page.waitForTimeout(400)

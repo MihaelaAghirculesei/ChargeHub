@@ -7,10 +7,10 @@ import { useStations } from '~/modules/stations/composables/useStations'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
 /**
- * `useAsyncData` (dentro `useStations`) richiede un contesto app Nuxt vero
- * per funzionare — non si può chiamare la funzione da sola in un test come
- * fosse una funzione pura. `mountSuspended` monta questo host minimo dentro
- * l'ambiente vitest "nuxt" ed espone il risultato del composable su `.vm`.
+ * `useAsyncData` (inside `useStations`) needs a real Nuxt app context to
+ * work — you cannot call the function on its own in a test as if it were a
+ * pure function. `mountSuspended` mounts this minimal host inside the
+ * vitest "nuxt" environment and exposes the composable's result on `.vm`.
  */
 const StationsHost = defineComponent({
   setup() {
@@ -19,11 +19,11 @@ const StationsHost = defineComponent({
   template: '<div />'
 })
 
-// L'ambiente "nuxt" riusa una singola app (e quindi un singolo Pinia) per
-// tutto il file di test, non una per `it()`: senza pulizia, `registerEndpoint`
-// accumula handler (quello del test precedente resta il primo match) e la
-// cache di `useAsyncData` servirebbe il valore già risolto invece di
-// rifare la richiesta al mount successivo.
+// The "nuxt" env reuses a single app (and so a single Pinia) for the
+// whole test file, not one per `it()`: without cleanup, `registerEndpoint`
+// accumulates handlers (the previous test's stays the first match) and the
+// `useAsyncData` cache would serve the already-resolved value instead of
+// re-issuing the request on the next mount.
 let unregisterEndpoint: (() => void) | undefined
 afterEach(() => {
   unregisterEndpoint?.()
@@ -33,7 +33,7 @@ afterEach(() => {
 })
 
 describe('useStations', () => {
-  it('espone le stazioni e il totale della pagina corrente dopo il fetch iniziale', async () => {
+  it('exposes the stations and the current page total after the initial fetch', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations', () => ({
       items: [{ id: 1, name: 'Rathaus' }],
       total: 42
@@ -48,7 +48,7 @@ describe('useStations', () => {
     expect(wrapper.vm.error).toBeFalsy()
   })
 
-  it('updateOptions traduce il payload di v-data-table-server nello stato tabella dei filtri', async () => {
+  it('updateOptions translates the v-data-table-server payload into the table state of the filters store', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations', () => ({ items: [], total: 0 }))
 
     const wrapper = await mountSuspended(StationsHost)
@@ -67,7 +67,7 @@ describe('useStations', () => {
     })
   })
 
-  it('con sortBy vuoto (colonna deselezionata) azzera sortBy/sortOrder invece di lasciare il vecchio valore', async () => {
+  it('with an empty sortBy (column deselected) it clears sortBy/sortOrder instead of leaving the old value', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations', () => ({ items: [], total: 0 }))
 
     const wrapper = await mountSuspended(StationsHost)

@@ -6,10 +6,10 @@ import { defineComponent, nextTick } from 'vue'
 import { useStation } from '~/modules/stations/composables/useStation'
 
 /**
- * `useAsyncData` (dentro `useStation`) richiede un contesto app Nuxt vero —
- * stesso motivo/pattern di `useStations.test.ts`. L'id passato a
- * `useStation` è un prop dell'host, così ogni test può usare un id diverso
- * (e uno dei test può cambiarlo dopo il mount).
+ * `useAsyncData` (inside `useStation`) needs a real Nuxt app context —
+ * same reason/pattern as `useStations.test.ts`. The id passed to
+ * `useStation` is a host prop, so each test can use a different id (and one
+ * test can change it after mount).
  */
 const StationHost = defineComponent({
   props: { id: { type: Number, required: true } },
@@ -26,7 +26,7 @@ afterEach(() => {
 })
 
 describe('useStation', () => {
-  it('espone la stazione dopo il fetch iniziale', async () => {
+  it('exposes the station after the initial fetch', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations/101', () => ({ id: 101, name: 'Rathaus' }))
 
     const wrapper = await mountSuspended(StationHost, { props: { id: 101 } })
@@ -37,13 +37,13 @@ describe('useStation', () => {
     expect(wrapper.vm.error).toBeFalsy()
   })
 
-  it('espone null quando la stazione non esiste, senza lanciare', async () => {
-    // Il contratto reale è "il server risponde 404, il repository lo
-    // traduce in null" (Giorno 4, già testato lì) — qui simuliamo il vero
-    // comportamento server (throw 404), non un 200 con body `null`, che non
-    // è come /api/stations/:id si comporta davvero.
+  it('exposes null when the station does not exist, without throwing', async () => {
+    // The real contract is "the server responds 404, the repository
+    // translates it to null" (day 4, already tested there) — here we
+    // simulate the real server behaviour (throw 404), not a 200 with a
+    // `null` body, which is not how /api/stations/:id actually behaves.
     unregisterEndpoint = registerEndpoint('/api/stations/999999', () => {
-      throw createError({ statusCode: 404, statusMessage: 'Stazione non trovata.' })
+      throw createError({ statusCode: 404, statusMessage: 'Station not found.' })
     })
 
     const wrapper = await mountSuspended(StationHost, { props: { id: 999999 } })
@@ -53,7 +53,7 @@ describe('useStation', () => {
     expect(wrapper.vm.error).toBeFalsy()
   })
 
-  it('rifetcha quando l’id cambia', async () => {
+  it('re-fetches when the id changes', async () => {
     const unregisterFirst = registerEndpoint('/api/stations/202', () => ({
       id: 202,
       name: 'Station 202'

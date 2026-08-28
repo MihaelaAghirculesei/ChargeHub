@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { haversineDistanceKm } from '~/modules/stations/geo'
 
 describe('haversineDistanceKm', () => {
-  it('restituisce 0 per due punti identici', () => {
+  it('returns 0 for two identical points', () => {
     expect(
       haversineDistanceKm(
         { latitude: 52.42, longitude: 10.79 },
@@ -11,7 +11,7 @@ describe('haversineDistanceKm', () => {
     ).toBe(0)
   })
 
-  it('calcola una distanza nota (Wolfsburg → Berlino, circa 180km)', () => {
+  it('computes a known distance (Wolfsburg → Berlin, about 180km)', () => {
     const wolfsburg = { latitude: 52.42, longitude: 10.79 }
     const berlin = { latitude: 52.52, longitude: 13.405 }
 
@@ -21,7 +21,7 @@ describe('haversineDistanceKm', () => {
     expect(distance).toBeLessThan(190)
   })
 
-  it('è simmetrica (a→b uguale a b→a)', () => {
+  it('is symmetric (a→b equals b→a)', () => {
     const a = { latitude: 52.42, longitude: 10.79 }
     const b = { latitude: 48.14, longitude: 11.58 }
 

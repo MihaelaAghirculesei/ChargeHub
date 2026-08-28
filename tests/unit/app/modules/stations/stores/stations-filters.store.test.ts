@@ -4,9 +4,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { nextTick } from 'vue'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
-// L'ambiente "nuxt" riusa un singolo router (e un singolo Pinia, resettato
-// sotto) per tutto il file: senza pulizia, i query param impostati da un
-// test rimarrebbero nell'URL del test successivo.
+// The "nuxt" env reuses a single router (and a single Pinia, reset below)
+// for the whole file: without cleanup, the query params set by one test
+// would remain in the next test's URL.
 afterEach(async () => {
   const router = useRouter()
   await router.replace({ query: {} })
@@ -17,7 +17,7 @@ beforeEach(() => {
 })
 
 describe('useStationsFiltersStore', () => {
-  it('parte con i filtri e lo stato tabella di default, nessuna selezione', () => {
+  it('starts with the default filters and table state, no selection', () => {
     const store = useStationsFiltersStore()
 
     expect(store.filters).toMatchObject({ countryCode: 'DE', radiusKm: 25, maxResults: 100 })
@@ -25,7 +25,7 @@ describe('useStationsFiltersStore', () => {
     expect(store.selectedStationId).toBeNull()
   })
 
-  it('al caricamento legge i filtri dalla query URL, se presente', async () => {
+  it('on load it reads the filters from the URL query, if present', async () => {
     const router = useRouter()
     await router.replace({ query: { search: 'Rathaus', minpowerkw: '22' } })
 
@@ -35,10 +35,10 @@ describe('useStationsFiltersStore', () => {
     expect(store.filters.minPowerKw).toBe(22)
   })
 
-  it('regressione: un campo assente dall’URL non sovrascrive con undefined il default/cookie', () => {
-    // `parseFiltersFromQuery` restituisce sempre tutte le chiavi (undefined
-    // per quelle assenti) — uno spread diretto nello store cancellerebbe
-    // radiusKm/latitude/longitude ogni volta che l'URL non li contiene.
+  it('regression: a field absent from the URL does not overwrite the default/cookie with undefined', () => {
+    // `parseFiltersFromQuery` always returns every key (undefined for the
+    // absent ones) — a direct spread into the store would erase
+    // radiusKm/latitude/longitude every time the URL does not contain them.
     const store = useStationsFiltersStore()
 
     expect(store.filters.latitude).toBe(52.42)
@@ -46,7 +46,7 @@ describe('useStationsFiltersStore', () => {
     expect(store.filters.radiusKm).toBe(25)
   })
 
-  it('setFilters fa merge parziale senza toccare i campi non passati', () => {
+  it('setFilters does a partial merge without touching the fields not passed', () => {
     const store = useStationsFiltersStore()
 
     store.setFilters({ minPowerKw: 22 })
@@ -55,7 +55,7 @@ describe('useStationsFiltersStore', () => {
     expect(store.filters.countryCode).toBe('DE')
   })
 
-  it('setFilters aggiorna anche i query param della route (URL condivisibile)', async () => {
+  it('setFilters also updates the route query params (shareable URL)', async () => {
     const store = useStationsFiltersStore()
 
     store.setFilters({ search: 'Stadtwerke', operatorId: 5 })
@@ -67,7 +67,7 @@ describe('useStationsFiltersStore', () => {
     expect(route.query.operatorid).toBe('5')
   })
 
-  it('setFilters riporta la tabella a pagina 1', () => {
+  it('setFilters resets the table to page 1', () => {
     const store = useStationsFiltersStore()
 
     store.setTableOptions({ page: 3 })
@@ -76,7 +76,7 @@ describe('useStationsFiltersStore', () => {
     expect(store.tableOptions.page).toBe(1)
   })
 
-  it('resetFilters riporta filtri e tabella ai default', () => {
+  it('resetFilters restores filters and table to the defaults', () => {
     const store = useStationsFiltersStore()
 
     store.setFilters({ minPowerKw: 22, operatorId: 5 })
@@ -88,7 +88,7 @@ describe('useStationsFiltersStore', () => {
     expect(store.tableOptions).toEqual({ page: 1, itemsPerPage: 10 })
   })
 
-  it('setTableOptions fa merge parziale', () => {
+  it('setTableOptions does a partial merge', () => {
     const store = useStationsFiltersStore()
 
     store.setTableOptions({ page: 2 })
@@ -102,7 +102,7 @@ describe('useStationsFiltersStore', () => {
     })
   })
 
-  it('select imposta e azzera la stazione selezionata', () => {
+  it('select sets and clears the selected station', () => {
     const store = useStationsFiltersStore()
 
     store.select(101)
@@ -112,7 +112,7 @@ describe('useStationsFiltersStore', () => {
     expect(store.selectedStationId).toBeNull()
   })
 
-  it('hover imposta e azzera la stazione in hover, indipendente dalla selezione', () => {
+  it('hover sets and clears the hovered station, independent of the selection', () => {
     const store = useStationsFiltersStore()
 
     store.select(101)
@@ -126,13 +126,13 @@ describe('useStationsFiltersStore', () => {
     expect(store.selectedStationId).toBe(101)
   })
 
-  it('parte con viewMode "split" di default', () => {
+  it('starts with viewMode "split" by default', () => {
     const store = useStationsFiltersStore()
 
     expect(store.viewMode).toBe('split')
   })
 
-  it('setViewMode cambia la modalità', () => {
+  it('setViewMode changes the mode', () => {
     const store = useStationsFiltersStore()
 
     store.setViewMode('map')
@@ -140,7 +140,7 @@ describe('useStationsFiltersStore', () => {
     expect(store.viewMode).toBe('map')
   })
 
-  it('sposta la mappa (lat/lon/radius) aggiorna anche la query URL', async () => {
+  it('panning the map (lat/lon/radius) also updates the URL query', async () => {
     const store = useStationsFiltersStore()
 
     store.setFilters({ latitude: 48.14, longitude: 11.58, radiusKm: 10 })

@@ -7,25 +7,25 @@ import { pollingTelemetryTransport } from '~/modules/stations/telemetry/polling-
 import type { TelemetryConnectionStatus } from '~/modules/stations/telemetry/transport'
 
 /**
- * Vero transport di produzione (a differenza di useLiveTelemetry.test.ts,
- * che usa un finto transport per isolare il composable) — qui si verifica
- * lo scheduling reale via `setTimeout` e la logica "reconnecting" dopo 1
- * fallimento / "offline" dopo 2 consecutivi.
+ * The real production transport (unlike useLiveTelemetry.test.ts, which
+ * uses a fake transport to isolate the composable) — here we verify the
+ * real scheduling via `setTimeout` and the "reconnecting" after 1 failure /
+ * "offline" after 2 consecutive failures logic.
  *
- * Solo `setTimeout`/`clearTimeout` sono finti (non l'intero orologio): il
- * mock di rete dietro `registerEndpoint` risolve comunque su microtask/
- * event-loop reali, quindi ogni avanzamento dei timer è seguito da un
- * `flushPromises()` reale per lasciarli risolvere.
+ * Only `setTimeout`/`clearTimeout` are faked (not the whole clock): the
+ * network mock behind `registerEndpoint` still resolves on real
+ * microtask/event-loop, so every timer advance is followed by a real
+ * `flushPromises()` to let them resolve.
  */
 function makeStationTelemetry(): StationTelemetry[] {
   return [{ stationId: 1, timestamp: '2026-08-18T10:00:00.000Z', connectors: [] }]
 }
 
 /**
- * Un solo `flushPromises()` non basta sempre a svuotare l'intera catena di
- * microtask dietro `$fetch` (parsing della risposta del mock incluso, più
- * hop di quelli che un `await` sembra suggerire): ripetuto qualche volta è
- * un compromesso pragmatico più affidabile di indovinare il numero esatto.
+ * A single `flushPromises()` is not always enough to drain the whole chain
+ * of microtasks behind `$fetch` (parsing the mock response included, more
+ * hops than an `await` seems to suggest): repeating it a few times is a
+ * pragmatic compromise more reliable than guessing the exact number.
  */
 async function settle() {
   for (let i = 0; i < 5; i += 1) await flushPromises()
@@ -49,7 +49,7 @@ afterEach(() => {
 })
 
 describe('pollingTelemetryTransport', () => {
-  it('esegue subito un primo poll e notifica "live" + i dati al successo', async () => {
+  it('runs a first poll immediately and notifies "live" + the data on success', async () => {
     unregisterEndpoint = registerEndpoint('/api/telemetry', () => makeStationTelemetry())
     const onUpdate = vi.fn()
     const onStatusChange = vi.fn()
@@ -61,7 +61,7 @@ describe('pollingTelemetryTransport', () => {
     expect(onUpdate).toHaveBeenCalledWith(makeStationTelemetry())
   })
 
-  it('rischedula un nuovo poll 5s dopo la fine del precedente, non prima', async () => {
+  it('reschedules a new poll 5s after the previous one ends, not before', async () => {
     let callCount = 0
     unregisterEndpoint = registerEndpoint('/api/telemetry', () => {
       callCount += 1
@@ -79,7 +79,7 @@ describe('pollingTelemetryTransport', () => {
     expect(callCount).toBe(2)
   })
 
-  it('un fallimento isolato porta a "reconnecting", non "offline"', async () => {
+  it('an isolated failure leads to "reconnecting", not "offline"', async () => {
     unregisterEndpoint = registerEndpoint('/api/telemetry', () => {
       throw createError({ statusCode: 502, statusMessage: 'Bad Gateway' })
     })
@@ -94,7 +94,7 @@ describe('pollingTelemetryTransport', () => {
     expect(statuses).toEqual(['reconnecting'])
   })
 
-  it('due fallimenti consecutivi portano a "offline"', async () => {
+  it('two consecutive failures lead to "offline"', async () => {
     unregisterEndpoint = registerEndpoint('/api/telemetry', () => {
       throw createError({ statusCode: 502, statusMessage: 'Bad Gateway' })
     })
@@ -110,7 +110,7 @@ describe('pollingTelemetryTransport', () => {
     expect(statuses).toEqual(['reconnecting', 'offline'])
   })
 
-  it('un successo dopo dei fallimenti riazzera il contatore e torna a "live"', async () => {
+  it('a success after failures resets the counter and returns to "live"', async () => {
     let shouldFail = true
     unregisterEndpoint = registerEndpoint('/api/telemetry', () => {
       if (shouldFail) throw createError({ statusCode: 502, statusMessage: 'Bad Gateway' })
@@ -130,7 +130,7 @@ describe('pollingTelemetryTransport', () => {
     expect(statuses).toEqual(['reconnecting', 'live'])
   })
 
-  it('stop() ferma lo scheduling: nessun altro poll dopo la chiamata', async () => {
+  it('stop() halts the scheduling: no further poll after the call', async () => {
     let callCount = 0
     unregisterEndpoint = registerEndpoint('/api/telemetry', () => {
       callCount += 1

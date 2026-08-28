@@ -10,7 +10,7 @@ const SEED_A = 'station-1-connector-10'
 const SEED_B = 'station-1-connector-11'
 const MAX_POWER_KW = 22
 
-/** cycleLengthSeconds è sempre tra 600 e 1800: 3600s coprono almeno un ciclo intero. */
+/** cycleLengthSeconds is always between 600 and 1800: 3600s covers at least one full cycle. */
 function scanCycle(
   seedKey: string,
   maxPowerKw: number,
@@ -55,20 +55,20 @@ function makeStation(overrides: Partial<Station> = {}): Station {
 }
 
 describe('computeChargePointTelemetry', () => {
-  it('è deterministico: stesso seed e stesso istante producono lo stesso risultato', () => {
+  it('is deterministic: the same seed and the same instant produce the same result', () => {
     const now = new Date('2026-08-18T10:00:00Z')
     const first = computeChargePointTelemetry(1, SEED_A, MAX_POWER_KW, now)
     const second = computeChargePointTelemetry(1, SEED_A, MAX_POWER_KW, now)
     expect(second).toEqual(first)
   })
 
-  it('attraversa sia Available che Charging nel corso di un ciclo', () => {
+  it('goes through both Available and Charging over the course of a cycle', () => {
     const statuses = new Set(scanCycle(SEED_A, MAX_POWER_KW).map((sample) => sample.status))
     expect(statuses.has('Available')).toBe(true)
     expect(statuses.has('Charging')).toBe(true)
   })
 
-  it('popola i campi di sessione solo quando lo stato è Charging', () => {
+  it('populates the session fields only when the status is Charging', () => {
     for (const sample of scanCycle(SEED_A, MAX_POWER_KW)) {
       if (sample.status === 'Charging') {
         expect(sample.powerKw).not.toBeNull()
@@ -84,7 +84,7 @@ describe('computeChargePointTelemetry', () => {
     }
   })
 
-  it('la potenza decresce verso la fine della sessione (curva plausibile, non piatta né casuale)', () => {
+  it('power decreases towards the end of the session (a plausible curve, not flat or random)', () => {
     const charging = scanCycle(SEED_A, MAX_POWER_KW).filter(
       (sample) => sample.status === 'Charging'
     )
@@ -94,7 +94,7 @@ describe('computeChargePointTelemetry', () => {
     expect(last.powerKw as number).toBeLessThan(first.powerKw as number)
   })
 
-  it("l'energia di sessione cresce in modo monotono finché la sessione prosegue", () => {
+  it('session energy grows monotonically as long as the session continues', () => {
     const charging = scanCycle(SEED_A, MAX_POWER_KW).filter(
       (sample) => sample.status === 'Charging'
     )
@@ -111,14 +111,14 @@ describe('computeChargePointTelemetry', () => {
     }
   })
 
-  it('due connettori diversi (seed diversi) non restano sincronizzati sullo stesso stato', () => {
+  it('two different connectors (different seeds) do not stay synced on the same status', () => {
     const samplesA = scanCycle(SEED_A, MAX_POWER_KW, 3600, 30)
     const samplesB = scanCycle(SEED_B, MAX_POWER_KW, 3600, 30)
     const anyDifferent = samplesA.some((sample, index) => sample.status !== samplesB[index]?.status)
     expect(anyDifferent).toBe(true)
   })
 
-  it('chiamando due volte a pochi secondi di distanza durante una ricarica, i valori cambiano in modo credibile', () => {
+  it('calling twice a few seconds apart during a charge, the values change believably', () => {
     const charging = scanCycle(SEED_A, MAX_POWER_KW, 3600, 5).filter(
       (sample) => sample.status === 'Charging'
     )
@@ -132,7 +132,7 @@ describe('computeChargePointTelemetry', () => {
     expect(laterSameSession.sessionEnergyKwh as number).toBeGreaterThan(
       early.sessionEnergyKwh as number
     )
-    // credibile, non un salto casuale: la potenza resta nello stesso ordine di grandezza
+    // believable, not a random jump: the power stays in the same order of magnitude
     expect(Math.abs((laterSameSession.powerKw as number) - (early.powerKw as number))).toBeLessThan(
       MAX_POWER_KW
     )
@@ -140,7 +140,7 @@ describe('computeChargePointTelemetry', () => {
 })
 
 describe('computeStationTelemetry', () => {
-  it('produce una riga di telemetria per ogni connettore della stazione', () => {
+  it('produces one telemetry row per connector of the station', () => {
     const station = makeStation()
     const now = new Date('2026-08-18T10:00:00Z')
     const telemetry = computeStationTelemetry(station, now)
@@ -151,16 +151,15 @@ describe('computeStationTelemetry', () => {
     expect(telemetry.connectors.map((connector) => connector.connectorId)).toEqual([10, 11])
   })
 
-  it('usa una potenza di default plausibile per i connettori senza PowerKW noto da OCM', () => {
+  it('uses a plausible default power for connectors with no PowerKW known from OCM', () => {
     const station = makeStation({
       connectors: [
         { id: 99, typeId: null, type: 'Unbekannt', level: null, powerKw: null, quantity: 1 }
       ]
     })
 
-    // Scansiona il tempo finché il connettore risulta in ricarica: senza un
-    // PowerKW noto deve comunque simulare una sessione plausibile, non
-    // restare sempre inattivo.
+    // Scan time until the connector is charging: with no known PowerKW it
+    // must still simulate a plausible session, not stay idle forever.
     let foundCharging: ChargePointTelemetry | undefined
     for (let t = 0; t < 3600 && !foundCharging; t += 5) {
       const [sample] = computeStationTelemetry(station, new Date(t * 1000)).connectors

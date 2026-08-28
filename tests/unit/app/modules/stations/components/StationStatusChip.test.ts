@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import StationStatusChip from '~/modules/stations/components/StationStatusChip.vue'
 
 describe('StationStatusChip', () => {
-  it('operativo: colore success, icona di conferma, testo del registro', async () => {
+  it('operational: success colour, a confirm icon, the registry text', async () => {
     const wrapper = await mountSuspended(StationStatusChip, {
       props: { isOperational: true, label: 'Operational' }
     })
@@ -13,7 +13,7 @@ describe('StationStatusChip', () => {
     expect(wrapper.find('.mdi-check-circle').exists()).toBe(true)
   })
 
-  it('non operativo: colore error, icona di allerta', async () => {
+  it('not operational: error colour, an alert icon', async () => {
     const wrapper = await mountSuspended(StationStatusChip, {
       props: { isOperational: false, label: 'Not Operational' }
     })
@@ -22,7 +22,7 @@ describe('StationStatusChip', () => {
     expect(wrapper.find('.mdi-alert-circle').exists()).toBe(true)
   })
 
-  it('sconosciuto (null): colore neutro, icona interrogativo — mai un colore a caso', async () => {
+  it('unknown (null): a neutral colour, a question-mark icon — never a random colour', async () => {
     const wrapper = await mountSuspended(StationStatusChip, {
       props: { isOperational: null, label: 'Planned for Future Date' }
     })
@@ -31,7 +31,7 @@ describe('StationStatusChip', () => {
     expect(wrapper.find('.mdi-help-circle').exists()).toBe(true)
   })
 
-  it('lo stato non è mai comunicato dal solo colore: testo sempre presente', async () => {
+  it('status is never communicated by colour alone: text always present', async () => {
     const wrapper = await mountSuspended(StationStatusChip, {
       props: { isOperational: true, label: 'Operational' }
     })

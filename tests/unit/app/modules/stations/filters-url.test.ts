@@ -11,7 +11,7 @@ const baseFilters: StationFilters = {
 }
 
 describe('parseFiltersFromQuery', () => {
-  it('legge tutti i campi filtro presenti nella query, incluse le coordinate', () => {
+  it('reads every filter field present in the query, coordinates included', () => {
     expect(
       parseFiltersFromQuery({
         lat: '52.42',
@@ -35,7 +35,7 @@ describe('parseFiltersFromQuery', () => {
     })
   })
 
-  it('restituisce undefined per i campi assenti, invalidi o vuoti', () => {
+  it('returns undefined for absent, invalid or empty fields', () => {
     expect(parseFiltersFromQuery({})).toEqual({
       latitude: undefined,
       longitude: undefined,
@@ -52,32 +52,32 @@ describe('parseFiltersFromQuery', () => {
     })
   })
 
-  it('prende il primo valore quando lo stesso param compare più volte', () => {
+  it('takes the first value when the same param appears more than once', () => {
     expect(parseFiltersFromQuery({ search: ['Rathaus', 'Stadtwerke'] })).toMatchObject({
       search: 'Rathaus'
     })
   })
 
-  it('scarta un ID non positivo o non intero', () => {
+  it('discards a non-positive or non-integer ID', () => {
     expect(parseFiltersFromQuery({ operatorid: '-5' }).operatorId).toBeUndefined()
     expect(parseFiltersFromQuery({ operatorid: '2.5' }).operatorId).toBeUndefined()
   })
 
-  it('accetta latitudine/longitudine negative o zero, non solo positive', () => {
+  it('accepts negative or zero latitude/longitude, not only positive', () => {
     expect(parseFiltersFromQuery({ lat: '-33.87', lon: '0' })).toMatchObject({
       latitude: -33.87,
       longitude: 0
     })
   })
 
-  it('scarta coordinate fuori dal range valido', () => {
+  it('discards coordinates outside the valid range', () => {
     expect(parseFiltersFromQuery({ lat: '95' }).latitude).toBeUndefined()
     expect(parseFiltersFromQuery({ lon: '-200' }).longitude).toBeUndefined()
   })
 })
 
 describe('filtersToQuery', () => {
-  it('serializza sempre le coordinate e solo i filtri opzionali attivi', () => {
+  it('always serialises the coordinates and only the active optional filters', () => {
     expect(filtersToQuery({ ...baseFilters, search: 'Rathaus', minPowerKw: 11 })).toEqual({
       lat: '52.42',
       lon: '10.79',
@@ -90,7 +90,7 @@ describe('filtersToQuery', () => {
     })
   })
 
-  it('round-trip: parse(serialize(filtri)) restituisce gli stessi filtri', () => {
+  it('round-trip: parse(serialize(filters)) returns the same filters', () => {
     const filters: StationFilters = {
       ...baseFilters,
       latitude: 48.14,

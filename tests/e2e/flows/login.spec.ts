@@ -3,7 +3,7 @@ import { DashboardPage } from '../pages/DashboardPage'
 import { LoginPage } from '../pages/LoginPage'
 
 test.describe('login -> dashboard', () => {
-  test('un operatore che si logga arriva alla dashboard con i KPI', async ({ page }) => {
+  test('an operator who logs in reaches the dashboard with the KPIs', async ({ page }) => {
     const loginPage = new LoginPage(page)
     const dashboard = new DashboardPage(page)
 
@@ -15,19 +15,17 @@ test.describe('login -> dashboard', () => {
     await expect(dashboard.kpiCard('In Ladung')).toBeVisible()
   })
 
-  test('credenziali sbagliate mostrano un errore e restano sulla pagina di login', async ({
-    page
-  }) => {
+  test('wrong credentials show an error and stay on the login page', async ({ page }) => {
     const loginPage = new LoginPage(page)
 
     await loginPage.goto()
-    await loginPage.loginAs('operator', 'password-sbagliata')
+    await loginPage.loginAs('operator', 'wrong-password')
 
     await expect(loginPage.errorAlert).toBeVisible()
     await expect(page).toHaveURL(/\/de\/login/)
   })
 
-  test('/tariffs senza sessione reindirizza al login e torna alla pagina di destinazione dopo il login', async ({
+  test('/tariffs with no session redirects to login and returns to the target page after login', async ({
     page
   }) => {
     const loginPage = new LoginPage(page)

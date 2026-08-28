@@ -8,7 +8,7 @@ afterEach(() => {
 })
 
 describe('useAuth', () => {
-  it('isLoggedIn/isOperator riflettono lo stato utente corrente', () => {
+  it('isLoggedIn/isOperator reflect the current user state', () => {
     const { isLoggedIn, isOperator } = useAuth()
 
     expect(isLoggedIn.value).toBe(false)
@@ -22,7 +22,7 @@ describe('useAuth', () => {
     expect(isOperator.value).toBe(true)
   })
 
-  it('login chiama il repository e aggiorna lo stato utente', async () => {
+  it('login calls the repository and updates the user state', async () => {
     registerEndpoint('/api/auth/login', {
       method: 'POST',
       handler: () => ({ username: 'operator', role: 'operator' })
@@ -34,7 +34,7 @@ describe('useAuth', () => {
     expect(user.value).toEqual({ username: 'operator', role: 'operator' })
   })
 
-  it('logout chiama il repository e azzera lo stato utente', async () => {
+  it('logout calls the repository and clears the user state', async () => {
     registerEndpoint('/api/auth/logout', {
       method: 'POST',
       handler: () => ({ success: true })

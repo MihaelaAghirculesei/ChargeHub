@@ -45,18 +45,18 @@ export class TariffsPage {
   }
 
   /**
-   * v-select non è un <select> nativo: apre l'overlay e clicca l'opzione
-   * per indice (l'elenco è generato dalle sessioni sintetiche, non ha
-   * testo stabile). `force: true`: l'input reale di v-select ha
-   * `pointer-events` gestiti dal wrapper `.v-field__input` che lo
-   * sovrappone e intercetta il click di Playwright — l'apertura
-   * dell'overlay funziona comunque, è così che il componente è costruito.
+   * v-select is not a native <select>: it opens the overlay and clicks the
+   * option by index (the list is generated from the synthetic sessions, it
+   * has no stable text). `force: true`: v-select's real input has
+   * `pointer-events` handled by the `.v-field__input` wrapper that overlays
+   * it and intercepts Playwright's click — opening the overlay works
+   * anyway, that is how the component is built.
    */
   async selectFirstSession() {
     await this.sessionSelect.click({ force: true })
-    // Non `.v-list-item` da solo: la stessa classe è anche sulle voci del
-    // drawer di navigazione, sempre nel DOM. Le opzioni del menu aperto
-    // hanno `role="option"` (Vuetify le espone come parte di un listbox).
+    // Not `.v-list-item` alone: the same class is also on the navigation
+    // drawer items, always in the DOM. The open menu's options have
+    // `role="option"` (Vuetify exposes them as part of a listbox).
     await this.page.getByRole('option').first().click()
   }
 

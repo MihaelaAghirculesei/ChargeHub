@@ -32,29 +32,29 @@ function makeStation(overrides: Partial<Station> = {}): Station {
 const NOW = new Date('2026-08-18T12:00:00.000Z')
 
 describe('generateSessions', () => {
-  it('restituisce un array vuoto se non ci sono stazioni', () => {
+  it('returns an empty array when there are no stations', () => {
     expect(generateSessions([], { now: NOW })).toEqual([])
   })
 
-  it('ignora le stazioni senza connettori', () => {
+  it('ignores stations with no connectors', () => {
     const station = makeStation({ connectors: [] })
     expect(generateSessions([station], { now: NOW })).toEqual([])
   })
 
-  it('è deterministico: stesso input produce lo stesso output', () => {
+  it('is deterministic: the same input produces the same output', () => {
     const stations = [makeStation()]
     const first = generateSessions(stations, { count: 50, now: NOW })
     const second = generateSessions(stations, { count: 50, now: NOW })
     expect(second).toEqual(first)
   })
 
-  it("genera esattamente `count` sessioni quando c'è almeno una stazione valida", () => {
+  it('generates exactly `count` sessions when there is at least one valid station', () => {
     const stations = [makeStation()]
     const sessions = generateSessions(stations, { count: 200, now: NOW })
     expect(sessions).toHaveLength(200)
   })
 
-  it('ogni sessione referenzia una stazione/connettore reali, con durata ed energia plausibili', () => {
+  it('each session references a real station/connector, with plausible duration and energy', () => {
     const stationA = makeStation({ id: 1, name: 'Stazione A' })
     const stationB = makeStation({
       id: 2,
@@ -89,7 +89,7 @@ describe('generateSessions', () => {
     }
   })
 
-  it('usa una potenza di default per i connettori senza PowerKW noto da OCM', () => {
+  it('uses a default power for connectors with no PowerKW known from OCM', () => {
     const station = makeStation({
       connectors: [
         { id: 99, typeId: null, type: 'Unbekannt', level: null, powerKw: null, quantity: 1 }
@@ -102,7 +102,7 @@ describe('generateSessions', () => {
     }
   })
 
-  it('ordina le sessioni dalla più recente alla meno recente', () => {
+  it('sorts the sessions from most recent to least recent', () => {
     const sessions = generateSessions([makeStation()], { count: 100, now: NOW })
     for (let index = 1; index < sessions.length; index += 1) {
       const previous = sessions[index - 1] as (typeof sessions)[number]

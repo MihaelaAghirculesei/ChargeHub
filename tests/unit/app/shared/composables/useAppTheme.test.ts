@@ -4,11 +4,11 @@ import { defineComponent } from 'vue'
 import { useAppTheme } from '~/shared/composables/useAppTheme'
 
 /**
- * `useTheme()` (Vuetify) richiede il plugin registrato su un'app vera.
- * La persistenza su cookie non è testata qui: `useCookie` è lo stesso
- * meccanismo già usato (e testato dove conta di più) per i filtri stazioni
- * dal Giorno 4 — non è logica di questo composable, solo un dettaglio di
- * `useCookie` di Nuxt stesso.
+ * `useTheme()` (Vuetify) needs the plugin registered on a real app. Cookie
+ * persistence is not tested here: `useCookie` is the same mechanism
+ * already used (and tested where it matters most) for the station filters
+ * since day 4 — it is not this composable's logic, only a detail of Nuxt's
+ * own `useCookie`.
  */
 const ThemeHost = defineComponent({
   setup() {
@@ -18,7 +18,7 @@ const ThemeHost = defineComponent({
 })
 
 describe('useAppTheme', () => {
-  it('isDark riflette il tema Vuetify attivo', async () => {
+  it('isDark reflects the active Vuetify theme', async () => {
     const wrapper = await mountSuspended(ThemeHost)
 
     wrapper.vm.setTheme('dark')
@@ -28,7 +28,7 @@ describe('useAppTheme', () => {
     expect(wrapper.vm.isDark).toBe(false)
   })
 
-  it('toggleTheme passa da chiaro a scuro e viceversa', async () => {
+  it('toggleTheme switches from light to dark and back', async () => {
     const wrapper = await mountSuspended(ThemeHost)
     wrapper.vm.setTheme('light')
 

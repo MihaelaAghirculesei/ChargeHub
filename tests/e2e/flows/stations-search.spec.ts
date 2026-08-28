@@ -2,17 +2,17 @@ import { expect, test } from '@playwright/test'
 import { StationDetailPage } from '../pages/StationDetailPage'
 import { StationsPage } from '../pages/StationsPage'
 
-test.describe('ricerca e filtro stazioni -> apertura dettaglio', () => {
-  test('un filtro per potenza minima riduce i risultati mostrati in tabella', async ({ page }) => {
+test.describe('station search and filter -> open detail', () => {
+  test('a minimum-power filter reduces the results shown in the table', async ({ page }) => {
     const stationsPage = new StationsPage(page)
     await stationsPage.goto()
     await stationsPage.viewModeButton('Liste').click()
     await page.waitForLoadState('networkidle')
-    // `networkidle` da solo non basta: la richiesta può già essere finita
-    // ma la tabella non aver ancora eseguito il proprio render (skeleton
-    // -> righe reali), specie sotto il carico di più progetti Playwright
-    // in parallelo. Aspettare la prima riga vera è deterministico, un
-    // secondo `networkidle`/timeout fisso no.
+    // `networkidle` alone is not enough: the request may already be done
+    // but the table not yet have run its own render (skeleton -> real
+    // rows), especially under the load of several Playwright projects in
+    // parallel. Waiting for the first real row is deterministic, a second
+    // `networkidle` / fixed timeout is not.
     await stationsPage.table.locator('tbody tr').first().waitFor()
 
     const rowsBefore = await stationsPage.table.locator('tbody tr').count()
@@ -23,12 +23,12 @@ test.describe('ricerca e filtro stazioni -> apertura dettaglio', () => {
     const rowsAfter = await stationsPage.table.locator('tbody tr').count()
     expect(rowsAfter).toBeLessThanOrEqual(rowsBefore)
 
-    // "Alle löschen" (StationsActiveFilterChips, Giorno 6) azzera di nuovo tutto.
+    // "Alle löschen" (StationsActiveFilterChips, day 6) clears everything again.
     await stationsPage.clearAllFiltersButton.click()
     await expect(stationsPage.minPowerInput).toHaveValue('')
   })
 
-  test('aprire una riga della tabella porta al dettaglio con lo stesso nome nell’intestazione', async ({
+  test('opening a table row leads to the detail with the same name in the heading', async ({
     page
   }) => {
     const stationsPage = new StationsPage(page)

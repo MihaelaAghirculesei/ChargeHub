@@ -11,21 +11,21 @@ beforeEach(() => {
   setActivePinia(createPinia())
 })
 
-// L'ambiente "nuxt" riusa un singolo cookie (stesso "ambient app" di
-// useRoute/useAsyncData, vedi docs/PROGRESS.md) per tutto il file: senza
-// pulizia, le tariffe aggiunte da un test resterebbero nel cookie letto dal
-// test successivo.
+// The "nuxt" env reuses a single cookie (same "ambient app" as
+// useRoute/useAsyncData, see docs/PROGRESS.md) for the whole file: without
+// cleanup, the tariffs added by one test would remain in the cookie read
+// by the next test.
 afterEach(() => {
   useCookie<Tariff[]>('chargehub-tariffs').value = []
 })
 
 describe('useTariffsStore', () => {
-  it('parte senza tariffe', () => {
+  it('starts with no tariffs', () => {
     const store = useTariffsStore()
     expect(store.tariffs).toEqual([])
   })
 
-  it("add valida l'input, assegna un id e lo aggiunge allo stato", () => {
+  it('add validates the input, assigns an id and adds it to the state', () => {
     const store = useTariffsStore()
 
     const tariff = store.add(validInput())
@@ -36,13 +36,13 @@ describe('useTariffsStore', () => {
     expect(store.tariffs[0]).toEqual(tariff)
   })
 
-  it('add rifiuta un input non valido (stessa validazione dello schema di dominio)', () => {
+  it('add rejects an invalid input (same validation as the domain schema)', () => {
     const store = useTariffsStore()
     expect(() => store.add({ ...validInput(), name: '' })).toThrow()
     expect(store.tariffs).toHaveLength(0)
   })
 
-  it('update sostituisce i campi mantenendo lo stesso id', () => {
+  it('update replaces the fields keeping the same id', () => {
     const store = useTariffsStore()
     const tariff = store.add(validInput())
 
@@ -52,7 +52,7 @@ describe('useTariffsStore', () => {
     expect(store.tariffs[0]).toMatchObject({ id: tariff.id, name: 'Premium', pricePerKwh: 0.6 })
   })
 
-  it('remove toglie solo la tariffa indicata', () => {
+  it('remove removes only the given tariff', () => {
     const store = useTariffsStore()
     const first = store.add(validInput())
     const second = store.add({ ...validInput(), name: 'Zweite' })
@@ -63,7 +63,7 @@ describe('useTariffsStore', () => {
     expect(store.tariffs[0]?.id).toBe(second.id)
   })
 
-  it('due tariffe diverse ottengono id diversi', () => {
+  it('two different tariffs get different ids', () => {
     const store = useTariffsStore()
     const first = store.add(validInput())
     const second = store.add(validInput())

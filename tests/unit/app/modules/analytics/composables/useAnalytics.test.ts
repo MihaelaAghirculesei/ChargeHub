@@ -9,9 +9,9 @@ import { useAnalytics } from '~/modules/analytics/composables/useAnalytics'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
 /**
- * `period` passato come `ref` diretto, non come prop dell'host — stesso
- * modo in cui lo chiama davvero `app/pages/analytics/index.vue` (il
- * selettore 7/30/90 giorni è un `ref`, non un valore derivato da props).
+ * `period` passed as a direct `ref`, not as a host prop — the same way
+ * `app/pages/analytics/index.vue` actually calls it (the 7/30/90-day
+ * selector is a `ref`, not a value derived from props).
  */
 const period = ref<AnalyticsPeriodDays>(7)
 const AnalyticsHost = defineComponent({
@@ -31,7 +31,7 @@ afterEach(() => {
 })
 
 describe('useAnalytics', () => {
-  it('espone i dati dei grafici dopo il fetch iniziale', async () => {
+  it('exposes the chart data after the initial fetch', async () => {
     unregisterEndpoint = registerEndpoint('/api/analytics', () => ({
       energyByDay: [{ date: '2026-08-01', energyKwh: 12.5 }],
       statusDistribution: [],
@@ -50,7 +50,7 @@ describe('useAnalytics', () => {
     expect(wrapper.vm.error).toBeFalsy()
   })
 
-  it('rifetcha quando il periodo cambia', async () => {
+  it('re-fetches when the period changes', async () => {
     let lastPeriod: unknown
     unregisterEndpoint = registerEndpoint('/api/analytics', (event) => {
       lastPeriod = getQuery(event).period
