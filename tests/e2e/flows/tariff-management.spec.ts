@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test'
 import { LoginPage } from '../pages/LoginPage'
 import { TariffsPage } from '../pages/TariffsPage'
 
-test.describe('creazione tariffa e calcolo', () => {
-  test('un operatore crea una tariffa, la vede in tabella e nel calcolatore per sessione', async ({
+test.describe('tariff creation and calculation', () => {
+  test('an operator creates a tariff, sees it in the table and in the per-session calculator', async ({
     page
   }) => {
     const loginPage = new LoginPage(page)
@@ -17,15 +17,15 @@ test.describe('creazione tariffa e calcolo', () => {
     await expect(tariffsPage.dialog).toBeHidden()
     await expect(tariffsPage.tariffRow(tariffName)).toBeVisible()
 
-    // Il calcolatore confronta la tariffa appena creata contro una sessione
-    // reale (dati sintetici, Giorno 12): comparire come riga del confronto è
-    // la prova che il form -> store -> calcolatore sono davvero collegati,
-    // non solo che il dialog "sembra" salvare.
+    // The calculator compares the just-created tariff against a real
+    // session (synthetic data, day 12): showing up as a comparison row is
+    // the proof that form -> store -> calculator are actually wired, not
+    // just that the dialog "looks like" it saves.
     await tariffsPage.selectFirstSession()
     await expect(tariffsPage.calculatorTable.getByText(tariffName)).toBeVisible()
   })
 
-  test('un viewer vede le tariffe ma non può crearne di nuove', async ({ page }) => {
+  test('a viewer sees the tariffs but cannot create new ones', async ({ page }) => {
     const loginPage = new LoginPage(page)
     const tariffsPage = new TariffsPage(page)
 

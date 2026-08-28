@@ -8,7 +8,7 @@ export class DashboardPage {
     await this.page.waitForLoadState('networkidle')
   }
 
-  /** Una card KPI per titolo (es. "Stationen gesamt", vedi i18n/locales/de.ts). */
+  /** A KPI card by title (e.g. "Stationen gesamt", see i18n/locales/de.ts). */
   kpiCard(label: string) {
     return this.page.locator('.v-card', { hasText: label })
   }

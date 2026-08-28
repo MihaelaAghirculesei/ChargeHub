@@ -14,27 +14,27 @@ const items: Item[] = [
 ]
 
 describe('paginate', () => {
-  it('affetta la pagina richiesta e riporta il totale su tutto l’array, non sulla pagina', () => {
+  it('slices the requested page and reports the total over the whole array, not the page', () => {
     const page = paginate(items, { page: 1, itemsPerPage: 2 })
 
     expect(page.items).toEqual([items[0], items[1]])
     expect(page.total).toBe(4)
   })
 
-  it('restituisce un array vuoto oltre l’ultima pagina, senza errori', () => {
+  it('returns an empty array past the last page, with no errors', () => {
     const page = paginate(items, { page: 10, itemsPerPage: 2 })
 
     expect(page.items).toEqual([])
     expect(page.total).toBe(4)
   })
 
-  it('senza sortBy mantiene l’ordine originale', () => {
+  it('without sortBy keeps the original order', () => {
     const page = paginate(items, { page: 1, itemsPerPage: 10 })
 
     expect(page.items.map((item) => item.name)).toEqual(['Charlie', 'Alpha', 'Bravo', 'Delta'])
   })
 
-  it('ordina ascendente/discendente in base a sortOrder', () => {
+  it('sorts ascending/descending based on sortOrder', () => {
     const asc = paginate(items, { page: 1, itemsPerPage: 10, sortBy: 'name' }, (item) => item.name)
     const desc = paginate(
       items,
@@ -46,7 +46,7 @@ describe('paginate', () => {
     expect(desc.items.map((item) => item.name)).toEqual(['Delta', 'Charlie', 'Bravo', 'Alpha'])
   })
 
-  it('manda sempre i valori null in coda, indipendentemente dal verso', () => {
+  it('always sends null values to the end, regardless of direction', () => {
     const asc = paginate(
       items,
       { page: 1, itemsPerPage: 10, sortBy: 'power' },
@@ -62,7 +62,7 @@ describe('paginate', () => {
     expect(desc.items.at(-1)?.name).toBe('Alpha')
   })
 
-  it('pagina il risultato già ordinato, non il risultato grezzo', () => {
+  it('paginates the already-sorted result, not the raw result', () => {
     const page = paginate(items, { page: 2, itemsPerPage: 2, sortBy: 'name' }, (item) => item.name)
 
     expect(page.items.map((item) => item.name)).toEqual(['Charlie', 'Delta'])

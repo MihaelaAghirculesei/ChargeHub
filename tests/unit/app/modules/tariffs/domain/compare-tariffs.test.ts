@@ -14,11 +14,11 @@ function makeTariff(overrides: Partial<Tariff> = {}): Tariff {
 }
 
 describe('compareTariffs', () => {
-  it('restituisce un array vuoto se non ci sono tariffe', () => {
+  it('returns an empty array when there are no tariffs', () => {
     expect(compareTariffs({ energyKwh: 10 }, [])).toEqual([])
   })
 
-  it('calcola il costo per ciascuna tariffa, con id e nome corretti', () => {
+  it('computes the cost for each tariff, with the correct id and name', () => {
     const tariffs = [
       makeTariff({ id: 'a', name: 'Günstig', pricePerKwh: 0.3 }),
       makeTariff({ id: 'b', name: 'Teuer', pricePerKwh: 0.6 })
@@ -29,7 +29,7 @@ describe('compareTariffs', () => {
     expect(results).toContainEqual({ tariffId: 'b', tariffName: 'Teuer', costEur: 6 })
   })
 
-  it('ordina dal risultato più economico al più caro', () => {
+  it('sorts from the cheapest result to the most expensive', () => {
     const tariffs = [
       makeTariff({ id: 'a', name: 'Teuer', pricePerKwh: 0.6 }),
       makeTariff({ id: 'b', name: 'Günstig', pricePerKwh: 0.3 }),
@@ -40,7 +40,7 @@ describe('compareTariffs', () => {
     expect(results.map((r) => r.tariffId)).toEqual(['b', 'c', 'a'])
   })
 
-  it('propaga i minuti di sosta a ciascun calcolo', () => {
+  it('propagates the overstay minutes to each calculation', () => {
     const tariffs = [makeTariff({ id: 'a', pricePerKwh: 0.5, blockingFeePerMinute: 0.2 })]
     const results = compareTariffs({ energyKwh: 10 }, tariffs, 10)
 

@@ -6,29 +6,29 @@ function validInput() {
 }
 
 describe('tariffInputSchema', () => {
-  it('accetta un input valido', () => {
+  it('accepts a valid input', () => {
     expect(tariffInputSchema.safeParse(validInput()).success).toBe(true)
   })
 
-  it('rifiuta un nome vuoto', () => {
+  it('rejects an empty name', () => {
     const result = tariffInputSchema.safeParse({ ...validInput(), name: '' })
     expect(result.success).toBe(false)
   })
 
-  it('rifiuta un nome fatto solo di spazi (trim)', () => {
+  it('rejects a name made only of spaces (trim)', () => {
     const result = tariffInputSchema.safeParse({ ...validInput(), name: '   ' })
     expect(result.success).toBe(false)
   })
 
   it.each(['pricePerKwh', 'blockingFeePerMinute', 'monthlyFeeEur'] as const)(
-    'rifiuta %s negativo',
+    'rejects a negative %s',
     (field) => {
       const result = tariffInputSchema.safeParse({ ...validInput(), [field]: -1 })
       expect(result.success).toBe(false)
     }
   )
 
-  it('accetta zero per i campi numerici (tariffa gratuita è un caso legittimo)', () => {
+  it('accepts zero for the numeric fields (a free tariff is a legitimate case)', () => {
     const result = tariffInputSchema.safeParse({
       ...validInput(),
       pricePerKwh: 0,
@@ -40,7 +40,7 @@ describe('tariffInputSchema', () => {
 })
 
 describe('tariffSchema', () => {
-  it('richiede anche un id, a differenza di tariffInputSchema', () => {
+  it('also requires an id, unlike tariffInputSchema', () => {
     expect(tariffSchema.safeParse(validInput()).success).toBe(false)
     expect(tariffSchema.safeParse({ ...validInput(), id: 'tariff-1' }).success).toBe(true)
   })

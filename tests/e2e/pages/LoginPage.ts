@@ -1,19 +1,19 @@
 import type { Page } from '@playwright/test'
 
 /**
- * Page Object Model (Giorno 20): un punto solo che sa come interagire con
- * `/de/login`, non locator ripetuti in ogni spec — se cambia un'etichetta
- * tradotta o la struttura del form, si aggiorna qui una volta sola.
+ * Page Object Model (day 20): a single place that knows how to interact
+ * with `/de/login`, not locators repeated in every spec — if a translated
+ * label or the form structure changes, it is updated here once.
  */
 export class LoginPage {
   constructor(private readonly page: Page) {}
 
   async goto() {
     await this.page.goto('/de/login')
-    // Il fix del Giorno 18 (submit nativo di VForm) ha reso l'ordine
-    // "aspetta la stabilizzazione prima di interagire" non opzionale, non
-    // solo prudenza: un click prima che l'hydration finisca può ricadere
-    // su un comportamento simile a un submit nativo del form sottostante.
+    // The day-18 fix (VForm native submit) made the order "wait for
+    // stabilisation before interacting" not optional, not just prudence: a
+    // click before hydration finishes can fall back to something like a
+    // native submit of the underlying form.
     await this.page.waitForLoadState('networkidle')
   }
 
@@ -30,9 +30,9 @@ export class LoginPage {
   }
 
   get errorAlert() {
-    // `getByRole('alert')` da solo prende anche i contenitori (vuoti) dei
-    // messaggi di validazione di ogni v-text-field, non solo il vero
-    // banner d'errore — quello è un v-alert, va scoperto per classe.
+    // `getByRole('alert')` alone also picks up the (empty) validation
+    // message containers of every v-text-field, not only the real error
+    // banner — that one is a v-alert, discovered by class.
     return this.page.locator('.v-alert[role="alert"]')
   }
 }

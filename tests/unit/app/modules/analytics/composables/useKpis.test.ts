@@ -6,7 +6,7 @@ import { defineComponent } from 'vue'
 import { useKpis } from '~/modules/analytics/composables/useKpis'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
-/** Stesso pattern di useStations.test.ts: useAsyncData richiede un contesto app Nuxt vero. */
+/** Same pattern as useStations.test.ts: useAsyncData needs a real Nuxt app context. */
 const KpisHost = defineComponent({
   setup() {
     return useKpis()
@@ -23,7 +23,7 @@ afterEach(() => {
 })
 
 describe('useKpis', () => {
-  it('espone i KPI dopo il fetch iniziale', async () => {
+  it('exposes the KPIs after the initial fetch', async () => {
     unregisterEndpoint = registerEndpoint('/api/kpi', () => [
       { key: 'stations', value: 42, unit: '', trendPercent: 0, higherIsBetter: true, series: [] }
     ])
@@ -38,7 +38,7 @@ describe('useKpis', () => {
     expect(wrapper.vm.error).toBeFalsy()
   })
 
-  it('espone un array vuoto (non undefined) prima che il fetch risolva o se il payload è vuoto', async () => {
+  it('exposes an empty array (not undefined) before the fetch resolves or if the payload is empty', async () => {
     unregisterEndpoint = registerEndpoint('/api/kpi', () => [])
 
     const wrapper = await mountSuspended(KpisHost)

@@ -54,14 +54,14 @@ function makeSession(overrides: Partial<ChargingSession> = {}): ChargingSession 
 const NOW = new Date('2026-08-18T12:00:00.000Z')
 
 describe('computeAnalytics', () => {
-  it('restituisce tutto a zero quando non ci sono stazioni', () => {
+  it('returns everything at zero when there are no stations', () => {
     const analytics = computeAnalytics([], [], 7, NOW)
     expect(analytics.energyByDay.every((p) => p.energyKwh === 0)).toBe(true)
     expect(analytics.statusDistribution.every((p) => p.count === 0)).toBe(true)
     expect(analytics.utilizationByHour.every((p) => p.utilizationPercent === 0)).toBe(true)
   })
 
-  it('è deterministico: stesso input produce lo stesso output', () => {
+  it('is deterministic: the same input produces the same output', () => {
     const stations = [makeStation()]
     const sessions = [makeSession()]
     const first = computeAnalytics(stations, sessions, 30, NOW)
@@ -69,14 +69,14 @@ describe('computeAnalytics', () => {
     expect(second).toEqual(first)
   })
 
-  it('energyByDay ha una voce per ogni giorno del periodo richiesto', () => {
+  it('energyByDay has one entry per day of the requested period', () => {
     for (const period of [7, 30, 90]) {
       const analytics = computeAnalytics([makeStation()], [], period, NOW)
       expect(analytics.energyByDay).toHaveLength(period)
     }
   })
 
-  it('energyByDay somma le sessioni del giorno corrispondente e ignora le altre', () => {
+  it('energyByDay sums the sessions of the matching day and ignores the others', () => {
     const sessions = [
       makeSession({ startedAt: '2026-08-18T08:00:00.000Z', energyKwh: 5 }),
       makeSession({ startedAt: '2026-08-18T10:00:00.000Z', energyKwh: 3 }),
@@ -91,7 +91,7 @@ describe('computeAnalytics', () => {
     expect(yesterday.energyKwh).toBe(100)
   })
 
-  it('energyByDay con un periodo di 90 giorni mostra zero al di fuori delle sessioni fornite, non le inventa', () => {
+  it('energyByDay with a 90-day period shows zero outside the sessions provided, it does not invent them', () => {
     const sessions = [makeSession({ startedAt: '2026-07-19T08:00:00.000Z', energyKwh: 42 })]
     const analytics = computeAnalytics([makeStation()], sessions, 90, NOW)
     const matching = analytics.energyByDay.find((p) => p.date === '2026-07-19')
@@ -100,7 +100,7 @@ describe('computeAnalytics', () => {
     expect(zeroCount).toBe(analytics.energyByDay.length - 1)
   })
 
-  it('statusDistribution copre i 4 stati e somma al numero di connettori totali, indipendentemente dal periodo', () => {
+  it('statusDistribution covers the 4 statuses and sums to the total number of connectors, regardless of the period', () => {
     const stations = [makeStation()]
     const distribution7 = computeAnalytics(stations, [], 7, NOW).statusDistribution
     const distribution90 = computeAnalytics(stations, [], 90, NOW).statusDistribution
@@ -113,11 +113,11 @@ describe('computeAnalytics', () => {
     ])
     const total = distribution7.reduce((sum, p) => sum + p.count, 0)
     expect(total).toBe(stations[0]!.connectors.length)
-    // Non dipende dal periodo: è sempre lo stato "adesso".
+    // Does not depend on the period: it is always the "now" state.
     expect(distribution90).toEqual(distribution7)
   })
 
-  it('utilizationByHour copre le 24 ore con percentuali valide', () => {
+  it('utilizationByHour covers the 24 hours with valid percentages', () => {
     const analytics = computeAnalytics([makeStation()], [], 7, NOW)
     expect(analytics.utilizationByHour).toHaveLength(24)
     expect(analytics.utilizationByHour.map((p) => p.hour)).toEqual(

@@ -30,7 +30,7 @@ beforeEach(() => {
 })
 
 describe('useStationsStore', () => {
-  it('list delega al repository e mantiene stazioni/totale in sync', async () => {
+  it('list delegates to the repository and keeps stations/total in sync', async () => {
     const stations = [{ id: 1 }, { id: 2 }] as Station[]
     listMock.mockResolvedValueOnce({ items: stations, total: 23 })
 
@@ -43,7 +43,7 @@ describe('useStationsStore', () => {
     expect(store.total).toBe(23)
   })
 
-  it('getById delega al repository senza toccare lo stato della lista', async () => {
+  it('getById delegates to the repository without touching the list state', async () => {
     const station = { id: 42 } as Station
     getByIdMock.mockResolvedValueOnce(station)
 

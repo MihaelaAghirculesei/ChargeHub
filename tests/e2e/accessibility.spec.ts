@@ -3,10 +3,10 @@ import { expect, type Page, test } from '@playwright/test'
 import { LoginPage } from './pages/LoginPage'
 
 /**
- * Scansione axe-core (Giorno 18, "Fatto quando: axe non riporta
- * violazioni") sulle pagine pubbliche principali. `/tariffs` è protetta
- * (Giorno 16): loggato separatamente sotto, non qui — le pagine pubbliche
- * non devono richiedere una sessione per essere verificate.
+ * axe-core scan (day 18, "Done when: axe reports no violations") on the
+ * main public pages. `/tariffs` is protected (day 16): logged in
+ * separately below, not here — the public pages must not require a session
+ * to be verified.
  */
 const PUBLIC_PAGES = [
   '/de',
@@ -18,9 +18,9 @@ const PUBLIC_PAGES = [
 ]
 
 /**
- * Il pannello di Nuxt DevTools (solo in `pnpm dev`, mai in produzione) non è
- * contenuto in una landmark — non è superficie della nostra app, escluderlo
- * evita falsi positivi legati a un tool di sviluppo.
+ * The Nuxt DevTools panel (only in `pnpm dev`, never in production) is not
+ * contained in a landmark — it is not our app's surface, excluding it
+ * avoids false positives tied to a dev tool.
  */
 async function scanForViolations(page: Page) {
   return new AxeBuilder({ page })
@@ -30,15 +30,15 @@ async function scanForViolations(page: Page) {
 }
 
 for (const path of PUBLIC_PAGES) {
-  test(`nessuna violazione axe su ${path}`, async ({ page }) => {
+  test(`no axe violations on ${path}`, async ({ page }) => {
     await page.goto(path)
-    // Le pagine con `useLiveTelemetry`/liste virtualizzate finiscono di
-    // stabilizzarsi poco dopo il load — un piccolo margine evita falsi
-    // positivi su contenuto ancora in transizione. Testo reale dentro
-    // `<main>` (non solo `networkidle`) copre anche `/de` (client-side,
-    // Giorno 21: la prima risposta è un guscio vuoto, il contenuto arriva
-    // dopo l'idratazione) e il primo hit "a freddo" di una rotta con `swr`
-    // in `pnpm dev`.
+    // Pages with `useLiveTelemetry` / virtualised lists finish
+    // stabilising shortly after load — a small margin avoids false
+    // positives on content still in transition. Real text inside `<main>`
+    // (not just `networkidle`) also covers `/de` (client-side, day 21: the
+    // first response is an empty shell, the content arrives after
+    // hydration) and the first "cold" hit of a route with `swr` in `pnpm
+    // dev`.
     await page.waitForLoadState('networkidle')
     await page.waitForFunction(
       () => (document.querySelector('main')?.textContent?.trim().length ?? 0) > 0
@@ -49,7 +49,7 @@ for (const path of PUBLIC_PAGES) {
   })
 }
 
-test('nessuna violazione axe su /tariffs dopo il login', async ({ page }) => {
+test('no axe violations on /tariffs after login', async ({ page }) => {
   await new LoginPage(page).loginAsOperator()
 
   await page.goto('/de/tariffs')

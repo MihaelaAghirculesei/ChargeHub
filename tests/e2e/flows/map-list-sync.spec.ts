@@ -2,22 +2,21 @@ import { expect, test } from '@playwright/test'
 import { StationsPage } from '../pages/StationsPage'
 
 /**
- * Vista "Geteilt" (split) è il default (nessun cookie, StationsFiltersStore):
- * mappa e tabella sono già entrambe visibili senza dover cambiare vista.
+ * The "Geteilt" (split) view is the default (no cookie, StationsFiltersStore):
+ * map and table are both already visible without switching view.
  *
- * Non testato: click su un marker preciso della mappa. MapLibre renderizza
- * su canvas/WebGL — le coordinate pixel di una stazione dipendono dalla sua
- * proiezione cartografica (lat/lon -> pixel, zoom incluso), che ricalcolare
- * qui duplicherebbe la logica della libreria solo per ottenere un test
- * fragile a ogni minima modifica di viewport/zoom di default. La sincronia
- * mappa <-> lista è verificata nella direzione testabile in modo stabile:
- * hover sulla riga della tabella (StationsTable.vue `rowProps`) scrive
- * `hoveredStationId` nello store — stessa fonte di verità che la mappa legge
- * per il proprio `feature-state` (StationsMap.vue), quindi verificarlo da un
- * lato conferma che il canale di sincronizzazione funziona.
+ * Not tested: clicking a precise map marker. MapLibre renders on
+ * canvas/WebGL — a station's pixel coordinates depend on its map
+ * projection (lat/lon -> pixel, zoom included), and recomputing that here
+ * would duplicate the library's logic just to get a test fragile to any
+ * small change of default viewport/zoom. The map <-> list sync is verified
+ * in the stably-testable direction: hovering a table row (StationsTable.vue
+ * `rowProps`) writes `hoveredStationId` to the store — the same source of
+ * truth the map reads for its own `feature-state` (StationsMap.vue), so
+ * verifying it from one side confirms the sync channel works.
  */
-test.describe('mappa <-> lista sincronizzate', () => {
-  test('la vista split mostra mappa e tabella insieme, con hover che evidenzia la riga', async ({
+test.describe('map <-> list synced', () => {
+  test('the split view shows map and table together, with hover highlighting the row', async ({
     page
   }) => {
     const stationsPage = new StationsPage(page)
@@ -36,7 +35,7 @@ test.describe('mappa <-> lista sincronizzate', () => {
     await expect(firstRow).not.toHaveClass(/bg-surface-variant/)
   })
 
-  test('la vista mappa mostra solo la mappa, la vista lista solo la tabella', async ({ page }) => {
+  test('the map view shows only the map, the list view only the table', async ({ page }) => {
     const stationsPage = new StationsPage(page)
     await stationsPage.goto()
 

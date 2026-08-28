@@ -4,9 +4,9 @@ import { afterEach, describe, expect, it } from 'vitest'
 import StationsActiveFilterChips from '~/modules/stations/components/StationsActiveFilterChips.vue'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
-// Stessa insidia del composable useStations: l'ambiente "nuxt" riusa una
-// singola app per tutto il file, quindi endpoint/cache/store vanno puliti
-// tra un test e l'altro (vedi tests/unit/app/modules/stations/composables/useStations.test.ts).
+// Same pitfall as the useStations composable: the "nuxt" env reuses a
+// single app for the whole file, so endpoint/cache/store must be cleaned
+// between tests (see tests/unit/app/modules/stations/composables/useStations.test.ts).
 let unregisterEndpoint: (() => void) | undefined
 afterEach(() => {
   unregisterEndpoint?.()
@@ -23,7 +23,7 @@ function registerReferenceData() {
 }
 
 describe('StationsActiveFilterChips', () => {
-  it('non mostra nulla quando nessun filtro è attivo', async () => {
+  it('shows nothing when no filter is active', async () => {
     registerReferenceData()
     const wrapper = await mountSuspended(StationsActiveFilterChips)
     await flushPromises()
@@ -31,7 +31,7 @@ describe('StationsActiveFilterChips', () => {
     expect(wrapper.find('[data-testid="active-filter-chips"]').exists()).toBe(false)
   })
 
-  it('mostra un chip per ogni filtro attivo, risolvendo gli ID in titoli leggibili', async () => {
+  it('shows a chip per active filter, resolving the IDs into readable titles', async () => {
     registerReferenceData()
     const filtersStore = useStationsFiltersStore()
     filtersStore.setFilters({ search: 'Rathaus', connectionTypeId: 25, minPowerKw: 22 })
@@ -45,7 +45,7 @@ describe('StationsActiveFilterChips', () => {
     expect(text).toContain('≥ 22 kW')
   })
 
-  it('"Alle löschen" azzera tutti i filtri', async () => {
+  it('"Alle löschen" clears all filters', async () => {
     registerReferenceData()
     const filtersStore = useStationsFiltersStore()
     filtersStore.setFilters({ search: 'Rathaus', minPowerKw: 22 })

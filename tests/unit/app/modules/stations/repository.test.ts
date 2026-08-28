@@ -24,7 +24,7 @@ const table: StationsTableOptions = {
 }
 
 describe('stationRepository.list', () => {
-  it('traduce filtri e stato tabella nei query param di /api/stations', async () => {
+  it('translates filters and table state into /api/stations query params', async () => {
     let capturedQuery: Record<string, unknown> = {}
     registerEndpoint('/api/stations', (event) => {
       capturedQuery = getQuery(event)
@@ -51,7 +51,7 @@ describe('stationRepository.list', () => {
     expect(capturedQuery.statustypeid).toBeUndefined()
   })
 
-  it('restituisce la pagina (items + total) così come arriva dal BFF', async () => {
+  it('returns the page (items + total) exactly as it comes from the BFF', async () => {
     const page: StationsPage = { items: [{ id: 1 } as Station], total: 1 }
     registerEndpoint('/api/stations', () => page)
 
@@ -60,23 +60,23 @@ describe('stationRepository.list', () => {
 })
 
 describe('stationRepository.getById', () => {
-  it('restituisce null su 404 invece di lanciare', async () => {
+  it('returns null on 404 instead of throwing', async () => {
     registerEndpoint('/api/stations/999999', () => {
-      throw createError({ statusCode: 404, statusMessage: 'Stazione non trovata.' })
+      throw createError({ statusCode: 404, statusMessage: 'Station not found.' })
     })
 
     await expect(stationRepository.getById(999999)).resolves.toBeNull()
   })
 
-  it('propaga qualunque altro errore', async () => {
+  it('propagates any other error', async () => {
     registerEndpoint('/api/stations/1', () => {
-      throw createError({ statusCode: 502, statusMessage: 'Impossibile recuperare la stazione.' })
+      throw createError({ statusCode: 502, statusMessage: 'Could not fetch the station.' })
     })
 
     await expect(stationRepository.getById(1)).rejects.toMatchObject({ statusCode: 502 })
   })
 
-  it('restituisce la stazione quando trovata', async () => {
+  it('returns the station when found', async () => {
     const station = { id: 42 } as Station
     registerEndpoint('/api/stations/42', () => station)
 
@@ -85,7 +85,7 @@ describe('stationRepository.getById', () => {
 })
 
 describe('stationRepository.referenceData', () => {
-  it('passa il countryCode come query param e restituisce le tabelle di lookup', async () => {
+  it('passes the countryCode as a query param and returns the lookup tables', async () => {
     let capturedQuery: Record<string, unknown> = {}
     const referenceData: ReferenceData = {
       connectionTypes: [{ id: 25, title: 'Type 2' }],

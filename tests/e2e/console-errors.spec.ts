@@ -75,7 +75,7 @@ async function gotoAndStabilize(page: Page, path: string) {
 }
 
 for (const path of PUBLIC_PAGES) {
-  test(`nessun errore/warning in console su ${path}`, async ({ page }) => {
+  test(`no console error/warning on ${path}`, async ({ page }) => {
     const issues = await collectConsoleIssues(page)
 
     await gotoAndStabilize(page, path)
@@ -84,7 +84,7 @@ for (const path of PUBLIC_PAGES) {
   })
 }
 
-test('nessun errore/warning in console su /tariffs dopo il login', async ({ page }) => {
+test('no console error/warning on /tariffs after login', async ({ page }) => {
   const issues = await collectConsoleIssues(page)
 
   await new LoginPage(page).loginAsOperator()

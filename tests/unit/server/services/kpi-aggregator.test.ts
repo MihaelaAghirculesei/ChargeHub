@@ -54,7 +54,7 @@ function makeSession(overrides: Partial<ChargingSession> = {}): ChargingSession 
 const NOW = new Date('2026-08-18T12:00:00.000Z')
 
 describe('computeKpis', () => {
-  it('restituisce tutti i KPI a zero quando non ci sono stazioni', () => {
+  it('returns all KPIs at zero when there are no stations', () => {
     const kpis = computeKpis([], [], NOW)
     for (const item of kpis) {
       expect(item.value).toBe(0)
@@ -64,7 +64,7 @@ describe('computeKpis', () => {
     }
   })
 
-  it('è deterministico: stesso input produce lo stesso output', () => {
+  it('is deterministic: the same input produces the same output', () => {
     const stations = [makeStation()]
     const sessions = [makeSession()]
     const first = computeKpis(stations, sessions, NOW)
@@ -72,7 +72,7 @@ describe('computeKpis', () => {
     expect(second).toEqual(first)
   })
 
-  it('produce esattamente le 6 chiavi attese, ciascuna con una serie di 7 giorni', () => {
+  it('produces exactly the 6 expected keys, each with a 7-day series', () => {
     const kpis = computeKpis([makeStation()], [], NOW)
     const keys = kpis.map((k) => k.key)
     expect(keys).toEqual([
@@ -88,7 +88,7 @@ describe('computeKpis', () => {
     }
   })
 
-  it('"stazioni gesamt" ha una serie costante (il registro non cambia in queste finestre) e trend zero', () => {
+  it('"total stations" has a constant series (the registry does not change in these windows) and zero trend', () => {
     const stations = [makeStation({ id: 1 }), makeStation({ id: 2 })]
     const kpi = computeKpis(stations, [], NOW).find((k) => k.key === 'stations')!
     expect(kpi.value).toBe(2)
@@ -96,7 +96,7 @@ describe('computeKpis', () => {
     expect(kpi.trendPercent).toBe(0)
   })
 
-  it('disponibili + in ricarica + guasti + offline sommano sempre al numero di connettori totali', () => {
+  it('available + charging + faulted + offline always sum to the total number of connectors', () => {
     const stations = [
       makeStation({ id: 1 }),
       makeStation({
@@ -109,13 +109,13 @@ describe('computeKpis', () => {
     const charging = kpis.find((k) => k.key === 'charging')!.value
     const faulted = kpis.find((k) => k.key === 'faulted')!.value
     const totalConnectors = stations.reduce((sum, s) => sum + s.connectors.length, 0)
-    // "offline" non è un KPI a sé (il piano ne chiede solo 4 + kWh + utilizzo),
-    // quindi lo deriviamo per differenza per verificare la somma.
+    // "offline" is not a KPI of its own (the plan asks for only 4 + kWh + utilisation),
+    // so we derive it by difference to check the sum.
     expect(available + charging + faulted).toBeLessThanOrEqual(totalConnectors)
     expect(available).toBeGreaterThanOrEqual(0)
   })
 
-  it('"kWh heute" somma solo le sessioni del giorno corrente, ignorando gli altri giorni', () => {
+  it('"kWh today" sums only the sessions of the current day, ignoring the other days', () => {
     const sessions = [
       makeSession({ startedAt: '2026-08-18T08:00:00.000Z', energyKwh: 5 }),
       makeSession({ startedAt: '2026-08-18T10:00:00.000Z', energyKwh: 3 }),
@@ -127,7 +127,7 @@ describe('computeKpis', () => {
     expect(kpi.series.at(-1)).toBe(8)
   })
 
-  it("l'utilizzo è la percentuale di connettori in ricarica sul totale, mai sopra 100", () => {
+  it('utilisation is the percentage of connectors charging out of the total, never above 100', () => {
     const kpi = computeKpis([makeStation(), makeStation({ id: 2 })], [], NOW).find(
       (k) => k.key === 'utilization'
     )!
@@ -136,20 +136,20 @@ describe('computeKpis', () => {
     expect(kpi.unit).toBe('%')
   })
 
-  it('imposta higherIsBetter a false solo per "guasti"', () => {
+  it('sets higherIsBetter to false only for "faulted"', () => {
     const kpis = computeKpis([makeStation()], [], NOW)
     for (const item of kpis) {
       expect(item.higherIsBetter).toBe(item.key !== 'faulted')
     }
   })
 
-  it("calcola il trend come variazione percentuale tra il primo e l'ultimo giorno della serie", () => {
+  it('computes the trend as the percentage change between the first and last day of the series', () => {
     const sessions = [
       makeSession({ startedAt: '2026-08-12T08:00:00.000Z', energyKwh: 10 }),
       makeSession({ startedAt: '2026-08-18T08:00:00.000Z', energyKwh: 20 })
     ]
     const kpi = computeKpis([makeStation()], sessions, NOW).find((k) => k.key === 'energyToday')!
-    // 7 giorni fa (2026-08-12) = 10, oggi (2026-08-18) = 20 → +100%
+    // 7 days ago (2026-08-12) = 10, today (2026-08-18) = 20 → +100%
     expect(kpi.series[0]).toBe(10)
     expect(kpi.series.at(-1)).toBe(20)
     expect(kpi.trendPercent).toBe(100)

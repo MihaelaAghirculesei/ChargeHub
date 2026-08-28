@@ -55,7 +55,7 @@ afterEach(() => {
 })
 
 describe('useLiveTelemetry', () => {
-  it('avvia il transport con gli id indicati quando la scheda è visibile', () => {
+  it('starts the transport with the given ids when the tab is visible', () => {
     const { transport, startCalls } = makeFakeTransport()
     const visibility = ref<DocumentVisibilityState>('visible')
     activeScope = effectScope()
@@ -67,7 +67,7 @@ describe('useLiveTelemetry', () => {
     expect(startCalls).toEqual([[1, 2]])
   })
 
-  it('non avvia il transport quando la scheda parte già nascosta', () => {
+  it('does not start the transport when the tab starts already hidden', () => {
     const { transport, startCalls } = makeFakeTransport()
     const visibility = ref<DocumentVisibilityState>('hidden')
     activeScope = effectScope()
@@ -79,7 +79,7 @@ describe('useLiveTelemetry', () => {
     expect(startCalls).toHaveLength(0)
   })
 
-  it('ferma il transport quando la scheda passa in background e lo riavvia quando torna visibile', async () => {
+  it('stops the transport when the tab goes to the background and restarts it when it becomes visible again', async () => {
     const { transport, startCalls, stopFn } = makeFakeTransport()
     const visibility = ref<DocumentVisibilityState>('visible')
     activeScope = effectScope()
@@ -98,7 +98,7 @@ describe('useLiveTelemetry', () => {
     expect(startCalls).toHaveLength(2)
   })
 
-  it('espone gli aggiornamenti e lo stato di connessione emessi dal transport', () => {
+  it('exposes the updates and the connection status emitted by the transport', () => {
     const { transport, emitUpdate, emitStatus } = makeFakeTransport()
     const visibility = ref<DocumentVisibilityState>('visible')
     activeScope = effectScope()
@@ -115,7 +115,7 @@ describe('useLiveTelemetry', () => {
     expect(result.status.value).toBe('live')
   })
 
-  it('ferma il transport quando lo scope viene distrutto (cleanup al dismount)', () => {
+  it('stops the transport when the scope is disposed (cleanup on unmount)', () => {
     const { transport, stopFn } = makeFakeTransport()
     const visibility = ref<DocumentVisibilityState>('visible')
     const scope = effectScope()
@@ -128,7 +128,7 @@ describe('useLiveTelemetry', () => {
     expect(stopFn).toHaveBeenCalledTimes(1)
   })
 
-  it('riavvia il transport con i nuovi id quando la lista di stazioni cambia', async () => {
+  it('restarts the transport with the new ids when the station list changes', async () => {
     const { transport, startCalls, stopFn } = makeFakeTransport()
     const visibility = ref<DocumentVisibilityState>('visible')
     const ids = ref([1])
