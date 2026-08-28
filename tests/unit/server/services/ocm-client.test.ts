@@ -46,7 +46,7 @@ function makePoi(overrides: Partial<OcmPoi> = {}): OcmPoi {
 }
 
 describe('normalizeConnector', () => {
-  it('applies the defaults when the optional fields are missing', () => {
+  it('returns null for the optional fields when they are missing', () => {
     const connector = normalizeConnector({
       ID: 1,
       ConnectionTypeID: null,
@@ -60,7 +60,7 @@ describe('normalizeConnector', () => {
     expect(connector).toEqual({
       id: 1,
       typeId: null,
-      type: 'Sconosciuto',
+      type: null,
       level: null,
       powerKw: null,
       quantity: 1
@@ -90,7 +90,7 @@ describe('normalizeConnector', () => {
 })
 
 describe('normalizeStation', () => {
-  it('applies the defaults when name, operator and status are missing', () => {
+  it('returns null for name, operator and status when OCM omits them', () => {
     const station = normalizeStation(
       makePoi({
         AddressInfo: { ...makePoi().AddressInfo, Title: null },
@@ -99,9 +99,9 @@ describe('normalizeStation', () => {
       })
     )
 
-    expect(station.name).toBe('Stazione senza nome')
-    expect(station.operator).toBe('Operatore sconosciuto')
-    expect(station.operationalStatus).toBe('Sconosciuto')
+    expect(station.name).toBeNull()
+    expect(station.operator).toBeNull()
+    expect(station.operationalStatus).toBeNull()
     expect(station.isOperational).toBeNull()
   })
 
@@ -196,7 +196,7 @@ describe('normalizeStation', () => {
 })
 
 describe('normalizeReferenceData', () => {
-  it('applies the "Sconosciuto" default and passes isOperational through', () => {
+  it('falls back a missing title to #<id> and passes isOperational through', () => {
     const raw: OcmReferenceData = {
       ConnectionTypes: [{ ID: 1, Title: null }],
       Operators: [{ ID: 2, Title: 'Enel X' }],
@@ -207,11 +207,11 @@ describe('normalizeReferenceData', () => {
     }
 
     expect(normalizeReferenceData(raw)).toEqual({
-      connectionTypes: [{ id: 1, title: 'Sconosciuto' }],
+      connectionTypes: [{ id: 1, title: '#1' }],
       operators: [{ id: 2, title: 'Enel X' }],
       statusTypes: [
         { id: 3, title: 'Operational', isOperational: true },
-        { id: 4, title: 'Sconosciuto', isOperational: null }
+        { id: 4, title: '#4', isOperational: null }
       ]
     })
   })

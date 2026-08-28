@@ -34,15 +34,20 @@ if (!station.value) {
 // so the rest of the script does not have to re-argue it.
 const currentStation = station.value
 
+// `name`/`operator` are nullable (OCM may omit them); resolve the localized
+// fallback once for the SEO meta and the JSON-LD.
+const stationName = currentStation.name ?? t('common.unknown')
+const stationOperator = currentStation.operator ?? t('common.unknown')
+
 useSeoMeta({
-  title: `${currentStation.name} – ChargeHub`,
-  description: `Ladestation ${currentStation.name}${currentStation.address.town ? ` in ${currentStation.address.town}` : ''}, Betreiber ${currentStation.operator}.`,
-  ogTitle: currentStation.name,
-  ogDescription: `Ladestation von ${currentStation.operator} mit ${currentStation.connectors.length} Anschlüssen.`
+  title: `${stationName} – ChargeHub`,
+  description: `Ladestation ${stationName}${currentStation.address.town ? ` in ${currentStation.address.town}` : ''}, Betreiber ${stationOperator}.`,
+  ogTitle: stationName,
+  ogDescription: `Ladestation von ${stationOperator} mit ${currentStation.connectors.length} Anschlüssen.`
 })
 
-// JSON-LD manuale (nessun modulo schema.org installato): ElectricVehicleChargingStation
-// è il tipo schema.org dedicato, non un tipo generico forzato per il caso.
+// Manual JSON-LD (no schema.org module installed): ElectricVehicleChargingStation
+// is the dedicated schema.org type, not a generic type forced onto the case.
 useHead({
   script: [
     {
@@ -50,7 +55,7 @@ useHead({
       innerHTML: JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'ElectricVehicleChargingStation',
-        name: currentStation.name,
+        name: stationName,
         address: {
           '@type': 'PostalAddress',
           streetAddress: currentStation.address.line1 ?? undefined,

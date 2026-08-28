@@ -70,9 +70,12 @@ function toGeoJson(
         geometry: { type: 'Point', coordinates: [station.longitude, station.latitude] },
         properties: {
           id: station.id,
-          name: station.name,
-          operator: station.operator,
-          operationalStatus: station.operationalStatus,
+          // `Station.name`/`operator`/`operationalStatus` are nullable (OCM
+          // may omit them); the popup renders these directly, so resolve the
+          // `t('common.unknown')` fallback here, not in the template string.
+          name: station.name ?? t('common.unknown'),
+          operator: station.operator ?? t('common.unknown'),
+          operationalStatus: station.operationalStatus ?? t('common.unknown'),
           // GeoJSON has no reliable `null`/`undefined` for a boolean inside
           // `properties` for style expressions: normalized to a 3-state string.
           isOperational: station.isOperational === null ? 'unknown' : String(station.isOperational)

@@ -75,7 +75,10 @@ export function normalizeConnector(raw: NonNullable<OcmPoi['Connections']>[numbe
   return {
     id: raw.ID,
     typeId: raw.ConnectionTypeID ?? null,
-    type: raw.ConnectionType?.Title ?? 'Sconosciuto',
+    // `null` when OCM omits it, never a hard-coded label: the server does
+    // not know the user's language, so the client renders `t('common.unknown')`
+    // — same treatment as `level`/`usageType`/`country` below.
+    type: raw.ConnectionType?.Title ?? null,
     level: raw.Level?.Title ?? null,
     powerKw: raw.PowerKW ?? null,
     quantity: raw.Quantity ?? 1
@@ -91,8 +94,10 @@ export function normalizeStation(raw: OcmPoi): Station {
   return {
     id: raw.ID,
     uuid: raw.UUID,
-    name: raw.AddressInfo.Title ?? 'Stazione senza nome',
-    operator: raw.OperatorInfo?.Title ?? 'Operatore sconosciuto',
+    // `null` when OCM omits it — the client renders `t('common.unknown')`,
+    // the server never picks a language-locked label (same as `type` above).
+    name: raw.AddressInfo.Title ?? null,
+    operator: raw.OperatorInfo?.Title ?? null,
     address: {
       line1: raw.AddressInfo.AddressLine1 ?? null,
       line2: raw.AddressInfo.AddressLine2 ?? null,
@@ -106,7 +111,7 @@ export function normalizeStation(raw: OcmPoi): Station {
     connectors,
     maxPowerKw: powerValues.length > 0 ? Math.max(...powerValues) : null,
     numberOfPoints: raw.NumberOfPoints ?? connectors.length,
-    operationalStatus: raw.StatusType?.Title ?? 'Sconosciuto',
+    operationalStatus: raw.StatusType?.Title ?? null,
     isOperational: raw.StatusType?.IsOperational ?? null,
     lastVerified: raw.DateLastVerified ?? null,
     usageType: raw.UsageType?.Title ?? null
@@ -114,7 +119,9 @@ export function normalizeStation(raw: OcmPoi): Station {
 }
 
 function normalizeReferenceEntry(raw: { ID: number; Title?: string | null }): ReferenceEntry {
-  return { id: raw.ID, title: raw.Title ?? 'Sconosciuto' }
+  // A lookup entry with no title is rare; `#<id>` is a stable, language-free
+  // label (same fallback the active-filter chips already use).
+  return { id: raw.ID, title: raw.Title ?? `#${raw.ID}` }
 }
 
 export function normalizeReferenceData(raw: OcmReferenceData): ReferenceData {
