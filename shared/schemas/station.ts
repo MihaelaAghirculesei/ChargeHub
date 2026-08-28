@@ -14,7 +14,9 @@ import { z } from 'zod'
 export const connectorSchema = z.object({
   id: z.number(),
   typeId: z.number().nullable(),
-  type: z.string(),
+  // `null` when OCM omits it — the UI renders `t('common.unknown')`, the
+  // server never hard-codes a language-locked label (see ocm-client.ts).
+  type: z.string().nullable(),
   level: z.string().nullable(),
   powerKw: z.number().nullable(),
   quantity: z.number()
@@ -33,15 +35,18 @@ export const stationAddressSchema = z.object({
 export const stationSchema = z.object({
   id: z.number(),
   uuid: z.string(),
-  name: z.string(),
-  operator: z.string(),
+  // `name`/`operator`/`operationalStatus` are `null` when OCM omits them —
+  // the UI renders `t('common.unknown')`, the server never hard-codes a
+  // language-locked label (see ocm-client.ts, same as `usageType` below).
+  name: z.string().nullable(),
+  operator: z.string().nullable(),
   address: stationAddressSchema,
   latitude: z.number(),
   longitude: z.number(),
   connectors: z.array(connectorSchema),
   maxPowerKw: z.number().nullable(),
   numberOfPoints: z.number(),
-  operationalStatus: z.string(),
+  operationalStatus: z.string().nullable(),
   isOperational: z.boolean().nullable(),
   lastVerified: z.string().nullable(),
   /** "Public"/"Public - Membership Required"/... — see shared/schemas/ocm.ts. */

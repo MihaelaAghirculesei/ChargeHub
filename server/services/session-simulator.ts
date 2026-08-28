@@ -70,9 +70,12 @@ export function generateSessions(
     sessions.push({
       id: `session-${index}`,
       stationId: station.id,
-      stationName: station.name,
+      // `Station.name` / `Connector.type` are nullable (OCM may omit them);
+      // a session row still needs a label, and `#<id>` is stable and
+      // language-free.
+      stationName: station.name ?? `#${station.id}`,
       connectorId: connector.id,
-      connectorType: connector.type,
+      connectorType: connector.type ?? `#${connector.id}`,
       startedAt: startedAt.toISOString(),
       endedAt: endedAt.toISOString(),
       durationMinutes,

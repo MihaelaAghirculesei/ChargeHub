@@ -69,15 +69,15 @@ function formatDate(value: string | null): string {
       <v-card class="mb-4">
         <v-card-item>
           <v-card-title class="text-h5">
-            <h1 class="text-h5 ma-0">{{ station.name }}</h1>
+            <h1 class="text-h5 ma-0">{{ station.name ?? t('common.unknown') }}</h1>
           </v-card-title>
-          <v-card-subtitle>{{ station.operator }}</v-card-subtitle>
+          <v-card-subtitle>{{ station.operator ?? t('common.unknown') }}</v-card-subtitle>
         </v-card-item>
         <v-card-text>
           <div class="d-flex flex-wrap align-center ga-2 mb-4">
             <StationStatusChip
               :is-operational="station.isOperational"
-              :label="station.operationalStatus"
+              :label="station.operationalStatus ?? t('common.unknown')"
             />
             <span class="text-caption text-medium-emphasis">
               {{ t('stations.detail.lastVerified', { date: formatDate(station.lastVerified) }) }}
@@ -98,10 +98,10 @@ function formatDate(value: string | null): string {
           </p>
 
           <!--
-            Non "Öffnungszeiten": OCM non ha un campo di orari strutturato,
-            solo il tipo di accesso (UsageType) e note libere di chi ha
-            censito la stazione (AccessComments, spesso — non sempre —
-            informazioni sugli orari). Vedi docs/PROGRESS.md, Giorno 9.
+            Not "Öffnungszeiten": OCM has no structured opening-hours field,
+            only the access type (UsageType) and free-form notes from
+            whoever recorded the station (AccessComments, often — not always
+            — hours information). See docs/PROGRESS.md, day 9.
           -->
           <h2 class="text-subtitle-1 font-weight-medium mb-1">{{ t('stations.detail.access') }}</h2>
           <p class="text-body-2 mb-0">{{ station.usageType ?? t('common.unknown') }}</p>
@@ -122,7 +122,7 @@ function formatDate(value: string | null): string {
         <v-list lines="two">
           <v-list-item v-for="entry in connectorsWithTelemetry" :key="entry.connector.id">
             <v-list-item-title class="d-flex align-center flex-wrap ga-2">
-              {{ entry.connector.type }}
+              {{ entry.connector.type ?? t('common.unknown') }}
               <ChargePointStatusChip v-if="entry.live" :status="entry.live.status" />
             </v-list-item-title>
             <v-list-item-subtitle>

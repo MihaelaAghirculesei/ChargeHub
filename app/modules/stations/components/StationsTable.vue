@@ -25,7 +25,9 @@ const headers = computed(() => [
 
 function connectorSummary(station: (typeof stations.value)[number]): string {
   if (station.connectors.length === 0) return '–'
-  const types = [...new Set(station.connectors.map((connector) => connector.type))]
+  const types = [
+    ...new Set(station.connectors.map((connector) => connector.type ?? t('common.unknown')))
+  ]
   return `${types.join(', ')} (${station.numberOfPoints})`
 }
 
@@ -76,10 +78,10 @@ function rowProps({ item }: { item: (typeof stations.value)[number] }) {
   />
 
   <!--
-    Nessun `items-per-page-text`: senza override, Vuetify lo prende da
-    `$vuetify.dataTable.itemsPerPageText` (locale de/en mergeti in
-    `i18n/locales/`, Giorno 17) — un valore scritto qui a mano resterebbe
-    nella lingua sbagliata quando si passa a `en`.
+    No `items-per-page-text`: without an override, Vuetify takes it from
+    `$vuetify.dataTable.itemsPerPageText` (de/en locale merged in
+    `i18n/locales/`, day 17) — a value written here by hand would stay in
+    the wrong language when switching to `en`.
   -->
   <v-data-table-server
     v-else
@@ -91,6 +93,12 @@ function rowProps({ item }: { item: (typeof stations.value)[number] }) {
     :row-props="rowProps"
     @update:options="onUpdateOptions"
   >
+    <template #[`item.name`]="{ item }">
+      {{ item.name ?? t('common.unknown') }}
+    </template>
+    <template #[`item.operator`]="{ item }">
+      {{ item.operator ?? t('common.unknown') }}
+    </template>
     <template #[`item.town`]="{ item }">
       {{ item.address.town ?? '–' }}
     </template>
@@ -101,7 +109,10 @@ function rowProps({ item }: { item: (typeof stations.value)[number] }) {
       {{ formatPower(item.maxPowerKw) }}
     </template>
     <template #[`item.operationalStatus`]="{ item }">
-      <StationStatusChip :is-operational="item.isOperational" :label="item.operationalStatus" />
+      <StationStatusChip
+        :is-operational="item.isOperational"
+        :label="item.operationalStatus ?? t('common.unknown')"
+      />
     </template>
   </v-data-table-server>
 </template>
