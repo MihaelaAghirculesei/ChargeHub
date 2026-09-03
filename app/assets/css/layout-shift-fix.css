@@ -1,29 +1,28 @@
 /*
- * Riserva l'altezza della `v-app-bar` PRIMA che il layout system di
- * Vuetify la applichi via JS (Giorno 25, gate Lighthouse CLS su
- * /de/stations/47109): misurato con un vero `PerformanceObserver` in
- * Playwright (non solo l'audit Lighthouse), il primo layout shift della
- * pagina è `.v-container` che salta da `y:0, height:100%viewport` a
- * `y:56px` — Vuetify applica `--v-layout-top`/`padding-top` su `.v-main`
- * solo dopo l'hydration (`useLayout`, non calcolato in SSR anche se il
- * valore è deterministico da `density`), mai durante il render iniziale.
- * Stesso identico valore (56px) applicato due volte — qui subito, poi da
- * Vuetify — quindi zero differenza visiva, solo l'intervallo "non ancora
- * spostato" eliminato.
+ * Reserve the `v-app-bar` height BEFORE Vuetify's layout system applies it
+ * via JS (Day 25, Lighthouse CLS gate on /de/stations/47109): measured with
+ * a real `PerformanceObserver` in Playwright (not just the Lighthouse
+ * audit), the page's first layout shift is `.v-container` jumping from
+ * `y:0, height:100%viewport` to `y:56px` — Vuetify applies
+ * `--v-layout-top`/`padding-top` on `.v-main` only after hydration
+ * (`useLayout`, not computed in SSR even though the value is deterministic
+ * from `density`), never during the initial render. The exact same value
+ * (56px) applied twice — here immediately, then by Vuetify — so zero visual
+ * difference, just the "not yet shifted" interval removed.
  *
- * 56px = altezza di `<v-app-bar density="comfortable">` in
- * app/layouts/default.vue, verificata misurando `.v-app-bar` con
- * `getBoundingClientRect()` in un browser reale. Se quella `density`
- * cambia, questo valore va aggiornato insieme (48px per "compact", 64px
- * per il default) — non riletto automaticamente da Vuetify.
+ * 56px = height of `<v-app-bar density="comfortable">` in
+ * app/layouts/default.vue, verified by measuring `.v-app-bar` with
+ * `getBoundingClientRect()` in a real browser. If that `density` changes,
+ * this value must be updated along with it (48px for "compact", 64px for
+ * the default) — not re-read automatically by Vuetify.
  *
- * `!important` necessario, non solo `.v-main { padding-top: 56px }`
- * (primo tentativo, verificato NON avere alcun effetto misurabile): la
- * vera regola di Vuetify è `padding-top: var(--v-layout-top)` in un
- * chunk CSS separato (`VMain.*.css`, non `entry.css`), stessa specificità
- * della mia — a parità di specificità vince l'ultima nel cascade, non la
- * mia. `!important` la batte a prescindere dall'ordine di caricamento dei
- * due file, senza dover dipendere da quale chunk arriva per ultimo.
+ * `!important` required, not just `.v-main { padding-top: 56px }` (first
+ * attempt, verified to have NO measurable effect): Vuetify's real rule is
+ * `padding-top: var(--v-layout-top)` in a separate CSS chunk (`VMain.*.css`,
+ * not `entry.css`), same specificity as mine — with equal specificity the
+ * last one in the cascade wins, not mine. `!important` beats it regardless
+ * of the load order of the two files, without having to depend on which
+ * chunk arrives last.
  */
 .v-main {
   padding-top: 56px !important;

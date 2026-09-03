@@ -71,11 +71,11 @@ onBeforeUnmount(() => {
 
 <template>
   <!--
-    `role="application"`, non "img": la mappa contiene controlli
-    interattivi focalizzabili veri (zoom, attribuzione) via
-    `NavigationControl` — "img" nega semanticamente contenuto interattivo
-    al suo interno (`nested-interactive`, trovato con axe-core solo quando
-    la mappa si inizializza davvero).
+    `role="application"`, not "img": the map contains real focusable
+    interactive controls (zoom, attribution) via `NavigationControl` —
+    "img" semantically denies interactive content inside it
+    (`nested-interactive`, found with axe-core only once the map actually
+    initializes).
   -->
   <div
     ref="mapContainer"

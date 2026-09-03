@@ -1,6 +1,7 @@
 /**
- * Unico punto di export pubblico del modulo analytics. `analyticsRepository`
- * resta volutamente privato, stesso principio degli altri moduli.
+ * The single public export point of the analytics module.
+ * `analyticsRepository` stays deliberately private, same principle as the
+ * other modules.
  */
 export { useAnalytics } from '~/modules/analytics/composables/useAnalytics'
 export type { AnalyticsPeriodDays } from '~/modules/analytics/composables/useAnalytics'

@@ -64,11 +64,11 @@ function submit() {
       <v-card-title>{{ tariff ? t('tariffs.editTariff') : t('tariffs.newTariff') }}</v-card-title>
       <v-card-text>
         <!--
-          Niente `@submit.prevent` su `v-form`: internamente Vuetify chiama
-          comunque un submit nativo dopo la validazione (vedi login.vue),
-          e Invio in un campo qui dentro genererebbe comunque un evento
-          `submit` nativo del form sottostante. `@keydown.enter` sui campi
-          evita del tutto quel percorso.
+          No `@submit.prevent` on `v-form`: internally Vuetify calls a
+          native submit after validation anyway (see login.vue), and Enter
+          in a field in here would still generate a native `submit` event on
+          the underlying form. `@keydown.enter` on the fields avoids that
+          path entirely.
         -->
         <v-form>
           <v-text-field

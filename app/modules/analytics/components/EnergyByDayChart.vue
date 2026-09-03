@@ -50,9 +50,9 @@ const chartOptions = {
     </ClientOnly>
 
     <!--
-      `eager`: senza, Vuetify monta il contenuto del pannello solo
-      all'apertura e la tabella non esiste nell'HTML SSR — vedi
-      StatusDistributionChart.vue per il dettaglio.
+      `eager`: without it, Vuetify mounts the panel content only on open and
+      the table does not exist in the SSR HTML — see
+      StatusDistributionChart.vue for the details.
     -->
     <v-expansion-panels class="mt-2">
       <v-expansion-panel :title="t('analytics.showAsTable')" eager>

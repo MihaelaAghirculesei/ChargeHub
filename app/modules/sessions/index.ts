@@ -1,5 +1,6 @@
 /**
- * Unico punto di export pubblico del modulo sessioni. `sessionRepository`
- * resta volutamente privato, stesso principio di `stationRepository`.
+ * The single public export point of the sessions module.
+ * `sessionRepository` stays deliberately private, same principle as
+ * `stationRepository`.
  */
 export { useSessions } from '~/modules/sessions/composables/useSessions'
