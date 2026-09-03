@@ -1,11 +1,12 @@
 import { de as vuetifyDe } from 'vuetify/locale'
 
 /**
- * `$vuetify` porta le traduzioni ufficiali dei componenti Vuetify (paginazione,
- * data-table, date-picker, ecc.) — vuetify-nuxt-module le legge da qui una
- * volta che rileva @nuxtjs/i18n (vedi vuetify-nuxt-module/dist/runtime/plugins/i18n.js:
- * usa `i18n.t()`/`i18n.n()` sugli stessi messaggi dell'app, non un set separato).
- * Senza questa chiave, Vuetify emette `[intlify] Not found '$vuetify....'`.
+ * `$vuetify` carries the official translations for the Vuetify components
+ * (pagination, data-table, date-picker, etc.) — vuetify-nuxt-module reads
+ * them from here once it detects @nuxtjs/i18n (see
+ * vuetify-nuxt-module/dist/runtime/plugins/i18n.js: it uses `i18n.t()`/
+ * `i18n.n()` against the same app messages, not a separate set). Without
+ * this key, Vuetify emits `[intlify] Not found '$vuetify....'`.
  */
 export default {
   $vuetify: vuetifyDe,

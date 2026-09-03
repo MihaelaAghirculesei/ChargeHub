@@ -69,12 +69,12 @@ const formattedValue = computed(() => {
       <div class="d-flex align-center ga-1 mb-2">
         <v-icon :icon="trendIcon" size="small" :color="trendIconColor" />
         <!--
-          `text-grey` (grigio Vuetify fisso, ~#9e9e9e) non basta per un
-          testo a 12px su sfondo card chiaro (contrasto 2.67, trovato con
-          axe-core, Giorno 18): per il caso "invariato" si usa
-          `text-medium-emphasis`, che eredita l'opacità già alzata per
-          l'accessibilità (vedi accessibility.css) invece di un grigio
-          indipendente dal tema.
+          `text-grey` (fixed Vuetify grey, ~#9e9e9e) is not enough for 12px
+          text on a light card background (contrast 2.67, found with
+          axe-core, Day 18): for the "unchanged" case we use
+          `text-medium-emphasis`, which inherits the opacity already raised
+          for accessibility (see accessibility.css) instead of a
+          theme-independent grey.
         -->
         <span
           class="text-caption"

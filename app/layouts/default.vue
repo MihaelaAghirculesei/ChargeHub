@@ -43,10 +43,10 @@ const navItems = computed(() => [
 <template>
   <div>
     <!--
-      Primo elemento raggiungibile da tastiera (Giorno 18): invisibile finché
-      non riceve focus (vedi app/assets/css/accessibility.css), salta la nav
-      e va dritto al contenuto — senza, un utente da tastiera deve attraversare
-      tutta la app bar/drawer ad ogni cambio pagina.
+      First keyboard-reachable element (Day 18): invisible until it receives
+      focus (see app/assets/css/accessibility.css), skips the nav and goes
+      straight to the content — without it, a keyboard user has to traverse
+      the whole app bar/drawer on every page change.
     -->
     <a class="skip-link" href="#main-content">{{ t('common.skipToContent') }}</a>
 
@@ -72,10 +72,10 @@ const navItems = computed(() => [
         @click="toggleTheme"
       />
       <!--
-        Cambio lingua esplicito (piano: routing localizzato, nessun redirect
-        automatico da Accept-Language — vedi nuxt.config.ts,
-        detectBrowserLanguage: false): senza questo controllo l'inglese
-        sarebbe raggiungibile solo digitando /en/... a mano.
+        Explicit language switch (plan: localized routing, no automatic
+        Accept-Language redirect — see nuxt.config.ts,
+        detectBrowserLanguage: false): without this control, English would
+        only be reachable by typing /en/... by hand.
       -->
       <v-menu>
         <template #activator="{ props: menuProps }">
@@ -103,12 +103,12 @@ const navItems = computed(() => [
       @mouseleave="rail = true"
     >
       <!--
-        `role="presentation"`: Vuetify dà `role="list"` a questo elemento ma
-        `role="link"` (non "listitem") ai `v-list-item` con `:to` — una
-        combinazione non valida per ARIA (`aria-required-children`, trovato
-        con axe-core, Giorno 18). Qui non serve semantica di lista: è un
-        gruppo di link di navigazione già dentro il landmark `<nav>` del
-        drawer, con la propria etichetta.
+        `role="presentation"`: Vuetify gives `role="list"` to this element
+        but `role="link"` (not "listitem") to the `v-list-item`s with `:to`
+        — an ARIA-invalid combination (`aria-required-children`, found with
+        axe-core, Day 18). No list semantics needed here: it is a group of
+        navigation links already inside the drawer's `<nav>` landmark, with
+        its own label.
       -->
       <v-list nav role="presentation" :aria-label="t('nav.mainNav')">
         <v-list-item

@@ -52,11 +52,11 @@ const chartOptions = { responsive: true, maintainAspectRatio: false }
     </ClientOnly>
 
     <!--
-      Tabella alternativa accessibile: un grafico canvas è invisibile a uno
-      screen reader. `eager` forza il contenuto del pannello nel DOM fin da
-      subito (Vuetify altrimenti lo monta solo all'apertura): senza, la
-      tabella non esiste nell'HTML SSR finché qualcuno non clicca, il che
-      vanifica il punto di averla — verificato con un curl sull'HTML grezzo.
+      Accessible alternative table: a canvas chart is invisible to a screen
+      reader. `eager` forces the panel content into the DOM right away
+      (Vuetify otherwise mounts it only on open): without it, the table does
+      not exist in the SSR HTML until someone clicks, which defeats the
+      point of having it — verified with a curl on the raw HTML.
     -->
     <v-expansion-panels class="mt-2">
       <v-expansion-panel :title="t('analytics.showAsTable')" eager>

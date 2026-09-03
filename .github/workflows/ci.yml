@@ -7,14 +7,14 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# `NUXT_SESSION_PASSWORD` qui non è un vero segreto di produzione — sigilla
-# solo la sessione mock usata dai test in CI (nessun dato reale dietro),
-# minimo 32 caratteri richiesto da validateEnv() (vedi server/utils/env.ts).
-# `NUXT_OCM_API_KEY` invece va aggiunta come secret del repository
-# (Settings -> Secrets and variables -> Actions -> NUXT_OCM_API_KEY): senza,
-# `pnpm build` passa comunque (validateEnv() controlla solo che la stringa
-# non sia vuota), ma le rotte che chiamano davvero OpenChargeMap durante i
-# test E2E possono fallire/andare in rate limit con una chiave finta.
+# `NUXT_SESSION_PASSWORD` here is not a real production secret — it only seals
+# the mock session used by the tests in CI (no real data behind it), and it
+# meets the 32-character minimum required by validateEnv() (see
+# server/utils/env.ts). `NUXT_OCM_API_KEY`, on the other hand, should be added
+# as a repository secret (Settings -> Secrets and variables -> Actions ->
+# NUXT_OCM_API_KEY): without it `pnpm build` still passes (validateEnv() only
+# checks that the string is not empty), but the routes that really call
+# OpenChargeMap during the E2E tests can fail / hit rate limits with a fake key.
 env:
   NUXT_SESSION_PASSWORD: 'ci-only-session-password-not-a-real-secret-32chars'
   NUXT_OCM_API_KEY: ${{ secrets.NUXT_OCM_API_KEY || 'ci-placeholder-key' }}
@@ -45,41 +45,40 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
-      # Soglia di copertura (Giorno 19: 91.82% statements/93.19% lines
-      # raggiunti) applicata da vitest.config.ts, non solo un numero
-      # riportato qui — un calo reale sotto l'80% del piano fa fallire
-      # questo step, non solo un'occhiata al report.
+      # Coverage threshold (Day 19: 91.82% statements / 93.19% lines reached)
+      # enforced by vitest.config.ts, not just a number reported here — a real
+      # drop below the plan's 80% fails this step, not just a glance at the
+      # report.
       - name: Unit test + coverage gate
         run: pnpm test:coverage
 
       - name: Build
         run: pnpm build
 
-      - name: Nessun segreto nell'output di build
+      - name: No secret in the build output
         shell: bash
         run: |
           if grep -rl -- "$NUXT_OCM_API_KEY" .output/ 2>/dev/null; then
-            echo "Trovata un'occorrenza del VALORE della chiave OCM in .output/ - vedi sopra"
+            echo "Found an occurrence of the OCM key VALUE in .output/ - see above"
             exit 1
           fi
-          echo "OK: nessuna occorrenza del valore della chiave OCM in .output/"
+          echo "OK: no occurrence of the OCM key value in .output/"
 
   e2e:
     name: E2E Playwright
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Immagine ufficiale Playwright (browser + librerie di sistema già
-    # installati, versione pinnata a quella di @playwright/test in
-    # package.json), non `playwright install --with-deps` su un runner
-    # Ubuntu generico. Cambio necessario, non solo prudente: due run
-    # consecutivi sono rimasti bloccati >1h30 esattamente su
-    # quell'installazione — un problema documentato e noto di
-    # microsoft/playwright su runner ubuntu-latest (mirror apt instabile in
-    # un caso, hang nell'estrazione zip dei browser in un altro), non
-    # qualcosa risolto da `DEBIAN_FRONTEND=noninteractive` (primo tentativo,
-    # si è bloccato di nuovo identico). L'immagine ufficiale elimina lo step
-    # di installazione del tutto, non lo rende solo più silenzioso.
+    # Official Playwright image (browsers + system libraries already
+    # installed, version pinned to the one of @playwright/test in
+    # package.json), not `playwright install --with-deps` on a generic Ubuntu
+    # runner. A necessary change, not just a cautious one: two consecutive
+    # runs got stuck for >1h30 exactly on that installation — a documented,
+    # known problem of microsoft/playwright on ubuntu-latest runners
+    # (unstable apt mirror in one case, hang in the browser zip extraction in
+    # another), not something fixed by `DEBIAN_FRONTEND=noninteractive` (first
+    # attempt, got stuck again identically). The official image removes the
+    # install step altogether, it does not just make it quieter.
     container:
       image: mcr.microsoft.com/playwright:v1.62.1-noble
     steps:
@@ -94,12 +93,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: E2E (Chromium, WebKit, mobile Chrome/Safari — Giorno 20)
+      - name: E2E (Chromium, WebKit, mobile Chrome/Safari — Day 20)
         run: pnpm test:e2e
         env:
           CI: true
 
-      - name: Report Playwright (se fallisce)
+      - name: Playwright report (on failure)
         if: failure()
         uses: actions/upload-artifact@v7
         with:
@@ -126,19 +125,19 @@ jobs:
 
       - run: pnpm build
 
-      # `node .output/server/index.mjs` (non `pnpm dev`, Giorno 21): i
-      # target del piano vanno verificati sulla build di produzione reale,
-      # non sul dev server. Runner GitHub pulito, non la macchina locale di
-      # stanotte: qui il punteggio Performance è finalmente affidabile.
+      # `node .output/server/index.mjs` (not `pnpm dev`, Day 21): the plan's
+      # targets must be verified against the real production build, not the
+      # dev server. Clean GitHub runner, not tonight's local machine: the
+      # Performance score is finally reliable here.
       #
-      # Avvio, attesa e scansione nello stesso step (non step separati): un
-      # processo avviato in background con `&` in uno step non è garantito
-      # sopravvivere fino allo step successivo — visto succedere davvero al
-      # primo run reale di questo workflow (server "Listening" nel log, poi
-      # nessuna risposta nello step dopo). `127.0.0.1` esplicito, non
-      # `localhost`: il server logga "Listening on http://[::]:PORT"
-      # (wildcard IPv6) e la risoluzione di "localhost" non è garantita
-      # preferire IPv4/IPv6 allo stesso modo su ogni runner.
+      # Start, wait and scan in the same step (not separate steps): a process
+      # started in the background with `&` in one step is not guaranteed to
+      # survive into the next step — seen happen for real on the first real
+      # run of this workflow (server "Listening" in the log, then no response
+      # in the next step). Explicit `127.0.0.1`, not `localhost`: the server
+      # logs "Listening on http://[::]:PORT" (IPv6 wildcard) and "localhost"
+      # resolution is not guaranteed to prefer IPv4/IPv6 the same way on every
+      # runner.
       # 4 pages, not just the station detail (the "what would a senior do"
       # backlog from 21/08, item 4): dashboard/analytics/sessions were only
       # spot-checked by hand on 21/08, with no protection against a future
@@ -152,7 +151,7 @@ jobs:
       # its output against `performanceThresholds`' keys and fails loudly
       # on any mismatch, so a page added here without a matching threshold
       # (or vice versa) can't silently go unguarded.
-      - name: Avvia la build, aspetta, scansiona 4 pagine con Lighthouse (3 run ciascuna)
+      - name: Start the build, wait, scan 4 pages with Lighthouse (3 runs each)
         run: |
           node .output/server/index.mjs &
           SERVER_PID=$!
@@ -167,25 +166,23 @@ jobs:
           )
           for slug in "${!PAGES[@]}"; do
             path="${PAGES[$slug]}"
-            # 3 richieste di riscaldamento, non solo `wait-on` (Giorno 25,
-            # misurato in locale sulla stessa build): la primissima
-            # richiesta dopo l'avvio del server è sistematicamente più
-            # lenta (JIT/V8 ancora a freddo) e da sola faceva scendere
-            # Performance di diversi punti rispetto a richieste successive
-            # identiche — con `wait-on` che si ferma al primo 200 OK,
-            # quella richiesta fredda sarebbe rimasta proprio quella
-            # scansionata da Lighthouse. Ripetuto per ogni pagina: ognuna
-            # ha il suo primo hit "a freddo" (compilazione route/chunk).
+            # 3 warm-up requests, not just `wait-on` (Day 25, measured
+            # locally on the same build): the very first request after the
+            # server starts is systematically slower (JIT/V8 still cold) and
+            # on its own dropped Performance by several points compared to
+            # identical later requests — with `wait-on` stopping at the
+            # first 200 OK, that cold request would have been exactly the
+            # one scanned by Lighthouse. Repeated for each page: each one
+            # has its own first "cold" hit (route/chunk compilation).
             curl -sf -o /dev/null "http://127.0.0.1:3010$path"
             curl -sf -o /dev/null "http://127.0.0.1:3010$path"
             curl -sf -o /dev/null "http://127.0.0.1:3010$path"
-            # 3 scansioni, non 1 (Giorno 25): anche a server "caldo",
-            # misurato ripetutamente in locale sulla stessa identica
-            # build, un singolo run di Lighthouse oscilla di un paio di
-            # punti Performance da un'esecuzione all'altra (rumore di
-            # misurazione reale, non un problema dell'app — la pratica
-            # raccomandata da Lighthouse CI stesso per questo è più run +
-            # mediana, non un numero singolo).
+            # 3 scans, not 1 (Day 25): even with a "warm" server, measured
+            # repeatedly locally on the exact same build, a single Lighthouse
+            # run swings by a couple of Performance points from one execution
+            # to the next (real measurement noise, not an app problem — the
+            # practice recommended by Lighthouse CI itself for this is more
+            # runs + median, not a single number).
             for i in 1 2 3; do
               pnpm exec lighthouse "http://127.0.0.1:3010$path" \
                 --output=json --output-path="./lighthouse-report-$slug-$i.json" \
@@ -199,7 +196,7 @@ jobs:
         env:
           PORT: 3010
 
-      # Per-page Performance thresholds, not a flat 90 (Giorno 25, second
+      # Per-page Performance thresholds, not a flat 90 (Day 25, second
       # continuation): the first real median-of-3 measurement on a clean CI
       # runner (not local, not noisy) came back stations 91, dashboard 86,
       # analytics 84, sessions 76 — three of four pages below the plan's
@@ -217,7 +214,7 @@ jobs:
       # margin for that actual noise, not the plan's 90 — an honest
       # regression floor. Pushing any of them back up is separate
       # optimization work, not part of this backlog item.
-      - name: Verifica i target del piano su ciascuna pagina, mediana di 3 run (soglie Performance per pagina, Accessibility/Best Practices/SEO >= 95, CLS <= 0.1)
+      - name: Verify the plan's targets per page, median of 3 runs (per-page Performance thresholds, Accessibility/Best Practices/SEO >= 95, CLS <= 0.1)
         run: |
           node -e "
             const fs = require('fs');
@@ -246,23 +243,23 @@ jobs:
               const pct = (k) => median(reports.map((r) => Math.round(r.categories[k].score * 100)));
               const cls = median(reports.map((r) => r.audits['cumulative-layout-shift'].numericValue));
               console.log(\`--- \${slug} ---\`);
-              console.log(\`Performance (mediana di 3, soglia \${performanceThreshold}):\`, pct('performance'), reports.map((r) => Math.round(r.categories.performance.score * 100)));
+              console.log(\`Performance (median of 3, threshold \${performanceThreshold}):\`, pct('performance'), reports.map((r) => Math.round(r.categories.performance.score * 100)));
               console.log('Accessibility:', pct('accessibility'));
               console.log('Best Practices:', pct('best-practices'));
               console.log('SEO:', pct('seo'));
-              console.log('CLS (mediana di 3):', cls, reports.map((r) => r.audits['cumulative-layout-shift'].numericValue));
+              console.log('CLS (median of 3):', cls, reports.map((r) => r.audits['cumulative-layout-shift'].numericValue));
               const failures = [];
               if (pct('performance') < performanceThreshold) failures.push(\`Performance < \${performanceThreshold}\`);
               if (pct('accessibility') < 95) failures.push('Accessibility < 95');
               if (pct('best-practices') < 95) failures.push('Best Practices < 95');
               if (pct('seo') < 95) failures.push('SEO < 95');
               if (cls > 0.1) failures.push('CLS > 0.1');
-              if (failures.length) { console.error(\`FALLITO (\${slug}):\`, failures.join(', ')); anyFailure = true; }
+              if (failures.length) { console.error(\`FAILED (\${slug}):\`, failures.join(', ')); anyFailure = true; }
             }
             if (anyFailure) process.exit(1);
           "
 
-      - name: Report Lighthouse
+      - name: Lighthouse report
         if: always()
         uses: actions/upload-artifact@v7
         with:

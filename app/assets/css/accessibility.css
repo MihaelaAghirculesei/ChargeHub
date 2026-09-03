@@ -1,10 +1,9 @@
 /*
- * Stili globali di accessibilità (Giorno 18), non legati a Vuetify: skip
- * link (nascosto finché non riceve focus da tastiera) e rispetto di
- * `prefers-reduced-motion` per ogni transizione/animazione dell'app,
- * incluse quelle interne di Vuetify (i suoi componenti usano classi
- * `.v-*-transition-*` standard, silenziarle qui non richiede toccare
- * ciascun componente).
+ * Global accessibility styles (Day 18), not tied to Vuetify: skip link
+ * (hidden until it receives keyboard focus) and honoring
+ * `prefers-reduced-motion` for every app transition/animation, including
+ * Vuetify's internal ones (its components use standard `.v-*-transition-*`
+ * classes, silencing them here does not require touching each component).
  */
 
 .skip-link {
@@ -25,10 +24,10 @@
 }
 
 /**
- * Anello di focus esplicito, indipendente dal meccanismo interno di
- * Vuetify (overlay/ripple, non sempre un `outline` CSS intercettabile) —
- * garantisce un indicatore di focus reale su ogni elemento, verificato con
- * un test Playwright (Giorno 18), non assunto.
+ * Explicit focus ring, independent of Vuetify's internal mechanism
+ * (overlay/ripple, not always an interceptable CSS `outline`) — guarantees
+ * a real focus indicator on every element, verified with a Playwright test
+ * (Day 18), not assumed.
  */
 :focus-visible {
   outline: 2px solid rgb(var(--v-theme-primary)) !important;
@@ -36,25 +35,25 @@
 }
 
 /**
- * L'opacità "medium emphasis" di default di Vuetify (0.6, usata per label
- * fluttuanti, testo secondario, icone) scende sotto 4.5:1 su sfondi chiari
- * a font piccoli (WCAG 1.4.3) — verificato con axe-core (Giorno 18) su una
- * label di v-text-field, poi di nuovo (Giorno 21) su v-card-subtitle a
- * 14px. `!important` non è decorativo qui: Vuetify imposta questa custom
- * property via `style` inline sull'elemento `.v-theme--*` stesso (il tema
- * attivo), che vince sempre su una regola di un foglio di stile esterno a
- * parità di tutto il resto — senza, il valore restava 0.6 nonostante
- * questa regola esistesse (verificato leggendo lo stile calcolato reale in
- * un browser, non assunto: il "fix" del Giorno 18 non aveva mai avuto
- * effetto per lo stesso motivo, solo che il testo toccato allora passava
- * comunque 4.5:1 anche a 0.6, per pura coincidenza di dimensione/peso).
+ * Vuetify's default "medium emphasis" opacity (0.6, used for floating
+ * labels, secondary text, icons) drops below 4.5:1 on light backgrounds at
+ * small font sizes (WCAG 1.4.3) — verified with axe-core (Day 18) on a
+ * v-text-field label, then again (Day 21) on a v-card-subtitle at 14px.
+ * `!important` is not decorative here: Vuetify sets this custom property via
+ * an inline `style` on the `.v-theme--*` element itself (the active theme),
+ * which always beats a rule from an external stylesheet with everything else
+ * equal — without it, the value stayed 0.6 despite this rule existing
+ * (verified by reading the real computed style in a browser, not assumed:
+ * the Day 18 "fix" had never taken effect for the same reason, it just
+ * happened that the text touched back then passed 4.5:1 even at 0.6, by pure
+ * coincidence of size/weight).
  */
 .v-theme--light,
 .v-theme--dark {
   --v-medium-emphasis-opacity: 0.8 !important;
 }
 
-/** Contenuto solo per screen reader (es. regioni aria-live), invisibile a schermo ma presente nel DOM. */
+/** Screen-reader-only content (e.g. aria-live regions), invisible on screen but present in the DOM. */
 .sr-only {
   position: absolute;
   width: 1px;

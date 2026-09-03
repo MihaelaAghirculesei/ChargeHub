@@ -1,33 +1,33 @@
 /*
- * Sottoinsieme di @mdi/font (Giorno 24): solo le icone usate davvero in
- * questa app (30) + quelle richieste internamente da Vuetify stesso
- * (checkbox, frecce, chiudi, ecc. — 76 totali, verificato leggendo
- * vuetify/iconsets/mdi.js), non l'intero set (~7000 regole, ~570 kB non
- * compressi). Generato una volta a mano da node_modules/@mdi/font
- * (estraendo da materialdesignicons.min.css le regole `.mdi-xxx::before`
- * di queste 76 icone), non mantenuto automaticamente: se si aggiunge una
- * nuova icona mdi-* al progetto, questo file va rigenerato con lo stesso
- * procedimento. Trovato con Lighthouse su un runner CI pulito, non
- * stimato: l'intero font+CSS come parte del bundle critico dava FCP
- * 11.5s, LCP 16.9s, Performance 46/100 su /de/stations/47109.
+ * Subset of @mdi/font (Day 24): only the icons actually used in this app
+ * (30) + the ones Vuetify itself requires internally (checkbox, arrows,
+ * close, etc. — 76 total, verified by reading vuetify/iconsets/mdi.js), not
+ * the whole set (~7000 rules, ~570 kB uncompressed). Generated once by hand
+ * from node_modules/@mdi/font (extracting the `.mdi-xxx::before` rules for
+ * these 76 icons from materialdesignicons.min.css), not maintained
+ * automatically: if a new mdi-* icon is added to the project, this file must
+ * be regenerated with the same procedure. Found with Lighthouse on a clean
+ * CI runner, not estimated: the whole font+CSS as part of the critical
+ * bundle gave FCP 11.5s, LCP 16.9s, Performance 46/100 on
+ * /de/stations/47109.
  *
- * `public/fonts/mdi-subset.woff2` (Giorno 25): non più il font
- * @mdi/font completo rinominato (403 kB, tutti i ~7000 glifi) ma un
- * sottoinsieme vero del BINARIO, generato con `fonttools` (Python) sugli
- * stessi 76 codepoint referenziati qui sotto:
+ * `public/fonts/mdi-subset.woff2` (Day 25): no longer the full @mdi/font
+ * font renamed (403 kB, all ~7000 glyphs) but a real subset of the BINARY,
+ * generated with `fonttools` (Python) over the same 76 codepoints
+ * referenced below:
  *
  *   pip install fonttools brotli
  *   pyftsubset node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2 \
  *     --output-file=public/fonts/mdi-subset.woff2 --flavor=woff2 \
- *     --unicodes=U+F0004,U+F0028,... (i codepoint di content: "\FXXXX" qui sotto) \
+ *     --unicodes=U+F0004,U+F0028,... (the codepoints of content: "\FXXXX" below) \
  *     --layout-features='' --no-hinting --desubroutinize
  *
- * 403 kB -> 3.7 kB (99%): il CSS qui sopra teneva già solo le REGOLE per
- * 76 icone, ma il file .woff2 conteneva comunque tutti i glifi del set
- * completo — scoperto rileggendo l'audit "network-requests" di Lighthouse
- * dopo aver risolto il collo di bottiglia di maplibre-gl (Giorno 25): con
- * quello fuori dal percorso critico, il font è tornato a essere l'asset
- * singolo più pesante della pagina (394 kB, priorità VeryHigh).
+ * 403 kB -> 3.7 kB (99%): the CSS above already kept only the RULES for 76
+ * icons, but the .woff2 file still contained all the glyphs of the full set
+ * — discovered by re-reading Lighthouse's "network-requests" audit after
+ * resolving the maplibre-gl bottleneck (Day 25): with that off the critical
+ * path, the font went back to being the single heaviest asset on the page
+ * (394 kB, VeryHigh priority).
  */
 @font-face{font-family:"Material Design Icons";src:url("/fonts/mdi-subset.woff2") format("woff2");font-weight:normal;font-style:normal;font-display:swap}
 .mdi:before,.mdi-set{display:inline-block;font:normal normal normal 24px/1 "Material Design Icons";font-size:inherit;text-rendering:auto;line-height:inherit;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
