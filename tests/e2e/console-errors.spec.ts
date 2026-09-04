@@ -41,11 +41,24 @@ const AUTHENTICATED_PAGES = ['/de/tariffs']
  *    ever runs server-side, see docs/adr/0002), so this can never mask a
  *    genuine CORS misconfiguration here. Restricted to `localhost` so it
  *    stays that narrow.
+ *
+ * 3. `[NUXT_E5002] Could not fetch the app manifest` — Nuxt's client
+ *    periodically fetches `/_nuxt/builds/meta/<hash>.json` (route rules,
+ *    prerender/payload hints). Against the *dev server* (what the E2E job
+ *    runs) under 4 Playwright projects in parallel, that one request
+ *    occasionally times out on a single worker; Nuxt logs this warning and
+ *    its own text says "This may be a transient network issue". It is never
+ *    produced by app code — there is nothing in this repo that controls the
+ *    manifest endpoint — and a genuinely broken router/route-rule setup
+ *    would hard-fail the real login/tariffs flows in this same suite, not
+ *    surface only as a console warning. Matched on the stable error code so
+ *    the exclusion stays exactly this one message.
  */
 function isKnownBenignNoise(text: string): boolean {
   return (
     /^\[\.WebGL-0x[0-9a-f]+\]GL Driver Message/i.test(text) ||
-    (/localhost/.test(text) && /due to access control checks\.$/.test(text))
+    (/localhost/.test(text) && /due to access control checks\.$/.test(text)) ||
+    /\[NUXT_E5002\].*app manifest/s.test(text)
   )
 }
 
