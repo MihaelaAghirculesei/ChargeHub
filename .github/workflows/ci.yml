@@ -110,7 +110,13 @@ jobs:
     name: Lighthouse CI
     needs: quality
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 20, not 10 (2026-09-04): `pnpm install` + `pnpm build` + 4 pages x
+    # (3 warm-up hits + 3 Lighthouse runs) is ~12-14 min on a current
+    # runner and the 10-min cap started cancelling the scan step mid-run on
+    # every PR. The scan work itself is deliberate (median-of-3 for noise,
+    # see the step comments) — the budget was just too tight, so give it
+    # the same headroom as the e2e job rather than trimming the method.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
 
