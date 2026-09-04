@@ -19,10 +19,10 @@ export function useAppTheme() {
   const theme = useTheme()
   const themeCookie = useThemeCookie()
 
-  const isDark = computed(() => theme.global.name.value === 'dark')
+  const isDark = computed(() => theme.name.value === 'dark')
 
   function setTheme(name: AppThemeName) {
-    theme.global.name.value = name
+    theme.change(name)
     themeCookie.value = name
   }
 
