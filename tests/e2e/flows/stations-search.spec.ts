@@ -28,6 +28,35 @@ test.describe('station search and filter -> open detail', () => {
     await expect(stationsPage.minPowerInput).toHaveValue('')
   })
 
+  test('sorting by the Betreiber column re-fetches and reorders the rows', async ({ page }) => {
+    const stationsPage = new StationsPage(page)
+    await stationsPage.goto()
+    await stationsPage.viewModeButton('Liste').click()
+    await page.waitForLoadState('networkidle')
+    await stationsPage.table.locator('tbody tr').first().waitFor()
+
+    const before = await stationsPage.operatorCells().allInnerTexts()
+    expect(before.length).toBeGreaterThan(1)
+
+    await stationsPage.sortByColumn('Betreiber', 'operator')
+    const ascending = await stationsPage.operatorCells().allInnerTexts()
+
+    // The re-fetch is the point of the test: a broken watch left the list
+    // untouched after the header click (only Vuetify's arrow flipped).
+    expect(ascending).not.toEqual(before)
+
+    // `paginate()` pushes "no operator" rows to the end regardless of
+    // direction and compares with a plain `<` (code points), so mirror that
+    // here rather than a locale-aware collation.
+    const known = ascending.filter((value) => value !== 'Unbekannt')
+    expect(known).toEqual([...known].sort())
+
+    // A second click flips to descending.
+    await stationsPage.sortByColumn('Betreiber', 'operator')
+    const descending = await stationsPage.operatorCells().allInnerTexts()
+    expect(descending).not.toEqual(ascending)
+  })
+
   test('opening a table row leads to the detail with the same name in the heading', async ({
     page
   }) => {
