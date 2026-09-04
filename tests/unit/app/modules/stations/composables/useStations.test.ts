@@ -1,7 +1,7 @@
 import { clearNuxtData } from '#app'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { useStations } from '~/modules/stations/composables/useStations'
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
@@ -65,6 +65,29 @@ describe('useStations', () => {
       sortBy: 'name',
       sortOrder: 'desc'
     })
+  })
+
+  it('re-fetches when the table sort or a filter changes (not only on the initial load)', async () => {
+    const handler = vi.fn(() => ({ items: [], total: 0 }))
+    unregisterEndpoint = registerEndpoint('/api/stations', handler)
+
+    const wrapper = await mountSuspended(StationsHost)
+    await flushPromises()
+    const callsAfterInitialLoad = handler.mock.calls.length
+
+    // Sort change (the v-data-table-server header click path).
+    wrapper.vm.updateOptions({
+      page: 1,
+      itemsPerPage: 10,
+      sortBy: [{ key: 'operator', order: 'asc' }]
+    })
+    await flushPromises()
+    expect(handler.mock.calls.length).toBe(callsAfterInitialLoad + 1)
+
+    // Filter change (the filter bar path).
+    useStationsFiltersStore().setFilters({ minPowerKw: 50 })
+    await flushPromises()
+    expect(handler.mock.calls.length).toBe(callsAfterInitialLoad + 2)
   })
 
   it('with an empty sortBy (column deselected) it clears sortBy/sortOrder instead of leaving the old value', async () => {
