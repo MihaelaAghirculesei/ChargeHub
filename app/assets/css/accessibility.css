@@ -35,6 +35,39 @@
 }
 
 /**
+ * Data-table sort headers are focusable `<th>`s, so the ring above (2px,
+ * `outline-offset: 2px`) reads as a blue rectangle floating around the cell
+ * on every click-to-sort — visually noisy. Replace it, for the table
+ * headers only, with a calmer indicator that still reads as focus: a faint
+ * primary tint plus a solid accent underline (kept for both mouse and
+ * keyboard so a keyboard user is never left without one).
+ */
+.v-data-table th.v-data-table__th--sortable:focus,
+.v-data-table th.v-data-table__th--sortable:focus-visible {
+  outline: none !important;
+  background-color: rgba(var(--v-theme-primary), 0.08);
+  box-shadow: inset 0 -3px 0 0 rgb(var(--v-theme-primary));
+}
+
+/**
+ * Vuetify fields (text, number, select) already show focus as a
+ * primary-coloured border on `.v-field--focused` — a real, WCAG-sufficient
+ * indicator. The global `:focus-visible` rule then stacks a second
+ * rectangle *inside* the field: around the bare `<input>` for a text field,
+ * around the `.v-field__input` tab-stop for a `v-select`. Drop that extra
+ * outline on the field's input area (and anything focusable inside it, e.g.
+ * a select's selection text) and let Vuetify's own border be the focus
+ * indicator, identical for every field. The `append-inner` button of the
+ * NL-search bar sits outside `.v-field__input`, so it keeps its own ring.
+ */
+.v-field__input:focus,
+.v-field__input:focus-visible,
+.v-field__input :focus,
+.v-field__input :focus-visible {
+  outline: none !important;
+}
+
+/**
  * Vuetify's default "medium emphasis" opacity (0.6, used for floating
  * labels, secondary text, icons) drops below 4.5:1 on light backgrounds at
  * small font sizes (WCAG 1.4.3) — verified with axe-core (Day 18) on a
