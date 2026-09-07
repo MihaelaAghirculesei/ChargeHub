@@ -21,10 +21,17 @@ export function useStations() {
   const stationsStore = useStationsStore()
   const filtersStore = useStationsFiltersStore()
 
+  // Getters, not `filtersStore.filters` / `filtersStore.tableOptions`
+  // directly: `setFilters` / `setTableOptions` replace the whole object
+  // (spread), they never mutate it in place. Passing the unwrapped object
+  // makes `watch` bind to that one instance, which is then orphaned on the
+  // next `set*` call and never changes again — so sorting/paging/filtering
+  // stopped re-fetching. The getters re-read the current object each time,
+  // so the identity change is seen.
   const { data, pending, error, refresh } = useAsyncData(
     'stations-list',
     () => stationsStore.list(filtersStore.filters, filtersStore.tableOptions),
-    { watch: [filtersStore.filters, filtersStore.tableOptions] }
+    { watch: [() => filtersStore.filters, () => filtersStore.tableOptions] }
   )
 
   const stations = computed(() => data.value?.items ?? [])

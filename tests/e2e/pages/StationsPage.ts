@@ -31,6 +31,32 @@ export class StationsPage {
     return this.page.locator('.v-data-table')
   }
 
+  columnHeader(label: string): Locator {
+    return this.page.getByRole('columnheader', { name: label })
+  }
+
+  /** Cells of the "Betreiber" column (2nd column, no select/expand column here). */
+  operatorCells(): Locator {
+    return this.table.locator('tbody tr td:nth-child(2)')
+  }
+
+  /**
+   * `v-data-table-server` sorts on the server (see `useStations`): a header
+   * click must trigger a `/api/stations` re-fetch, not only Vuetify's arrow
+   * toggle. Waiting for that response (not `networkidle`, which resolves
+   * immediately on an already-idle page) is what makes this deterministic.
+   */
+  async sortByColumn(label: string, sortKey: string) {
+    const [response] = await Promise.all([
+      this.page.waitForResponse(
+        (r) => r.url().includes('/api/stations?') && r.url().includes(`sortby=${sortKey}`)
+      ),
+      this.columnHeader(label).click()
+    ])
+    await response.finished()
+    await this.table.locator('tbody tr').first().waitFor()
+  }
+
   get map() {
     return this.page.locator('.maplibregl-canvas')
   }
