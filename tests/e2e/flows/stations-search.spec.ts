@@ -17,13 +17,13 @@ test.describe('station search and filter -> open detail', () => {
 
     const rowsBefore = await stationsPage.table.locator('tbody tr').count()
 
-    await stationsPage.minPowerInput.fill('50')
-    await page.waitForLoadState('networkidle')
+    await stationsPage.filterByMinPower(50)
 
     const rowsAfter = await stationsPage.table.locator('tbody tr').count()
     expect(rowsAfter).toBeLessThanOrEqual(rowsBefore)
 
     // "Alle löschen" (StationsActiveFilterChips, day 6) clears everything again.
+    await expect(stationsPage.clearAllFiltersButton).toBeVisible({ timeout: 15_000 })
     await stationsPage.clearAllFiltersButton.click()
     await expect(stationsPage.minPowerInput).toHaveValue('')
   })

@@ -39,12 +39,12 @@ test.describe('map <-> list synced', () => {
     const stationsPage = new StationsPage(page)
     await stationsPage.goto()
 
-    await stationsPage.viewModeButton('Karte').click()
+    await stationsPage.selectViewMode('Karte')
     await stationsPage.waitForMapReady()
-    await expect(stationsPage.table).toBeHidden()
+    await expect(stationsPage.table).toBeHidden({ timeout: 15_000 })
 
-    await stationsPage.viewModeButton('Liste').click()
-    await expect(stationsPage.table).toBeVisible()
-    await expect(stationsPage.map).toBeHidden()
+    await stationsPage.selectViewMode('Liste')
+    await expect(stationsPage.table).toBeVisible({ timeout: 15_000 })
+    await expect(stationsPage.map).toBeHidden({ timeout: 15_000 })
   })
 })

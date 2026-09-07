@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 
 export class StationsPage {
   constructor(private readonly page: Page) {}
@@ -27,6 +27,36 @@ export class StationsPage {
     return this.page.getByRole('button', { name: label })
   }
 
+  /**
+   * Switch the map/list/split toggle and wait for the click to register
+   * (Vuetify marks the selected `v-btn-toggle` button with `v-btn--active`)
+   * before the caller asserts on the resulting layout. On WebKit under the
+   * load of 4 parallel projects against one dev server the re-render lags
+   * visibly; without this wait the following visibility assertion races it.
+   */
+  async selectViewMode(label: 'Karte' | 'Liste' | 'Geteilt') {
+    const button = this.viewModeButton(label)
+    await button.click()
+    await expect(button).toHaveClass(/v-btn--active/, { timeout: 15_000 })
+  }
+
+  /**
+   * Fill the "Min. Leistung" field and wait for the re-fetch it triggers.
+   * That field has no debounce (unlike the search box), so the request
+   * fires immediately — but `networkidle` can still resolve before it even
+   * starts, which is what left this flaky on WebKit.
+   */
+  async filterByMinPower(kw: number) {
+    await Promise.all([
+      this.page.waitForResponse(
+        (r) => r.url().includes('/api/stations?') && r.url().includes(`minpowerkw=${kw}`),
+        { timeout: 20_000 }
+      ),
+      this.minPowerInput.fill(String(kw))
+    ])
+    await this.table.locator('tbody tr').first().waitFor()
+  }
+
   get table() {
     return this.page.locator('.v-data-table')
   }
@@ -49,7 +79,11 @@ export class StationsPage {
   async sortByColumn(label: string, sortKey: string) {
     const [response] = await Promise.all([
       this.page.waitForResponse(
-        (r) => r.url().includes('/api/stations?') && r.url().includes(`sortby=${sortKey}`)
+        (r) => r.url().includes('/api/stations?') && r.url().includes(`sortby=${sortKey}`),
+        // The dev server serialises the full 2000-row list on every sort;
+        // under 4 parallel projects that can take well over the default
+        // 10s on WebKit. The test timeout (45s) still bounds a real hang.
+        { timeout: 20_000 }
       ),
       this.columnHeader(label).click()
     ])
