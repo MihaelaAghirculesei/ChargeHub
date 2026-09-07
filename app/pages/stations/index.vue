@@ -8,6 +8,7 @@ import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filt
 import type { StationsViewMode } from '~/modules/stations/types'
 
 const { t } = useI18n()
+const { smAndUp } = useDisplay()
 
 useSeoMeta({ title: t('stations.seoTitle') })
 
@@ -49,6 +50,13 @@ function onViewModeChange(value: unknown) {
           :aria-label="option.label"
         >
           <span class="d-none d-sm-inline">{{ option.label }}</span>
+          <!-- Tooltip only where the label is hidden (icon-only, below `sm`). -->
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+            :disabled="smAndUp"
+            :text="option.label"
+          />
         </v-btn>
       </v-btn-toggle>
     </div>

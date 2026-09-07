@@ -58,6 +58,7 @@ const navItems = computed(() => [
       <v-app-bar-nav-icon
         v-if="mobile"
         :size="compactBar ? 'small' : undefined"
+        :title="t('nav.openMenu')"
         :aria-label="t('nav.openMenu')"
         @click="drawer = !drawer"
       />
@@ -98,12 +99,15 @@ const navItems = computed(() => [
         </v-btn>
         <v-btn
           class="d-md-none"
-          icon="mdi-logout"
+          icon
           variant="text"
           :size="compactBar ? 'small' : undefined"
           :aria-label="t('auth.logout')"
           @click="handleLogout"
-        />
+        >
+          <v-icon icon="mdi-logout" />
+          <v-tooltip activator="parent" location="bottom" :text="t('auth.logout')" />
+        </v-btn>
       </template>
       <template v-else>
         <v-btn
@@ -116,21 +120,31 @@ const navItems = computed(() => [
         </v-btn>
         <v-btn
           class="d-md-none"
-          icon="mdi-login"
+          icon
           variant="text"
           :size="compactBar ? 'small' : undefined"
           :aria-label="t('auth.login')"
           :to="localePath('/login')"
-        />
+        >
+          <v-icon icon="mdi-login" />
+          <v-tooltip activator="parent" location="bottom" :text="t('auth.login')" />
+        </v-btn>
       </template>
       <v-btn
-        :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
+        icon
         variant="text"
         class="flex-shrink-0"
         :size="compactBar ? 'small' : undefined"
         :aria-label="isDark ? t('nav.toLightTheme') : t('nav.toDarkTheme')"
         @click="toggleTheme"
-      />
+      >
+        <v-icon :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'" />
+        <v-tooltip
+          activator="parent"
+          location="bottom"
+          :text="isDark ? t('nav.toLightTheme') : t('nav.toDarkTheme')"
+        />
+      </v-btn>
       <!--
         Explicit language switch (plan: localized routing, no automatic
         Accept-Language redirect — see nuxt.config.ts,
@@ -143,9 +157,11 @@ const navItems = computed(() => [
             variant="text"
             class="flex-shrink-0"
             :size="compactBar ? 'small' : undefined"
+            :aria-label="t('nav.language')"
             v-bind="menuProps"
           >
             {{ locale.toUpperCase() }}
+            <v-tooltip activator="parent" location="bottom" :text="t('nav.language')" />
           </v-btn>
         </template>
         <v-list density="compact" role="presentation">

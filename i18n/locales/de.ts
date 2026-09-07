@@ -42,7 +42,8 @@ export default {
     mainNav: 'Hauptnavigation',
     comingSoon: 'Bald verfügbar',
     toLightTheme: 'Zum hellen Design wechseln',
-    toDarkTheme: 'Zum dunklen Design wechseln'
+    toDarkTheme: 'Zum dunklen Design wechseln',
+    language: 'Sprache'
   },
 
   auth: {

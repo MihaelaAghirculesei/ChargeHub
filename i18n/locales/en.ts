@@ -32,7 +32,8 @@ export default {
     mainNav: 'Main navigation',
     comingSoon: 'Coming soon',
     toLightTheme: 'Switch to light theme',
-    toDarkTheme: 'Switch to dark theme'
+    toDarkTheme: 'Switch to dark theme',
+    language: 'Language'
   },
 
   auth: {
