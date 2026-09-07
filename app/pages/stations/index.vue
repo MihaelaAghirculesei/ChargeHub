@@ -51,12 +51,7 @@ function onViewModeChange(value: unknown) {
         >
           <span class="d-none d-sm-inline">{{ option.label }}</span>
           <!-- Tooltip only where the label is hidden (icon-only, below `sm`). -->
-          <v-tooltip
-            activator="parent"
-            location="bottom"
-            :disabled="smAndUp"
-            :text="option.label"
-          />
+          <v-tooltip activator="parent" location="top" :disabled="smAndUp" :text="option.label" />
         </v-btn>
       </v-btn-toggle>
     </div>

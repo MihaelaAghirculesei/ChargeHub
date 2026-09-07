@@ -106,7 +106,7 @@ const navItems = computed(() => [
           @click="handleLogout"
         >
           <v-icon icon="mdi-logout" />
-          <v-tooltip activator="parent" location="bottom" :text="t('auth.logout')" />
+          <v-tooltip activator="parent" location="top" :text="t('auth.logout')" />
         </v-btn>
       </template>
       <template v-else>
@@ -127,7 +127,7 @@ const navItems = computed(() => [
           :to="localePath('/login')"
         >
           <v-icon icon="mdi-login" />
-          <v-tooltip activator="parent" location="bottom" :text="t('auth.login')" />
+          <v-tooltip activator="parent" location="top" :text="t('auth.login')" />
         </v-btn>
       </template>
       <v-btn
@@ -141,7 +141,7 @@ const navItems = computed(() => [
         <v-icon :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'" />
         <v-tooltip
           activator="parent"
-          location="bottom"
+          location="top"
           :text="isDark ? t('nav.toLightTheme') : t('nav.toDarkTheme')"
         />
       </v-btn>
@@ -161,7 +161,7 @@ const navItems = computed(() => [
             v-bind="menuProps"
           >
             {{ locale.toUpperCase() }}
-            <v-tooltip activator="parent" location="bottom" :text="t('nav.language')" />
+            <v-tooltip activator="parent" location="top" :text="t('nav.language')" />
           </v-btn>
         </template>
         <v-list density="compact" role="presentation">
