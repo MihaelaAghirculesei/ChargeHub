@@ -11,13 +11,13 @@ export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  // 1 even locally, not only in CI: under the load of 4 parallel projects
-  // against a single shared dev server, WebKit in particular showed an
-  // isolated failure that did not reproduce when run in isolation (login
-  // succeeded but the session was not yet persisted on the next navigation)
-  // — environment flakiness, not a reproducible bug: a second attempt
-  // confirms it without hiding it (a real failure would still fail on retry).
-  retries: 1,
+  // Under the load of 4 parallel projects against a single shared dev
+  // server, WebKit / mobile-Safari intermittently miss a 10s action or
+  // response timeout on view transitions and list re-fetches — environment
+  // flakiness against `pnpm dev`, not a reproducible bug. CI gets 2 retries
+  // (a genuine failure still fails all 3 attempts and is not hidden); local
+  // keeps 1 so the signal stays sharp while iterating.
+  retries: process.env.CI ? 2 : 1,
   reporter: 'list',
   // A single dev server shared by 4 parallel projects (Day 20): the default
   // of 30s per test became marginal under load (an axe scan went over it
