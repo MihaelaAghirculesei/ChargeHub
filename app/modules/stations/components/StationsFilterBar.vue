@@ -48,6 +48,12 @@ const minPowerKw = computed<number | null>({
 </script>
 
 <template>
+  <!--
+    Full width on phones (`cols="12"`): at `cols="6"` the select/number
+    fields are ~180px and their labels ("Betreiber", "Min. Leistung")
+    clipped under the dropdown arrow and clear icon. Two per row from `sm`,
+    the full row of five from `md`.
+  -->
   <v-row>
     <v-col cols="12" md="4">
       <v-text-field
@@ -59,7 +65,7 @@ const minPowerKw = computed<number | null>({
         density="comfortable"
       />
     </v-col>
-    <v-col cols="6" md="2">
+    <v-col cols="12" sm="6" md="2">
       <v-select
         v-model="connectionTypeId"
         :items="connectorTypeItems"
@@ -70,7 +76,7 @@ const minPowerKw = computed<number | null>({
         density="comfortable"
       />
     </v-col>
-    <v-col cols="6" md="2">
+    <v-col cols="12" sm="6" md="2">
       <v-select
         v-model="operatorId"
         :items="operatorItems"
@@ -81,7 +87,7 @@ const minPowerKw = computed<number | null>({
         density="comfortable"
       />
     </v-col>
-    <v-col cols="6" md="2">
+    <v-col cols="12" sm="6" md="2">
       <v-select
         v-model="statusTypeId"
         :items="statusItems"
@@ -92,12 +98,13 @@ const minPowerKw = computed<number | null>({
         density="comfortable"
       />
     </v-col>
-    <v-col cols="6" md="2">
+    <v-col cols="12" sm="6" md="2">
       <v-text-field
         v-model.number="minPowerKw"
         type="number"
         min="0"
         :label="t('stations.filters.minPower')"
+        suffix="kW"
         clearable
         hide-details
         density="comfortable"

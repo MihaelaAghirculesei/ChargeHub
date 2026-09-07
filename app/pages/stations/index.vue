@@ -50,11 +50,18 @@ function onViewModeChange(value: unknown) {
     <StationsFilterBar class="mb-4" />
     <StationsActiveFilterChips />
 
+    <!--
+      Side by side only from `xl`: the table has six columns (one of them the
+      long connector list), so in anything narrower than a half of `xl` it
+      scrolls behind its own edge. Below `xl` the map and the full-width
+      table stack instead — still distinct from the map-only / list-only
+      modes, just not cramped.
+    -->
     <v-row v-if="filtersStore.viewMode === 'split'">
-      <v-col cols="12" md="6">
+      <v-col cols="12" xl="6">
         <StationsMap />
       </v-col>
-      <v-col cols="12" md="6">
+      <v-col cols="12" xl="6">
         <StationsTable />
       </v-col>
     </v-row>

@@ -108,7 +108,7 @@ export default {
       connectionType: 'Anschlusstyp',
       operator: 'Betreiber',
       status: 'Status',
-      minPower: 'Min. Leistung (kW)'
+      minPower: 'Min. Leistung'
     },
     activeFilters: {
       search: 'Suche: {value}',

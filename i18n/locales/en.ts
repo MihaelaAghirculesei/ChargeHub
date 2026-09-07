@@ -96,7 +96,7 @@ export default {
       connectionType: 'Connector type',
       operator: 'Operator',
       status: 'Status',
-      minPower: 'Min. power (kW)'
+      minPower: 'Min. power'
     },
     activeFilters: {
       search: 'Search: {value}',
