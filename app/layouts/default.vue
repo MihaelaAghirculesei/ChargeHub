@@ -4,9 +4,13 @@ import { useAuth } from '~/modules/auth'
 const { t, locale, locales } = useI18n()
 const localePath = useLocalePath()
 const switchLocalePath = useSwitchLocalePath()
-const { mobile } = useDisplay()
+const { mobile, width } = useDisplay()
 const { isDark, toggleTheme } = useAppTheme()
 const { user, isLoggedIn, logout } = useAuth()
+
+// On the narrowest phones the icon buttons crowd "ChargeHub" out of the
+// bar; a smaller size gives the title room and tightens the gaps.
+const compactBar = computed(() => width.value < 400)
 
 const drawer = ref(!mobile.value)
 const rail = ref(true)
@@ -51,7 +55,12 @@ const navItems = computed(() => [
     <a class="skip-link" href="#main-content">{{ t('common.skipToContent') }}</a>
 
     <v-app-bar :elevation="1" density="comfortable">
-      <v-app-bar-nav-icon v-if="mobile" :aria-label="t('nav.openMenu')" @click="drawer = !drawer" />
+      <v-app-bar-nav-icon
+        v-if="mobile"
+        :size="compactBar ? 'small' : undefined"
+        :aria-label="t('nav.openMenu')"
+        @click="drawer = !drawer"
+      />
       <!--
         `flex-grow-1` + no `<v-spacer>`: the title fills the slack itself and
         keeps the actions pinned right. A spacer would split the free space
@@ -91,6 +100,7 @@ const navItems = computed(() => [
           class="d-md-none"
           icon="mdi-logout"
           variant="text"
+          :size="compactBar ? 'small' : undefined"
           :aria-label="t('auth.logout')"
           @click="handleLogout"
         />
@@ -108,6 +118,7 @@ const navItems = computed(() => [
           class="d-md-none"
           icon="mdi-login"
           variant="text"
+          :size="compactBar ? 'small' : undefined"
           :aria-label="t('auth.login')"
           :to="localePath('/login')"
         />
@@ -116,6 +127,7 @@ const navItems = computed(() => [
         :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
         variant="text"
         class="flex-shrink-0"
+        :size="compactBar ? 'small' : undefined"
         :aria-label="isDark ? t('nav.toLightTheme') : t('nav.toDarkTheme')"
         @click="toggleTheme"
       />
@@ -127,7 +139,12 @@ const navItems = computed(() => [
       -->
       <v-menu>
         <template #activator="{ props: menuProps }">
-          <v-btn variant="text" class="flex-shrink-0" v-bind="menuProps">
+          <v-btn
+            variant="text"
+            class="flex-shrink-0"
+            :size="compactBar ? 'small' : undefined"
+            v-bind="menuProps"
+          >
             {{ locale.toUpperCase() }}
           </v-btn>
         </template>

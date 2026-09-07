@@ -28,6 +28,12 @@ function onViewModeChange(value: unknown) {
   <v-container class="py-8" fluid>
     <div class="d-flex flex-wrap align-center justify-space-between mb-4 ga-2">
       <h1 class="text-h5">{{ t('stations.title') }}</h1>
+      <!--
+        Labels hidden below `sm` (CSS utility, not a JS breakpoint, so no
+        hydration mismatch): at 320px "KARTE / LISTE / GETEILT" clipped the
+        last word. The icon carries the meaning on phones; the button keeps
+        its `aria-label` from the visually-hidden text.
+      -->
       <v-btn-toggle
         :model-value="filtersStore.viewMode"
         density="comfortable"
@@ -40,8 +46,9 @@ function onViewModeChange(value: unknown) {
           :key="option.value"
           :value="option.value"
           :prepend-icon="option.icon"
+          :aria-label="option.label"
         >
-          {{ option.label }}
+          <span class="d-none d-sm-inline">{{ option.label }}</span>
         </v-btn>
       </v-btn-toggle>
     </div>

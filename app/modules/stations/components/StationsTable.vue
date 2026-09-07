@@ -5,6 +5,7 @@ import type { StationsTableUpdate } from '~/modules/stations/composables/useStat
 import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filters.store'
 
 const { t } = useI18n()
+const { name: breakpoint } = useDisplay()
 const { stations, total, pending, error, refresh, updateOptions } = useStations()
 const filtersStore = useStationsFiltersStore()
 
@@ -14,14 +15,36 @@ const filtersStore = useStationsFiltersStore()
 // the plain spinner.
 const isFirstLoad = computed(() => pending.value && stations.value.length === 0)
 
-const headers = computed(() => [
-  { title: t('stations.table.name'), key: 'name' },
-  { title: t('stations.table.operator'), key: 'operator' },
-  { title: t('stations.table.town'), key: 'town' },
-  { title: t('stations.table.connectors'), key: 'connectors', sortable: false },
-  { title: t('stations.table.maxPower'), key: 'maxPowerKw', align: 'end' as const },
-  { title: t('stations.table.status'), key: 'operationalStatus' }
-])
+// `useDisplay()` reports the SSR fallback breakpoint on the server and the
+// real one on the client; narrowing the columns before hydration finishes
+// would be a hydration mismatch (the console-errors e2e gate guards this
+// class of bug). Every column until mounted, then responsive.
+const hydrated = ref(false)
+onMounted(() => {
+  hydrated.value = true
+})
+
+// Six columns need ~720px, so on a phone the table scrolled sideways off
+// the screen. Drop the least essential ones per breakpoint down to just
+// name + status on the narrowest — the row still opens the full detail on
+// tap. Column order is preserved so the visible set is always a prefix
+// pattern of the full one.
+const headers = computed(() => {
+  const all = [
+    { title: t('stations.table.name'), key: 'name' },
+    { title: t('stations.table.operator'), key: 'operator' },
+    { title: t('stations.table.town'), key: 'town' },
+    { title: t('stations.table.connectors'), key: 'connectors', sortable: false },
+    { title: t('stations.table.maxPower'), key: 'maxPowerKw', align: 'end' as const },
+    { title: t('stations.table.status'), key: 'operationalStatus' }
+  ]
+  const hidden: Record<string, string[]> = {
+    xs: ['operator', 'town', 'connectors', 'maxPowerKw'],
+    sm: ['town', 'connectors']
+  }
+  const drop = hydrated.value ? (hidden[breakpoint.value] ?? []) : []
+  return all.filter((header) => !drop.includes(header.key))
+})
 
 function connectorSummary(station: (typeof stations.value)[number]): string {
   if (station.connectors.length === 0) return '–'

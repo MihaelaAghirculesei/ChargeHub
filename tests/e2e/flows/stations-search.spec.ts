@@ -29,6 +29,10 @@ test.describe('station search and filter -> open detail', () => {
   })
 
   test('sorting by the Betreiber column re-fetches and reorders the rows', async ({ page }) => {
+    // The table drops the Betreiber column on phone-width viewports
+    // (StationsTable.vue). This test is about the sort re-fetch, not the
+    // responsive column set, so pin a desktop width where the column exists.
+    await page.setViewportSize({ width: 1400, height: 900 })
     const stationsPage = new StationsPage(page)
     await stationsPage.goto()
     await stationsPage.viewModeButton('Liste').click()
