@@ -32,8 +32,8 @@ function onViewModeChange(value: unknown) {
       <!--
         Labels hidden below `sm` (CSS utility, not a JS breakpoint, so no
         hydration mismatch): at 320px "KARTE / LISTE / GETEILT" clipped the
-        last word. The icon carries the meaning on phones; the button keeps
-        its `aria-label` from the visually-hidden text.
+        last word. `aria-label` names the button at every width; `title`
+        adds a hover hint only where the label is not already shown.
       -->
       <v-btn-toggle
         :model-value="filtersStore.viewMode"
@@ -48,10 +48,9 @@ function onViewModeChange(value: unknown) {
           :value="option.value"
           :prepend-icon="option.icon"
           :aria-label="option.label"
+          :title="smAndUp ? undefined : option.label"
         >
           <span class="d-none d-sm-inline">{{ option.label }}</span>
-          <!-- Tooltip only where the label is hidden (icon-only, below `sm`). -->
-          <v-tooltip activator="parent" location="top" :disabled="smAndUp" :text="option.label" />
         </v-btn>
       </v-btn-toggle>
     </div>

@@ -99,15 +99,13 @@ const navItems = computed(() => [
         </v-btn>
         <v-btn
           class="d-md-none"
-          icon
+          icon="mdi-logout"
           variant="text"
           :size="compactBar ? 'small' : undefined"
           :aria-label="t('auth.logout')"
+          :title="t('auth.logout')"
           @click="handleLogout"
-        >
-          <v-icon icon="mdi-logout" />
-          <v-tooltip activator="parent" location="top" :text="t('auth.logout')" />
-        </v-btn>
+        />
       </template>
       <template v-else>
         <v-btn
@@ -120,31 +118,23 @@ const navItems = computed(() => [
         </v-btn>
         <v-btn
           class="d-md-none"
-          icon
+          icon="mdi-login"
           variant="text"
           :size="compactBar ? 'small' : undefined"
           :aria-label="t('auth.login')"
+          :title="t('auth.login')"
           :to="localePath('/login')"
-        >
-          <v-icon icon="mdi-login" />
-          <v-tooltip activator="parent" location="top" :text="t('auth.login')" />
-        </v-btn>
+        />
       </template>
       <v-btn
-        icon
+        :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'"
         variant="text"
         class="flex-shrink-0"
         :size="compactBar ? 'small' : undefined"
         :aria-label="isDark ? t('nav.toLightTheme') : t('nav.toDarkTheme')"
+        :title="isDark ? t('nav.toLightTheme') : t('nav.toDarkTheme')"
         @click="toggleTheme"
-      >
-        <v-icon :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'" />
-        <v-tooltip
-          activator="parent"
-          location="top"
-          :text="isDark ? t('nav.toLightTheme') : t('nav.toDarkTheme')"
-        />
-      </v-btn>
+      />
       <!--
         Explicit language switch (plan: localized routing, no automatic
         Accept-Language redirect — see nuxt.config.ts,
@@ -153,15 +143,19 @@ const navItems = computed(() => [
       -->
       <v-menu>
         <template #activator="{ props: menuProps }">
+          <!--
+            No `aria-label`: the visible "DE"/"EN" already names the button.
+            An aria-label of "Sprache" would replace it and trip axe's
+            label/name mismatch. `title` stays as the hover hint only.
+          -->
           <v-btn
             variant="text"
             class="flex-shrink-0"
             :size="compactBar ? 'small' : undefined"
-            :aria-label="t('nav.language')"
+            :title="t('nav.language')"
             v-bind="menuProps"
           >
             {{ locale.toUpperCase() }}
-            <v-tooltip activator="parent" location="top" :text="t('nav.language')" />
           </v-btn>
         </template>
         <v-list density="compact" role="presentation">
