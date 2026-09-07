@@ -23,7 +23,32 @@ const status = computed(
 </script>
 
 <template>
-  <v-chip :color="status.color" :prepend-icon="status.icon" variant="flat" size="small">
+  <!--
+    `title` + the ellipsis rule: OCM status strings can be long ("Planned
+    For Future Date"), which overflowed the narrow Status column on a phone.
+    The full text stays in the DOM for screen readers and on hover; only
+    the visible run is clipped.
+  -->
+  <v-chip
+    :color="status.color"
+    :prepend-icon="status.icon"
+    variant="flat"
+    size="small"
+    :title="label"
+    class="status-chip"
+  >
     {{ label }}
   </v-chip>
 </template>
+
+<style scoped>
+.status-chip {
+  max-width: 100%;
+}
+
+.status-chip :deep(.v-chip__content) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

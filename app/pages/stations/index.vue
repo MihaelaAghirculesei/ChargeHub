@@ -81,3 +81,16 @@ function onViewModeChange(value: unknown) {
     </template>
   </v-container>
 </template>
+
+<style scoped>
+/* View-toggle labels: pull them in toward their icon and drop them 3px so
+   they sit level with the icon rather than riding high above it. */
+.v-btn-toggle :deep(.v-btn__prepend) {
+  margin-inline-end: 3px;
+}
+
+.v-btn-toggle :deep(.v-btn__content) span {
+  position: relative;
+  top: 3px;
+}
+</style>
