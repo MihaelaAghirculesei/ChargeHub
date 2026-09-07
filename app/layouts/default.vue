@@ -55,8 +55,19 @@ const navItems = computed(() => [
       <v-app-bar-title>ChargeHub</v-app-bar-title>
       <v-spacer />
       <template v-if="isLoggedIn">
-        <v-chip class="mr-2" size="small" variant="tonal" prepend-icon="mdi-account">
-          {{ user?.username }} · {{ user?.role }}
+        <!--
+          The mock accounts (server/utils/auth-session.ts) use the role as
+          the username, so "username · role" rendered as "operator · operator".
+          The role is the only meaningful attribute of a mock login — show it
+          alone, capitalized.
+        -->
+        <v-chip
+          class="mr-2 text-capitalize"
+          size="small"
+          variant="tonal"
+          prepend-icon="mdi-account"
+        >
+          {{ user?.role }}
         </v-chip>
         <v-btn variant="text" prepend-icon="mdi-logout" @click="handleLogout">
           {{ t('auth.logout') }}
