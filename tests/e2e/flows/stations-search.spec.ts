@@ -82,4 +82,31 @@ test.describe('station search and filter -> open detail', () => {
     await expect(page).toHaveURL(/\/de\/stations\/\d+/)
     await expect(detailPage.heading).toHaveText(stationName!)
   })
+
+  test('the per-page selector has no broken "All" option and 100 still loads', async ({ page }) => {
+    const stationsPage = new StationsPage(page)
+    await stationsPage.goto()
+    await stationsPage.viewModeButton('Liste').click()
+    await page.waitForLoadState('networkidle')
+    await stationsPage.table.locator('tbody tr').first().waitFor()
+
+    await page.locator('.v-data-table-footer .v-select').click()
+
+    // OCM caps a fetch at 100 rows, so Vuetify's default "All" (-1) entry is
+    // both redundant and broken here: the server rejects a non-positive
+    // itemsperpage with a 400, which surfaces as "Stations could not be
+    // loaded".
+    await expect(page.getByRole('option', { name: /^(Alle|All)$/ })).toHaveCount(0)
+
+    await Promise.all([
+      page.waitForResponse(
+        (r) => r.url().includes('/api/stations?') && r.url().includes('itemsperpage=100'),
+        { timeout: 20_000 }
+      ),
+      page.getByRole('option', { name: '100', exact: true }).click()
+    ])
+
+    await expect(page.getByTestId('stations-error')).toBeHidden()
+    await expect(stationsPage.table.locator('tbody tr').first()).toBeVisible()
+  })
 })

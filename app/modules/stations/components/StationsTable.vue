@@ -106,11 +106,17 @@ function rowProps({ item }: { item: (typeof stations.value)[number] }) {
     `i18n/locales/`, day 17) — a value written here by hand would stay in
     the wrong language when switching to `en`.
   -->
+  <!--
+    No "All" (-1) in the per-page options: OCM caps a fetch at 100 results
+    (`maxresults`), so 100 already shows every row, and the server rejects
+    a non-positive `itemsperpage` (400 -> "Stations could not be loaded").
+  -->
   <v-data-table-server
     v-else
     :headers="headers"
     :items="stations"
     :items-length="total"
+    :items-per-page-options="[10, 25, 50, 100]"
     :loading="pending"
     density="comfortable"
     :row-props="rowProps"
