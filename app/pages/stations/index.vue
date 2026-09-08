@@ -8,6 +8,7 @@ import { useStationsFiltersStore } from '~/modules/stations/stores/stations-filt
 import type { StationsViewMode } from '~/modules/stations/types'
 
 const { t } = useI18n()
+const { smAndUp } = useDisplay()
 
 useSeoMeta({ title: t('stations.seoTitle') })
 
@@ -28,6 +29,13 @@ function onViewModeChange(value: unknown) {
   <v-container class="py-8" fluid>
     <div class="d-flex flex-wrap align-center justify-space-between mb-4 ga-2">
       <h1 class="text-h5">{{ t('stations.title') }}</h1>
+      <!--
+        Labels hidden below `sm` (CSS utility, not a JS breakpoint, so no
+        hydration mismatch): at 320px "KARTE / LISTE / GETEILT" clipped the
+        last word. `aria-label` names the button at every width; the tooltip
+        (above the toggle, `disabled` once the label is already shown) is
+        just the hover hint.
+      -->
       <v-btn-toggle
         :model-value="filtersStore.viewMode"
         density="comfortable"
@@ -40,8 +48,10 @@ function onViewModeChange(value: unknown) {
           :key="option.value"
           :value="option.value"
           :prepend-icon="option.icon"
+          :aria-label="option.label"
         >
-          {{ option.label }}
+          <span class="d-none d-sm-inline">{{ option.label }}</span>
+          <v-tooltip activator="parent" location="top" :disabled="smAndUp" :text="option.label" />
         </v-btn>
       </v-btn-toggle>
     </div>
@@ -50,11 +60,18 @@ function onViewModeChange(value: unknown) {
     <StationsFilterBar class="mb-4" />
     <StationsActiveFilterChips />
 
+    <!--
+      Side by side only from `xl`: the table has six columns (one of them the
+      long connector list), so in anything narrower than a half of `xl` it
+      scrolls behind its own edge. Below `xl` the map and the full-width
+      table stack instead — still distinct from the map-only / list-only
+      modes, just not cramped.
+    -->
     <v-row v-if="filtersStore.viewMode === 'split'">
-      <v-col cols="12" md="6">
+      <v-col cols="12" xl="6">
         <StationsMap />
       </v-col>
-      <v-col cols="12" md="6">
+      <v-col cols="12" xl="6">
         <StationsTable />
       </v-col>
     </v-row>
@@ -64,3 +81,16 @@ function onViewModeChange(value: unknown) {
     </template>
   </v-container>
 </template>
+
+<style scoped>
+/* View-toggle labels: pull them in toward their icon and drop them 3px so
+   they sit level with the icon rather than riding high above it. */
+.v-btn-toggle :deep(.v-btn__prepend) {
+  margin-inline-end: 3px;
+}
+
+.v-btn-toggle :deep(.v-btn__content) span {
+  position: relative;
+  top: 3px;
+}
+</style>

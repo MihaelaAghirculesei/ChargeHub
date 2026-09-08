@@ -16,7 +16,7 @@ export class StationsPage {
     // `getByLabel` alone also picks up the field's "clear" button
     // (`clearable`, its aria-label contains the same label): the field
     // itself has role `spinbutton` (type="number").
-    return this.page.getByRole('spinbutton', { name: 'Min. Leistung (kW)' })
+    return this.page.getByRole('spinbutton', { name: 'Min. Leistung' })
   }
 
   get clearAllFiltersButton() {

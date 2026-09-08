@@ -23,7 +23,32 @@ const status = computed(
 </script>
 
 <template>
-  <v-chip :color="status.color" :prepend-icon="status.icon" variant="flat" size="small">
+  <!--
+    OCM status strings can be long ("Planned For Future Date") and the
+    Status column is narrow on a phone. Let the chip wrap onto two lines
+    (grow the row) instead of clipping or forcing a horizontal scrollbar.
+  -->
+  <v-chip
+    :color="status.color"
+    :prepend-icon="status.icon"
+    variant="flat"
+    size="small"
+    class="status-chip"
+  >
     {{ label }}
   </v-chip>
 </template>
+
+<style scoped>
+.status-chip {
+  max-width: 100%;
+  height: auto;
+  min-height: 24px;
+  padding-block: 2px;
+}
+
+.status-chip :deep(.v-chip__content) {
+  white-space: normal;
+  line-height: 1.2;
+}
+</style>

@@ -42,7 +42,8 @@ export default {
     mainNav: 'Hauptnavigation',
     comingSoon: 'Bald verfügbar',
     toLightTheme: 'Zum hellen Design wechseln',
-    toDarkTheme: 'Zum dunklen Design wechseln'
+    toDarkTheme: 'Zum dunklen Design wechseln',
+    language: 'Sprache'
   },
 
   auth: {
@@ -108,7 +109,7 @@ export default {
       connectionType: 'Anschlusstyp',
       operator: 'Betreiber',
       status: 'Status',
-      minPower: 'Min. Leistung (kW)'
+      minPower: 'Min. Leistung'
     },
     activeFilters: {
       search: 'Suche: {value}',
