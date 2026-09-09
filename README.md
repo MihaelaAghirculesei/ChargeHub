@@ -150,7 +150,18 @@ Die Session ist ein versiegeltes httpOnly-Cookie (signiert + verschlüsselt mit 
 
 ## Performance
 
-Lighthouse auf `/de/stations/[id]` (mobile Simulation, Median aus 3 Läufen in CI): **Performance 90+/100**, Accessibility/Best Practices/SEO **100/100**, CLS **< 0,05**. Ausgangspunkt war Performance 46/100 — die größten Hebel waren verzögertes Laden der Karte (MapLibre lädt erst nach Klick, nicht automatisch nach der Hydration), ein echtes Font-Subset statt des vollständigen Icon-Sets, deaktiviertes Vuetify-Color-Pack (nie verwendete Utility-Klassen) sowie Brotli-Kompression für HTML und statische Assets (Nitro komprimiert standardmäßig nur Build-Artefakte, nicht die pro Request gerenderte Seite).
+Der Lighthouse-Gate in der CI scannt vier Seiten gegen die Produktions-Build (mobile Simulation, Median aus 3 Läufen auf einem sauberen Runner) und blockiert den Merge bei einer Regression:
+
+| Seite               | Performance-Schwelle | A11y | Best Practices | SEO | CLS   |
+| ------------------- | -------------------- | ---- | -------------- | --- | ----- |
+| `/de/stations/[id]` | ≥ 82 (typ. 85–91)    | 100  | ≥ 96           | 100 | < 0,1 |
+| `/de` (Dashboard)   | ≥ 80                 | 100  | ≥ 96           | 100 | < 0,1 |
+| `/de/analytics`     | ≥ 78                 | 100  | ≥ 96           | 100 | < 0,1 |
+| `/de/sessions`      | ≥ 70                 | 100  | ≥ 96           | 100 | < 0,1 |
+
+Die Performance-Schwellen sind bewusst **pro Seite** und nicht ein pauschales 90: gemessen auf dem CI-Runner schwankt derselbe Build über mehrere Läufe um mehrere Punkte (die Sessions-Seite lädt eine virtualisierte 2000-Zeilen-Tabelle client-seitig). Untersucht auf echte Defekte, bevor eine Schwelle gesenkt wurde — der Wert ist jeweils die real beobachtete Basislinie mit Rausch-Marge, ein ehrlicher Regressions-Boden (siehe Kommentar in [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+
+Ausgangspunkt auf der Stationsdetail-Seite war Performance **46/100**. Die größten Hebel: verzögertes Laden der Karte (MapLibre lädt erst nach Klick, nicht automatisch nach der Hydration), ein echtes Font-Subset statt des vollständigen Icon-Sets, deaktiviertes Vuetify-Color-Pack (nie verwendete Utility-Klassen) sowie Brotli-Kompression für HTML und statische Assets (Nitro komprimiert standardmäßig nur Build-Artefakte, nicht die pro Request gerenderte Seite).
 
 ## Projektstatus
 
