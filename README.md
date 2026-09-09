@@ -27,6 +27,20 @@ Dashboard zur Verwaltung von Ladeinfrastruktur für Elektrofahrzeuge. Portfolio-
 - **i18n:** `@nuxtjs/i18n`, Deutsch (Standard) + Englisch, lokalisiertes Routing (`/de/...`, `/en/...`)
 - **CI/CD:** GitHub Actions — Lint, Typecheck, Unit-Tests mit Coverage-Schwelle, Build, E2E, Lighthouse CI (siehe [`.github/workflows/ci.yml`](.github/workflows/ci.yml)); `main` ist per Branch Protection geschützt (PR + alle 3 Checks grün erforderlich); Deploy auf Vercel automatisch bei jedem Merge, Preview-Deployment für jeden PR
 
+## Was dieses Projekt zeigt
+
+| Thema                           | Wo im Projekt                                                                                                                                                                                            |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Vue 3 / Nuxt in der Tiefe**   | Nuxt 4, `<script setup>`, Composables statt Logik in Komponenten, `useAsyncData` mit sauberem `pending`/`error`-Handling, hybrides Rendering pro Route ([ADR-0006](docs/adr/0006-rendering-strategy.md)) |
+| **Skalierbare Projektstruktur** | Feature-first-Module (`app/modules/*`) mit Barrel-Exports, Repository-Pattern, unidirektionaler Datenfluss ([ADR-0004](docs/adr/0004-modular-structure.md), [ADR-0005](docs/adr/0005-pinia-state.md))    |
+| **SCSS**                        | Vuetify-Theme über SCSS-Variablen (`app/assets/scss/_variables.scss`), eigener Sass-Importer in `nuxt.config.ts` für den Windows-Dart-Sass-Bug bei absoluten `@use`-Pfaden                               |
+| **TypeScript**                  | Strict-Modus mit `noUncheckedIndexedAccess`, kein `any`/`@ts-ignore` im Quellcode, Domänentypen aus Zod-Schemas abgeleitet (`z.infer`)                                                                   |
+| **Barrierefreiheit**            | axe-core als E2E-Gate, sichtbarer Fokus, Skip-Link, bewusst gesetzte `role`/`aria`-Attribute, Status nie über Farbe allein ([ADR-0001](docs/adr/0001-design-system.md))                                  |
+| **Testing**                     | Vitest + `@nuxt/test-utils` (Unit/Component), Playwright über vier Browser/Viewports, Coverage-Schwelle im CI, dazu eine Eval-Suite für die Freitextsuche                                                |
+| **CI/CD**                       | GitHub Actions (Lint, Typecheck, Test, Build, E2E, Lighthouse), Branch Protection auf `main`, automatischer Vercel-Deploy je Merge, Preview je PR                                                        |
+| **State-Management**            | Pinia nur für geteilten Client-State, Server-Daten ausschließlich über `useAsyncData` — eine Wahrheitsquelle ([ADR-0005](docs/adr/0005-pinia-state.md))                                                  |
+| **API-Anbindung (BFF)**         | Nitro-Layer vor der Open-Charge-Map-API: Key nur serverseitig, Cache mit langem TTL, kein POST auf ein Community-Register                                                                                |
+
 ## Architektur
 
 ```mermaid
