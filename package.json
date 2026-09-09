@@ -1,7 +1,9 @@
 {
   "name": "chargehub",
+  "version": "1.0.0",
   "type": "module",
   "private": true,
+  "license": "MIT",
   "packageManager": "pnpm@11.22.0",
   "scripts": {
     "build": "nuxt build",
