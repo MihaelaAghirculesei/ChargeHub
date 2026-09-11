@@ -55,6 +55,16 @@ function onSubmit() {
         </template>
       </v-text-field>
     </v-form>
+    <!--
+      Always visible (not only as a placeholder, which disappears once the
+      field has a value): the real OCM data behind this demo only exists for
+      one region. Without this, a query for a real place outside it (e.g.
+      "Köln") looks like a broken/too-strict search instead of what it is —
+      see the empty-state text below for the same reasoning.
+    -->
+    <div class="text-caption text-medium-emphasis mt-1" data-testid="nl-search-hint">
+      {{ t('stations.nlSearch.hint') }}
+    </div>
     <v-alert
       v-if="errorText"
       type="error"
