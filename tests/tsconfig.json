@@ -1,0 +1,31 @@
+{
+  // Not wired into the root tsconfig.json's "references" on purpose: that
+  // would make `nuxt typecheck` (CI) start type-checking every test file,
+  // a separate, bigger change. This file exists only so an editor's
+  // TypeScript server resolves `~/...` (and the other Nuxt aliases) for
+  // files under `tests/unit/**` — that directory is absent from every
+  // generated `.nuxt/tsconfig.*.json` "include" (Nuxt/`@nuxt/test-utils`
+  // only wires up `test(s)/nuxt/**/*`), so without this file an opened
+  // test file falls into TS's inferred single-file project (no path
+  // mapping) and shows a false "Cannot find module '~/...'".
+  //
+  // `extends` does NOT merge array options — "include" below fully
+  // replaces the parent's, so its entries are copied over rather than
+  // just appended (adjusting the one path that only makes sense from
+  // inside `.nuxt/`: `./nuxt.d.ts` -> `../.nuxt/nuxt.d.ts`). Losing
+  // `../app/**/*`/`./nuxt.d.ts` from the program is what causes
+  // "Cannot find name 'ref'/'computed'/'useI18n'/..." for every
+  // auto-imported Nuxt composable once a component is only reached as
+  // a dependency, not a root file.
+  "extends": "../.nuxt/tsconfig.app.json",
+  "include": [
+    "../.nuxt/nuxt.d.ts",
+    "../i18n/**/*",
+    "../app/**/*",
+    "../modules/*/runtime/**/*",
+    "../shared/**/*.d.ts",
+    "../modules/*/shared/**/*.d.ts",
+    "../*.d.ts",
+    "**/*"
+  ]
+}

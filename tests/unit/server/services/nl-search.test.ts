@@ -179,7 +179,10 @@ describe('extractStationFilters', () => {
   })
 
   it('maps an Anthropic.APIError to NlSearchError upstream_error', async () => {
-    parseMock.mockRejectedValueOnce(new Anthropic.APIError('boom'))
+    // The real constructor's shape (status, error body, message, headers) —
+    // the mock only needs the prototype chain for `instanceof`, but the call
+    // still has to satisfy the real SDK's type, same as production code would.
+    parseMock.mockRejectedValueOnce(new Anthropic.APIError(500, {}, 'boom', new Headers()))
 
     await expect(
       extractStationFilters('any query', referenceData, mockClient)
