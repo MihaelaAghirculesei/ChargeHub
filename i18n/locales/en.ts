@@ -84,7 +84,7 @@ export default {
       label: 'Free-text search',
       placeholder: 'e.g. "fast CCS chargers from Ionity"',
       submit: 'Search',
-      hint: 'Live data currently covers the Wolfsburg/Braunschweig/Gifhorn area.',
+      hint: 'This only filters within the area the map currently shows — it does not move the map to a different place.',
       error: {
         rate_limited: 'Too many searches — please try again in a minute.',
         daily_cap:
@@ -116,7 +116,7 @@ export default {
     loadError: 'Stations could not be loaded.',
     empty: {
       title: 'No stations found',
-      text: 'There are no results for the current filters. Live data currently only covers the Wolfsburg/Braunschweig/Gifhorn area – check that your search points there, or try a larger radius or different filters.'
+      text: 'There are no results for the current filters. The search only filters within the map area currently shown — pan the map to where you want to search, or click "Clear all" to return to the default view.'
     },
     mapAriaLabel: 'Map view of the stations',
     miniMapAriaLabel: 'Location of the station on the map',

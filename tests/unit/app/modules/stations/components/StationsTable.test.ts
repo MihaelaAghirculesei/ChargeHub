@@ -17,14 +17,17 @@ afterEach(() => {
 describe('StationsTable', () => {
   /**
    * Zero results looks identical whether the filters are just too strict
-   * within the covered area, or the search points at a real place the demo
-   * data does not cover at all (e.g. "Köln" instead of Wolfsburg /
-   * Braunschweig / Gifhorn) — NL search deliberately never geocodes free
-   * text (ADR-0007), so the client cannot tell the two apart. The empty
-   * state names the covered area instead, so a "no results" is not read as
-   * "the search is broken".
+   * within the current map view, or the free-text search names a place
+   * that view does not currently show — NL search deliberately never
+   * geocodes free text and never moves the map (ADR-0007), and neither
+   * does the classic text filter, so the client cannot tell the two cases
+   * apart. Naming a fixed region here would be wrong the moment someone
+   * pans the map elsewhere (a real regression this session: the hint used
+   * to name "Wolfsburg/Braunschweig/Gifhorn", which broke as soon as the
+   * map was panned to Dresden) — the empty state explains the actual
+   * mechanism instead, which stays true regardless of where the map is.
    */
-  it('names the real covered area in the empty state, not just a generic "no results"', async () => {
+  it('explains that the search only filters the current map view, not just a generic "no results"', async () => {
     unregisterEndpoint = registerEndpoint('/api/stations', () => ({ items: [], total: 0 }))
 
     const wrapper = await mountSuspended(StationsTable)
@@ -32,6 +35,6 @@ describe('StationsTable', () => {
 
     const empty = wrapper.find('[data-testid="stations-empty"]')
     expect(empty.exists()).toBe(true)
-    expect(empty.text()).toContain('Wolfsburg/Braunschweig/Gifhorn')
+    expect(empty.text()).toContain('Gebiets, das die Karte gerade zeigt')
   })
 })
