@@ -96,7 +96,7 @@ export default {
       label: 'Freitextsuche',
       placeholder: 'z. B. „schnelle CCS-Ladepunkte von Ionity“',
       submit: 'Suchen',
-      hint: 'Live-Daten decken aktuell den Raum Wolfsburg/Braunschweig/Gifhorn ab.',
+      hint: 'Die Suche filtert nur innerhalb des Gebiets, das die Karte gerade zeigt — sie verschiebt die Karte nicht zu einem anderen Ort.',
       error: {
         rate_limited: 'Zu viele Suchanfragen — bitte in einer Minute erneut versuchen.',
         daily_cap:
@@ -128,7 +128,7 @@ export default {
     loadError: 'Die Stationen konnten nicht geladen werden.',
     empty: {
       title: 'Keine Stationen gefunden',
-      text: 'Für die aktuellen Filter gibt es keine Ergebnisse. Die Live-Daten decken aktuell nur den Raum Wolfsburg/Braunschweig/Gifhorn ab – prüfe, ob deine Suche dorthin zeigt, oder versuche einen größeren Radius bzw. andere Filter.'
+      text: 'Für die aktuellen Filter gibt es keine Ergebnisse. Die Suche filtert nur innerhalb des Gebiets, das die Karte gerade zeigt — verschiebe die Karte dorthin, wo du suchen möchtest, oder klicke auf „Alle löschen", um zur Standardansicht zurückzukehren.'
     },
     mapAriaLabel: 'Kartenansicht der Stationen',
     miniMapAriaLabel: 'Standort der Station auf der Karte',

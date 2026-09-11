@@ -57,9 +57,13 @@ function onSubmit() {
     </v-form>
     <!--
       Always visible (not only as a placeholder, which disappears once the
-      field has a value): the real OCM data behind this demo only exists for
-      one region. Without this, a query for a real place outside it (e.g.
-      "Köln") looks like a broken/too-strict search instead of what it is —
+      field has a value): position (lat/lon/radius) is never extracted from
+      this text (ADR-0007) — a place name in the query is filtered as free
+      text against the stations already in the current map view, it does
+      not move that view. Without this, a query naming a real place outside
+      the current view (e.g. "Köln" while the map still shows Wolfsburg) or
+      even one naming a place *inside* it after the map itself was panned
+      away looks like a broken/too-strict search instead of what it is —
       see the empty-state text below for the same reasoning.
     -->
     <div class="text-caption text-medium-emphasis mt-1" data-testid="nl-search-hint">
