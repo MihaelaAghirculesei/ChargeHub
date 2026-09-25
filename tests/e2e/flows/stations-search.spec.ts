@@ -22,7 +22,7 @@ test.describe('station search and filter -> open detail', () => {
     const rowsAfter = await stationsPage.table.locator('tbody tr').count()
     expect(rowsAfter).toBeLessThanOrEqual(rowsBefore)
 
-    // "Alle löschen" (StationsActiveFilterChips, day 6) clears everything again.
+    // "Alle löschen" (StationsActiveFilterChips) clears everything again.
     await expect(stationsPage.clearAllFiltersButton).toBeVisible({ timeout: 15_000 })
     await stationsPage.clearAllFiltersButton.click()
     await expect(stationsPage.minPowerInput).toHaveValue('')

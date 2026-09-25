@@ -6,7 +6,7 @@ const SESSION_COOKIE_NAME = 'chargehub-session'
 /**
  * Explicit mock login — no real backend, see README. Two fixed accounts, one
  * per role: not meant for production, only to demonstrate route guards and
- * permissions (day 16).
+ * permissions.
  */
 export const MOCK_ACCOUNTS: Record<string, { password: string; role: UserRole }> = {
   operator: { password: 'operator123', role: 'operator' },
@@ -28,7 +28,7 @@ export const MOCK_ACCOUNTS: Record<string, { password: string; role: UserRole }>
  * sent back by Safari/WebKit (which does not honour the "localhost = secure
  * context" exception Chromium grants) — every subsequent request then looks
  * session-less, an endless redirect to login. A real bug found only with
- * Playwright on WebKit (day 20): a `curl` never applies the semantics of the
+ * Playwright on WebKit: a `curl` never applies the semantics of the
  * `Secure` flag, so it could never have revealed it.
  */
 export function getAuthSession(event: H3Event) {

@@ -109,7 +109,7 @@ describe('computeKpis', () => {
     const charging = kpis.find((k) => k.key === 'charging')!.value
     const faulted = kpis.find((k) => k.key === 'faulted')!.value
     const totalConnectors = stations.reduce((sum, s) => sum + s.connectors.length, 0)
-    // "offline" is not a KPI of its own (the plan asks for only 4 + kWh + utilisation),
+    // "offline" is not a KPI of its own (the KPIs are stations/available/charging/faulted + kWh + utilisation),
     // so we derive it by difference to check the sum.
     expect(available + charging + faulted).toBeLessThanOrEqual(totalConnectors)
     expect(available).toBeGreaterThanOrEqual(0)

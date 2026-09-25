@@ -3,7 +3,7 @@ import { computeStationTelemetry } from '~~/server/services/telemetry-simulator'
 
 /**
  * Sampling helpers shared by whoever aggregates simulated telemetry over
- * time (KPIs, day 13; charts, day 14): `computeStationTelemetry` is a pure
+ * time (KPIs; charts): `computeStationTelemetry` is a pure
  * function of (station, instant), so sampling it at different instants
  * produces a plausible history without persisting anything (ADR-0002).
  */

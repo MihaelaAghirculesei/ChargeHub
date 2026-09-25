@@ -7,7 +7,7 @@ import { useTariffsStore } from '~/modules/tariffs'
 import { useAuth } from '~/modules/auth'
 
 /**
- * "operator" can manage tariffs, "viewer" cannot (plan, day 16): the whole
+ * "operator" can manage tariffs, "viewer" cannot: the whole
  * route only requires being authenticated (`middleware: 'auth'`), the
  * distinction between the two roles is in the UI below (`isOperator`), not
  * in the middleware — a viewer can look at tariffs and the calculator, not

@@ -42,7 +42,7 @@ export const evalReferenceData: ReferenceData = {
 }
 
 /**
- * Regression case (day 26, second follow-up): real Germany on OCM has **984
+ * Regression case: real Germany on OCM has **984
  * operators** — with `operatorId` built as a literal union (as all three id
  * fields were at first), the API rejects the request with 400 "The compiled
  * grammar is too large" before even reaching a `parsed_output`. Found with a

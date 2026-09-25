@@ -2,7 +2,7 @@ import { useAuthUser } from '~/modules/auth/composables/useAuthUser'
 import { authRepository } from '~/modules/auth/repository'
 
 /**
- * Public entry point for authentication (mock login, day 16). `user` is the
+ * Public entry point for authentication (mock login). `user` is the
  * shared state of `useAuthUser()` (synced with the server session via the
  * `auth-session.ts` plugin, not re-read here) — `login`/`logout` write it,
  * the rest of the app reads it through `isLoggedIn`/`isOperator`, never

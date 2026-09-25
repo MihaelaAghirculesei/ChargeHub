@@ -25,7 +25,7 @@ const selectedSession = computed(
 )
 
 /**
- * `overstayMinutes` is manual: the synthetic sessions (day 12) do not
+ * `overstayMinutes` is manual: the synthetic sessions do not
  * model how long a car stays plugged in after charging, see
  * calculate-session-cost.ts.
  */

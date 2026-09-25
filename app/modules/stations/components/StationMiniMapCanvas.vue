@@ -3,8 +3,8 @@ import type { Map as MapLibreMap, Marker } from 'maplibre-gl'
 import { loadMaplibreGl } from '~/modules/stations/maplibre'
 
 /**
- * The real MapLibre logic, isolated from the `StationMiniMap.vue` wrapper
- * (day 24): this file is NEVER touched by the SSR render (mounted
+ * The real MapLibre logic, isolated from the `StationMiniMap.vue` wrapper:
+ * this file is NEVER touched by the SSR render (mounted
  * client-side only via `defineAsyncComponent`, after the click on "Show
  * map"), so its `import('maplibre-gl')` does not end up in the
  * `<link rel="prefetch">` tags Nuxt generates for every dynamic import

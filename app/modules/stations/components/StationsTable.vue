@@ -63,10 +63,10 @@ function onUpdateOptions(options: StationsTableUpdate) {
 }
 
 /**
- * Row ↔ marker hover (day 8): the row writes to the store on mouseover, and
+ * Row ↔ marker hover: the row writes to the store on mouseover, and
  * highlights itself when the map is the one setting the hover — the same
  * `hoveredStationId` in both directions, see StationsMap.vue. Click
- * navigates to the detail (day 9) — without it, the map popup would be the
+ * navigates to the detail — without it, the map popup would be the
  * only way to reach it.
  */
 const localePath = useLocalePath()
@@ -103,7 +103,7 @@ function rowProps({ item }: { item: (typeof stations.value)[number] }) {
   <!--
     No `items-per-page-text`: without an override, Vuetify takes it from
     `$vuetify.dataTable.itemsPerPageText` (de/en locale merged in
-    `i18n/locales/`, day 17) — a value written here by hand would stay in
+    `i18n/locales/`) — a value written here by hand would stay in
     the wrong language when switching to `en`.
   -->
   <!--

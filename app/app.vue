@@ -13,7 +13,7 @@ useHead({ htmlAttrs: { lang: locale } })
     <NuxtRouteAnnouncer />
     <NuxtLayout>
       <!--
-        Skeleton during navigation (day 9): a page with a script-level
+        Skeleton during navigation: a page with a script-level
         `await` (e.g. app/pages/stations/[id].vue) has an async setup, so
         Vue mounts it inside a Suspense boundary — `<NuxtPage>` does not
         expose a `#fallback` of its own in this version, it must be wrapped

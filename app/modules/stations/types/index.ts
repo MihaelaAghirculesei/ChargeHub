@@ -20,8 +20,8 @@ export interface StationFilters {
 
 /**
  * The `StationFilters` keys that end up in the URL (shareable query param).
- * `latitude`/`longitude`/`radiusKm` are here since day 8: panning the map
- * is now a way to change the search, not only the day-6 filter bar — see
+ * `latitude`/`longitude`/`radiusKm` are here because panning the map
+ * is a way to change the search, not only the filter bar — see
  * `app/modules/stations/filters-url.ts`. `countryCode`/`maxResults` stay
  * out: the first has no UI yet, the second is an internal detail (how many
  * results to cache), not a search criterion a user perceives.
@@ -49,7 +49,7 @@ export interface StationsTableOptions {
 }
 
 /**
- * How to show the map and list from day 8: one of the two, or both side by
+ * How to show the map and list: one of the two, or both side by
  * side. Pure UI state, persisted ("with the choice remembered") but
  * separate from the search filters — changing the view does not change the
  * results.

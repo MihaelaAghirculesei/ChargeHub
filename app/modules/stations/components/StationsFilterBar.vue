@@ -8,7 +8,7 @@ const { data: referenceData, pending: referenceDataPending } = useStationReferen
 
 // Local input for immediate feedback while typing; the real filter (which
 // re-fetches and rewrites the URL) updates only 300ms after the last
-// keystroke, as the plan requires — no request on every character.
+// keystroke — no request on every character.
 const searchInput = ref(filtersStore.filters.search ?? '')
 const searchDebounced = refDebounced(searchInput, 300)
 watch(searchDebounced, (value) => {

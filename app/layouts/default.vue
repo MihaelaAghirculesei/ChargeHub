@@ -47,7 +47,7 @@ const navItems = computed(() => [
 <template>
   <div>
     <!--
-      First keyboard-reachable element (Day 18): invisible until it receives
+      First keyboard-reachable element: invisible until it receives
       focus (see app/assets/css/accessibility.css), skips the nav and goes
       straight to the content — without it, a keyboard user has to traverse
       the whole app bar/drawer on every page change.
@@ -136,7 +136,7 @@ const navItems = computed(() => [
         @click="toggleTheme"
       />
       <!--
-        Explicit language switch (plan: localized routing, no automatic
+        Explicit language switch (localized routing, no automatic
         Accept-Language redirect — see nuxt.config.ts,
         detectBrowserLanguage: false): without this control, English would
         only be reachable by typing /en/... by hand.
@@ -183,7 +183,7 @@ const navItems = computed(() => [
         `role="presentation"`: Vuetify gives `role="list"` to this element
         but `role="link"` (not "listitem") to the `v-list-item`s with `:to`
         — an ARIA-invalid combination (`aria-required-children`, found with
-        axe-core, Day 18). No list semantics needed here: it is a group of
+        axe-core). No list semantics needed here: it is a group of
         navigation links already inside the drawer's `<nav>` landmark, with
         its own label.
       -->

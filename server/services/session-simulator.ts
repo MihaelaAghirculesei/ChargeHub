@@ -5,8 +5,8 @@ import { round } from '~~/server/utils/number'
 import { hashString, mulberry32 } from '~~/server/utils/random'
 
 /**
- * Synthetic history of completed sessions for the day-12 table — not an
- * extension of the live telemetry simulator (day 10, a single "now" state
+ * Synthetic history of completed sessions for the table — not an
+ * extension of the live telemetry simulator (a single "now" state
  * per connector): here we need a row volume independent of the number of
  * real connectors, to demonstrate table virtualisation. Each session is
  * generated from an index (0..count-1) with the same seed approach as
@@ -16,11 +16,11 @@ import { hashString, mulberry32 } from '~~/server/utils/random'
  * what live telemetry shows for a charge in progress.
  */
 
-/** Target number of sessions: the figure cited by the plan's "Done when" criterion (smooth scroll over 2000 rows), not a realistic occupancy estimate. */
+/** Target number of sessions: sized to prove smooth virtual scrolling over 2000 rows, not a realistic occupancy estimate. */
 const DEFAULT_SESSION_COUNT = 2000
 const DEFAULT_LOOKBACK_DAYS = 30
 const DEFAULT_POWER_KW = 11
-/** Placeholder until a real tariffs module exists (day 15). */
+/** Placeholder until a real tariffs module exists. */
 const PRICE_PER_KWH_EUR = 0.45
 
 const MIN_DURATION_MINUTES = 10

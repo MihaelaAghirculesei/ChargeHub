@@ -12,7 +12,7 @@ import { sessionRepository } from '~/modules/sessions/repository'
  * `server: false`: the ~2000 rows measure about 600KB of JSON — no point
  * bloating the SSR HTML/payload of every load with data that only feeds the
  * client-side virtualised table, with no SEO/sharing value unlike the
- * station detail (day 9). The fetch starts after hydration, `pending`
+ * station detail. The fetch starts after hydration, `pending`
  * drives the table's loading state.
  *
  * The `pending` exposed here is not `useAsyncData`'s raw `pending`: with

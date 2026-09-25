@@ -18,7 +18,7 @@ test.describe('tariff creation and calculation', () => {
     await expect(tariffsPage.tariffRow(tariffName)).toBeVisible()
 
     // The calculator compares the just-created tariff against a real
-    // session (synthetic data, day 12): showing up as a comparison row is
+    // session (synthetic data): showing up as a comparison row is
     // the proof that form -> store -> calculator are actually wired, not
     // just that the dialog "looks like" it saves.
     await tariffsPage.selectFirstSession()

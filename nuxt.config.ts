@@ -85,10 +85,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['vuetify-nuxt-module', '@pinia/nuxt', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
-  // Skip link + prefers-reduced-motion (Day 18): global styles not tied to
+  // Skip link + prefers-reduced-motion: global styles not tied to
   // Vuetify's Sass variables, so a CSS file separate from the one in
-  // vuetify.moduleOptions.styles.configFile. mdi-subset.css (Day 24): see the
-  // comment on vuetifyOptions.icons below. layout-shift-fix.css (Day 25): see
+  // vuetify.moduleOptions.styles.configFile. mdi-subset.css: see the
+  // comment on vuetifyOptions.icons below. layout-shift-fix.css: see
   // the comment in the file itself.
   css: [
     '~/assets/css/accessibility.css',
@@ -96,8 +96,8 @@ export default defineNuxtConfig({
     '~/assets/css/layout-shift-fix.css'
   ],
   /**
-   * Global defaults (Day 24): every page already sets its own title via
-   * `useSeoMeta` (convention since Day 1, "Page name – ChargeHub"), so no
+   * Global defaults: every page already sets its own title via
+   * `useSeoMeta` (project convention, "Page name – ChargeHub"), so no
    * `titleTemplate` here — it would stack on top of the suffix already
    * written by hand in each page. `title`/`ogTitle`/`description` stay as a
    * fallback for the one case with no `useSeoMeta` of its own: the error page
@@ -159,7 +159,7 @@ export default defineNuxtConfig({
     },
     vuetifyOptions: {
       /**
-       * `false`, not left at the default (Day 24, after the first real CI
+       * `false`, not left at the default (after the first real CI
        * run on a clean runner): the module's default (`@mdi/font` locally,
        * since it is installed) injects the entire MDI stylesheet (~7000
        * icons, ~570 kB uncompressed) as part of the critical bundle that
@@ -228,7 +228,7 @@ export default defineNuxtConfig({
   vite: {
     /**
      * Silences the dev-server half of the `maplibre-gl-worker.mjs` 404
-     * (found 25/08 while verifying the security-headers change against a
+     * (found while verifying the security-headers change against a
      * real production build — see `app/modules/stations/maplibre.ts` for
      * the actual production fix and the full root cause). Without this,
      * `pnpm dev` logs "The file does not exist at
@@ -252,7 +252,7 @@ export default defineNuxtConfig({
       }
     },
     /**
-     * `cssCodeSplit: false` (Day 25, Lighthouse Performance gate on
+     * `cssCodeSplit: false` (Lighthouse Performance gate on
      * /de/stations/47109): Vite's default generates one CSS file per Vuetify
      * component (VBtn, VCard, VList, VRow, ... 10 files from 300 B to 4 kB
      * each on this page alone, ~15 kB total) — great for granular caching,
@@ -268,14 +268,14 @@ export default defineNuxtConfig({
       rollupOptions: {
         output: {
           /**
-           * Only `vuetify` in a single chunk, not everything (Day 25, same
+           * Only `vuetify` in a single chunk, not everything (same
            * Lighthouse gate): Vuetify generates ~15-20 separate JS files
            * from a few hundred bytes to a few tens of kB per component
            * (VBtn, VCard, VList, ...), used on almost every page of this
            * app — same reasoning as `cssCodeSplit` above, each file is a
            * separate round-trip in Lighthouse's mobile simulation.
            * `maplibre-gl` and Chart.js stay EXCLUDED and in separate/lazy
-           * chunks (explicitly required by the plan, Day 21): they only
+           * chunks (an explicit requirement): they only
            * come in behind a real dynamic import (map on click, charts on
            * the analytics page), they have no place in the "always loaded"
            * bundle.
@@ -320,13 +320,11 @@ export default defineNuxtConfig({
     ],
     langDir: 'locales',
     defaultLocale: 'de',
-    // Routing always prefixed for both languages (/de/..., /en/...), as
-    // required by the plan — not "de without prefix, en with" of
-    // prefix_except_default.
+    // Routing always prefixed for both languages (/de/..., /en/...) — not
+    // "de without prefix, en with" of prefix_except_default.
     strategy: 'prefix',
     // No automatic redirect based on the browser's Accept-Language: German
-    // stays the deterministic default ("German as the default language",
-    // plan) until the user explicitly picks from the UI — not a detection
+    // stays the deterministic default until the user explicitly picks from the UI — not a detection
     // that varies from one browser to another (and is not deterministic at
     // all in a test environment).
     detectBrowserLanguage: false
@@ -339,17 +337,17 @@ export default defineNuxtConfig({
     }
   },
   /**
-   * Hybrid rendering per route (Day 21), not a single mode for the whole
+   * Hybrid rendering per route, not a single mode for the whole
    * app:
    * - `/login`: no per-request data (the form always starts empty, the
    *   "already logged in" redirect and the post-login one run client-side
    *   via `useAuth()`/query string, not in the HTML) — the one page of this
    *   app that truly qualifies as a static "landing", `prerender: true`.
-   * - `/` (dashboard): KPIs derived from OCM + simulators (Day 10-13), never
+   * - `/` (dashboard): KPIs derived from OCM + simulators, never
    *   really static nor useful to serve pre-rendered identically to every
-   *   visitor — pure client-side (`ssr: false`), as required by the plan.
+   *   visitor — pure client-side (`ssr: false`).
    * - `/stations/*` (station detail, not the list): SSR stays essential
-   *   ("Done when" of Day 9, full content in the first response, not only
+   *   (full content in the first response, not only
    *   after hydration).
    *
    * Also tried `swr` (stale-while-revalidate/ISR) on `/stations/*`, to avoid
@@ -371,7 +369,7 @@ export default defineNuxtConfig({
     '/de': { ssr: false },
     '/en': { ssr: false },
     /**
-     * `public/fonts/mdi-subset.woff2` (Day 25) does not have a
+     * `public/fonts/mdi-subset.woff2` does not have a
      * content-hashed name like the assets in `_nuxt/*` — Nitro does not
      * apply the `Cache-Control: max-age=31536000, immutable` it gives build
      * assets to it on its own. Found with Lighthouse's "cache-insight"
@@ -382,8 +380,7 @@ export default defineNuxtConfig({
      */
     '/fonts/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } },
     /**
-     * Baseline security headers (backlog item #2, 25/08 — see
-     * docs/PROGRESS.md), applied to every route including `/api/**`.
+     * Baseline security headers, applied to every route including `/api/**`.
      *
      * CSP is the only non-trivial one. `script-src`/`style-src` need
      * `'unsafe-inline'`: Nuxt embeds the SSR hydration payload
@@ -437,12 +434,12 @@ export default defineNuxtConfig({
     }
   },
   /**
-   * `compressPublicAssets: true` (Day 25, Lighthouse Performance gate on
+   * `compressPublicAssets: true` (Lighthouse Performance gate on
    * /de/stations/47109): without it, `node .output/server/index.mjs` — the
    * same command used by the Lighthouse job in CI — compresses nothing,
    * verified with `curl -H "Accept-Encoding: gzip, br"`: no
-   * `Content-Encoding`, raw bytes identical to the Content-Length. The plan
-   * explicitly requires "initial bundle under 300 kB gzip" — 884 kB of
+   * `Content-Encoding`, raw bytes identical to the Content-Length. The
+   * performance budget is "initial bundle under 300 kB gzip" — 884 kB of
    * critical JS+CSS transferred WITHOUT compression (measured with
    * Lighthouse's "network-requests" audit) made that target unreachable no
    * matter what else was trimmed. Pre-compresses the static assets in

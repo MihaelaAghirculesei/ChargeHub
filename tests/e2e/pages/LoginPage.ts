@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test'
 
 /**
- * Page Object Model (day 20): a single place that knows how to interact
+ * Page Object Model: a single place that knows how to interact
  * with `/de/login`, not locators repeated in every spec — if a translated
  * label or the form structure changes, it is updated here once.
  */
@@ -10,7 +10,7 @@ export class LoginPage {
 
   async goto() {
     await this.page.goto('/de/login')
-    // The day-18 fix (VForm native submit) made the order "wait for
+    // The fix (VForm native submit) made the order "wait for
     // stabilisation before interacting" not optional, not just prudence: a
     // click before hydration finishes can fall back to something like a
     // native submit of the underlying form.

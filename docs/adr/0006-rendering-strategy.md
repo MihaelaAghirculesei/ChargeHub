@@ -2,13 +2,13 @@
 
 ## Status
 
-Angenommen — 2026-08-19 (Tag 21), mit einem unten dokumentierten verworfenen Versuch.
+Angenommen — 2026-08-19, mit einem unten dokumentierten verworfenen Versuch.
 
 ## Kontext
 
 Nuxt rendert jede Seite standardmäßig serverseitig. Nicht alle Seiten dieser
 App haben dasselbe Profil: das Stationsdetail hat Daten, die sich selten
-ändern, und profitiert von vollständigem SSR beim ersten Paint (Tag 9); das
+ändern, und profitiert von vollständigem SSR beim ersten Paint; das
 Dashboard zeigt KPIs, abgeleitet aus OCM + Simulatoren, nie wirklich
 statisch noch für zwei Besucher:innen identisch; der Login hat keinerlei
 Pro-Request-Daten im HTML.
@@ -25,8 +25,8 @@ Pro-Request-Daten im HTML.
   OCM + Simulatoren, nie statisch noch sinnvoll für jede:n Besucher:in
   identisch vorzurendern.
 - Stationsdetail (`/stations/:id`): SSR als Standard, unverändert — bleibt
-  essenziell für das "Fertig, wenn" von Tag 9 (vollständiger Inhalt in der
-  ersten Antwort, nicht erst nach der Hydration).
+  essenziell für die Anforderung "vollständiger Inhalt in der
+  ersten Antwort", nicht erst nach der Hydration.
 
 ### Versucht und verworfen: `swr` auf dem Stationsdetail
 
@@ -52,8 +52,8 @@ einer künftigen Version, die das Verhalten dieser Nuxt/Nitro-Kombination
 ## Warum nicht eine einzige Art für die ganze App
 
 Ein einheitlicher Standard (alles SSR oder alles clientseitig) hätte entweder
-das "Fertig, wenn" von Tag 9 (vollständiger SSR-Inhalt für das
-Stationsdetail) oder die Einfachheit des Dashboards geopfert (das kein SSR
+den vollständigen SSR-Inhalt für das
+Stationsdetail oder die Einfachheit des Dashboards geopfert (das kein SSR
 für bei jedem Besuch wechselnde Daten braucht). Nitros `routeRules` macht
 diese Pro-Route-Entscheidung an einer einzigen Stelle explizit
 (`nuxt.config.ts`), nicht verstreut über `definePageMeta` verschiedener
@@ -64,8 +64,9 @@ Seiten.
 - Das Dashboard benachteiligt, weil clientseitig, konstruktionsbedingt die
   Lighthouse-Metriken rund um den ersten Paint (FCP/LCP) gegenüber einer
   gleichwertigen SSR-Seite — eine bewusste Entscheidung, keine zu
-  verfolgende Regression. Das Lighthouse-Gate in der CI (Tag 22) scannt
-  deshalb das Stationsdetail (SSR), nicht das Dashboard.
+  verfolgende Regression. Das Lighthouse-Gate in der CI misst
+  das Dashboard deshalb mit einer eigenen Performance-Schwelle
+  (`performanceThresholds` in `ci.yml`), nicht am Maßstab des SSR-Stationsdetails.
 - Aktuell kein anwendungsseitiges HTTP-Caching (`swr`/ISR) auf dem
   Stationsdetail — jeder Request holt die Daten erneut von OCM. Sollte das
   Verkehrsvolumen es rechtfertigen, ist der richtige Weg herauszufinden,

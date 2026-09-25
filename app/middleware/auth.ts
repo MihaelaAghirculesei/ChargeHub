@@ -6,8 +6,7 @@ import { useAuthUser } from '~/modules/auth/composables/useAuthUser'
  * rest of the app (dashboard, stations, sessions, charts) stays public. It
  * runs in SSR too (Nuxt middleware is not client-only by default), so a
  * protected route without a valid session redirects **before** the HTML of
- * the protected page is generated — no flash of content, the plan's "Done
- * when" criterion.
+ * the protected page is generated — no flash of content.
  */
 export default defineNuxtRouteMiddleware((to) => {
   const user = useAuthUser()

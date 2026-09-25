@@ -2,15 +2,14 @@
 
 ## Status
 
-Angenommen — 2026-08-26 (Zusatzfeature nach dem 24-Tage-Plan, als „Multiplikator" abgestimmt).
+Angenommen — 2026-08-26 (optionales Zusatzfeature).
 
 ## Kontext
 
-Die Filtersuche steht seit Tag 6 (Textsuche, Steckertyp, Mindestleistung,
+Die Filtersuche existiert bereits (Textsuche, Steckertyp, Mindestleistung,
 Betreiber, Status, synchron mit den URL-Query-Params). Eine Suche in freier
-Sprache — „schneller CCS-Lader von Ionity, der funktioniert" — obendrauf ist
-ein sichtbarer Kompetenz-Multiplikator für die Bewerbung, ohne die
-bestehende Suche zu ersetzen.
+Sprache — „schneller CCS-Lader von Ionity, der funktioniert" — obendrauf senkt
+die Einstiegshürde für Nutzer:innen, ohne die bestehende Suche zu ersetzen.
 
 Das braucht ein Sprachmodell, also eine externe, kostenpflichtige API. Zwei
 Fragen entstehen daraus:
@@ -49,7 +48,7 @@ Fehler.
 ### Position bleibt außen vor
 
 Lat/Lon/Radius werden **nicht** aus dem Text extrahiert: das ist bereits der
-aktuelle Karten-/Filter-Store-Zustand (Tag 6–8). Die Sprachsuche fügt
+aktuelle Karten-/Filter-Store-Zustand. Die Sprachsuche fügt
 Kriterien _über_ der aktuellen Ansicht hinzu, sie verschiebt sie nicht.
 Ortsnamen aus Freitext geokodieren ist ein anderes Problem (braucht einen
 eigenen Geocoding-Dienst) und ausdrücklich außerhalb des Scopes.

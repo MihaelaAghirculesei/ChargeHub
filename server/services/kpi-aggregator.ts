@@ -9,7 +9,7 @@ import { round } from '~~/server/utils/number'
  * synthetic sessions) into KPIs with trend/sparkline — not a new simulator.
  * The 7-day history for the "live" KPIs (available/charging/faulted/
  * utilisation) leans on `server/utils/telemetry-aggregation.ts` (the same
- * sampling logic reused by the day-14 charts).
+ * sampling logic reused by the charts).
  */
 
 const TREND_DAYS = 7

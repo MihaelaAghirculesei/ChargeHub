@@ -11,7 +11,7 @@ const VIEW_MODE_COOKIE_NAME = 'chargehub-station-view-mode'
 /**
  * Wolfsburg as the default: no geolocation is built yet at first load, so a
  * sensible search centre is needed rather than coordinates 0,0 — from here
- * on (day 8) the map itself updates `latitude`/`longitude`/`radiusKm` when
+ * on the map itself updates `latitude`/`longitude`/`radiusKm` when
  * the user pans it. `maxResults: 100` (OCM's cap) because it is "how many
  * results to keep cached to paginate over", not "how many to show" — see
  * `itemsPerPage` in `StationsTableOptions`.
@@ -66,7 +66,7 @@ function useViewModeCookie() {
  * never the station list, which is domain and must always be re-fetched
  * (see `useStationsStore`).
  *
- * The shareable filters (day-6 filter bar + day-8 map search area:
+ * The shareable filters (filter bar + map search area:
  * `latitude`/`longitude`/`radiusKm`/`search`/...) also sync with the URL
  * query params, so a search is shareable via link — those take priority
  * over the cookie on first load (a shared link must rebuild the view for
@@ -75,8 +75,7 @@ function useViewModeCookie() {
  * the URL after mount, to avoid a reactive URL→filters→URL ping-pong. That
  * means browser back/forward does not navigate the filter history within
  * the page — only a refresh or a fresh load re-reads it, which is exactly
- * the plan's "Done when" criterion (copy the URL, open it elsewhere, same
- * view).
+ * the requirement (copy the URL, open it elsewhere, same view).
  */
 export const useStationsFiltersStore = defineStore('stations-filters', () => {
   const route = useRoute()

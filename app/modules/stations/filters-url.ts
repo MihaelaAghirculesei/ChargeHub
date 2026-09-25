@@ -1,7 +1,7 @@
 import type { StationFilters } from '~/modules/stations/types'
 
 /**
- * Translation between the shareable filters (day-6 filter bar + day-8 map
+ * Translation between the shareable filters (filter bar + map
  * search area) and the URL query params, so a search is shareable via link
  * and survives a refresh — separate from `stationRepository`/`toQuery()`
  * because this is the shape for *the browser's address*, not for the

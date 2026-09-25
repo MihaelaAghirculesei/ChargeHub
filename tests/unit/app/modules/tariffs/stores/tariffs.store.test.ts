@@ -12,7 +12,7 @@ beforeEach(() => {
 })
 
 // The "nuxt" env reuses a single cookie (same "ambient app" as
-// useRoute/useAsyncData, see docs/PROGRESS.md) for the whole file: without
+// useRoute/useAsyncData) for the whole file: without
 // cleanup, the tariffs added by one test would remain in the cookie read
 // by the next test.
 afterEach(() => {

@@ -6,7 +6,7 @@ import { z } from 'zod'
  *
  * `operationalStatus` reflects the OCM registry status (site
  * planned/operational/removed), not the live status of the charge point:
- * the latter comes from the telemetry simulator (day 10) and is a separate
+ * the latter comes from the telemetry simulator and is a separate
  * concept, so as not to confuse "exists and is in service per the registry"
  * with "is charging right now".
  */

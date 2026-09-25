@@ -13,7 +13,7 @@
   // More rounded cards and chips: a softer visual language for a dashboard,
   // but not "pill" (keeps a clear visual hierarchy against `pill`/`circle`).
   $border-radius-root: 10px,
-  // `false`, not the default `true` (Day 25, Lighthouse Performance gate on
+  // `false`, not the default `true` (Lighthouse Performance gate on
   // /de/stations/47109): it generates `.bg-{color}[-variant]`/
   // `.text-{color}[-variant]` for every Material Design color (~19) ×
   // variant (~14 each, lighten/darken/accent) — 243 kB out of 248 kB of

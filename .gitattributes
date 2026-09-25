@@ -3,8 +3,8 @@
 # Windows machine with core.autocrlf=true any git operation that touches a
 # file (checkout, stash, pull) rewrites it in CRLF, making `prettier --check`
 # (default endOfLine: "lf") fail even when the content has not really
-# changed. Happened twice in one session (21/08) on files just written and
-# already formatted correctly.
+# changed. Seen in practice on files just written and already formatted
+# correctly.
 * text=auto eol=lf
 
 *.png binary

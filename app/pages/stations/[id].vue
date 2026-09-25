@@ -13,7 +13,7 @@ if (!Number.isInteger(parsedId) || parsedId <= 0) {
 }
 
 // `await` here (not `lazy`) is what makes the content arrive in the HTML
-// of the first response — the day-9 "Done when" — and not only after
+// of the first response — and not only after
 // hydration: in SSR and in client navigation alike, the rest of the script
 // (including the 404 check below) does not run until the fetch is
 // resolved.

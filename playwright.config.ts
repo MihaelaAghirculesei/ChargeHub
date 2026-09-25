@@ -2,8 +2,8 @@ import { defineConfig, devices } from '@playwright/test'
 
 /**
  * `webServer` starts a dev server on its own on a dedicated port (3011, not
- * 3010 — that one is taken by the manual production-build checks used on
- * every previous day, see docs/PROGRESS.md) and waits for it to respond
+ * 3010 — that one is taken by the manual production-build checks) and
+ * waits for it to respond
  * before starting the tests. `reuseExistingServer` locally: if a dev server
  * is already running on that port, it does not start a second one.
  */
@@ -19,7 +19,7 @@ export default defineConfig({
   // keeps 1 so the signal stays sharp while iterating.
   retries: process.env.CI ? 2 : 1,
   reporter: 'list',
-  // A single dev server shared by 4 parallel projects (Day 20): the default
+  // A single dev server shared by 4 parallel projects: the default
   // of 30s per test became marginal under load (an axe scan went over it
   // once), especially for pages with virtualized lists / live telemetry.
   timeout: 45_000,
@@ -38,11 +38,11 @@ export default defineConfig({
     timeout: 10_000
   },
   /**
-   * axe-core and keyboard navigation (Day 18) run only on `chromium`: they
+   * axe-core and keyboard navigation run only on `chromium`: they
    * are DOM/ARIA checks computed by JS, not dependent on the rendering
    * engine — repeating them on every browser/viewport costs 4x the time
-   * with no new signal. The Day 20 user flows (`tests/e2e/flows/`) run on
-   * all four projects: what the plan asks to cover — Chromium + WebKit,
+   * with no new signal. The user flows (`tests/e2e/flows/`) run on
+   * all four projects: what needs to be covered — Chromium + WebKit,
    * desktop and mobile — is the real functional behavior, not the
    * accessibility scan itself.
    */

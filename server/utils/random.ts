@@ -1,6 +1,6 @@
 /**
- * Deterministic utilities shared by any simulator (telemetry, day 10;
- * sessions, day 12): same seed → same sequence, always.
+ * Deterministic utilities shared by any simulator (telemetry;
+ * sessions): same seed → same sequence, always.
  */
 
 /** String hash → 32-bit integer, FNV-1a. Deterministic, no dependency. */

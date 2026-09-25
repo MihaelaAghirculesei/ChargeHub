@@ -6,9 +6,9 @@ Angenommen — 2026-08-18.
 
 ## Kontext
 
-Der Telemetrie-Simulator (Tag 10, `docs/adr/0002-telemetry-simulation.md`)
+Der Telemetrie-Simulator (`docs/adr/0002-telemetry-simulation.md`)
 stellt `GET /api/telemetry` bereit: ein im Handumdrehen berechneter
-Snapshot, ohne Zustand. Der Plan (Tag 11) verlangt, dass das Dashboard die
+Snapshot, ohne Zustand. Anforderung: Das Dashboard soll die
 Entwicklung dieses Zustands widerspiegelt, ohne dass Nutzer:innen die Seite
 neu laden — mit: automatischer Pause, wenn der Tab nicht sichtbar ist,
 flüssigem Übergang der Werte (nie ein abrupter Sprung), einem
@@ -63,7 +63,7 @@ Request) darf die gesamte Verbindung nicht sofort als "offline"
 kennzeichnen — sie durchläuft erst "Wiederverbindung" und wird **erst** nach
 einem zweiten aufeinanderfolgenden Fehlschlag zu "offline"
 (`OFFLINE_AFTER_FAILURES = 2` in `polling-transport.ts`). Ein Boolean
-`isLive` hätte diese vom Plan explizit geforderte Unterscheidung nicht
+`isLive` hätte diese explizit geforderte Unterscheidung nicht
 abbilden können.
 
 ### 5. Pause bei verstecktem Tab: injizierbare `visibility`, nicht nur direktes `useDocumentVisibility()`

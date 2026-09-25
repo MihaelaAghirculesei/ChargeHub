@@ -1,7 +1,7 @@
 import { useStationsStore } from '~/modules/stations/stores/stations.store'
 
 /**
- * Public entry point for the single station (detail page, day 9): no
+ * Public entry point for the single station (detail page): no
  * page/component calls `stationRepository` or `useStationsStore` directly
  * for this.
  *

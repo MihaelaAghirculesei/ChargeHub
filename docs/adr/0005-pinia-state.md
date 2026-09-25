@@ -14,8 +14,8 @@ ist der häufigste Fehler mit Pinia in einer Nuxt-App:
    `useAsyncData`/`useFetch`, mit eingebautem SSR, Deduplizierung und
    Invalidierung.
 2. **Reiner Client-State, zwischen nicht verwandten Komponenten geteilt** —
-   Stationssuchfilter (Tag 4), Hell-/Dunkel-Theme (Tag 2), von Nutzer:innen
-   angelegte Tarife (Tag 15), authentifizierte Session (Tag 16).
+   Stationssuchfilter, Hell-/Dunkel-Theme, von Nutzer:innen angelegte
+   Tarife, authentifizierte Session.
 
 ## Entscheidung
 
@@ -28,7 +28,7 @@ einziger globaler Store): spiegelt dieselbe Feature-first-Struktur wie
 Server-Daten fließen **nicht** durch Duplizierung in einen Pinia-Store — die
 Modul-Composables (`useStations`, `useKpis`...) rufen direkt `useAsyncData`
 gegen das Modul-Repository auf. Ein einziger Store bildet die Ausnahme
-(`stations.store.ts`, Tag 4): er cached die Daten nicht selbst, sondern
+(`stations.store.ts`): er cached die Daten nicht selbst, sondern
 kapselt den `useAsyncData`-Aufruf hinter einem stabilen Interface, das sowohl
 die Karte als auch die Stationstabelle konsumieren — so werden zwei
 unabhängige Fetches für denselben Suchbereich vermieden.
