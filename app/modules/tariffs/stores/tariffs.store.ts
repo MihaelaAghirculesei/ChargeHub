@@ -3,8 +3,8 @@ import { tariffInputSchema, type Tariff, type TariffInput } from '~/modules/tari
 const TARIFFS_COOKIE_NAME = 'chargehub-tariffs'
 
 /**
- * Persistence via `useCookie`, like dark mode (day 2) and station filters
- * (day 4) — no new dependency (e.g. `pinia-plugin-persistedstate`) for a
+ * Persistence via `useCookie`, like dark mode and station filters
+ * — no new dependency (e.g. `pinia-plugin-persistedstate`) for a
  * store that only needs to survive a browser reload.
  */
 function useTariffsCookie() {

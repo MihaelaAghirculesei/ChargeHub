@@ -15,7 +15,7 @@ const querySchema = z.object({
  * (same geographic params as `GET /api/stations`, so it is "the sessions of
  * the stations you are already looking at"). No period/station filter here:
  * the client loads the whole set once (that is the point of the virtualised
- * table, day 12) and filters in memory — a round trip to the server for
+ * table) and filters in memory — a round trip to the server for
  * every filter change would be redundant when the data is all there
  * already.
  */

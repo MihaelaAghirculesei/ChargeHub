@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /**
- * The 4 quantities the plan requires for a tariff: name, price €/kWh,
+ * The 4 quantities that define a tariff: name, price €/kWh,
  * blocking fee (Blockiergebühr, €/minute — common in the German market to
  * discourage leaving the car plugged in after charging ends) and monthly
  * fee. Validated with Zod because it is the only entry point for

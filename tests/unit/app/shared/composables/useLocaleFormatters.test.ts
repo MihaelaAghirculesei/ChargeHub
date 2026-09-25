@@ -7,7 +7,7 @@ import { useLocaleFormatters } from '~/shared/composables/useLocaleFormatters'
  * `useI18n()` (inside `useLocaleFormatters`) needs the i18n plugin
  * registered on a real Nuxt app — same reason/pattern as
  * useStations.test.ts for `useAsyncData`. The test environment's default
- * locale is `de` (`detectBrowserLanguage: false`, day 17), so every assert
+ * locale is `de` (`detectBrowserLanguage: false`), so every assert
  * below assumes `de-DE`.
  */
 const FormattersHost = defineComponent({

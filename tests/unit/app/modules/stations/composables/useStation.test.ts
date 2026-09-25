@@ -39,7 +39,7 @@ describe('useStation', () => {
 
   it('exposes null when the station does not exist, without throwing', async () => {
     // The real contract is "the server responds 404, the repository
-    // translates it to null" (day 4, already tested there) — here we
+    // translates it to null" (already tested there) — here we
     // simulate the real server behaviour (throw 404), not a 200 with a
     // `null` body, which is not how /api/stations/:id actually behaves.
     unregisterEndpoint = registerEndpoint('/api/stations/999999', () => {

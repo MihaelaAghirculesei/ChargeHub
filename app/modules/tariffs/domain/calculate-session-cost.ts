@@ -12,7 +12,7 @@ function round(value: number, decimals: number): number {
 /**
  * Cost of ONE session with a tariff: energy × price/kWh, plus any minutes
  * parked past the end of charging × blocking fee. `overstayMinutes` is
- * manual (default 0): the synthetic sessions (day 12) do not model how long
+ * manual (default 0): the synthetic sessions do not model how long
  * a car stays plugged in after charging, so inventing that number from the
  * data would falsify it — better to leave it explicit to whoever uses the
  * calculator.

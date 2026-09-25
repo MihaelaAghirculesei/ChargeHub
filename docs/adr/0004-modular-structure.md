@@ -25,7 +25,7 @@ app/modules/stations/
 ├── components/       # StationsMap.vue, StationsTable.vue, StationDetail.vue...
 ├── composables/       # useStations, useStation, useStationReferenceData
 ├── stores/             # stations.store.ts, stations-filters.store.ts
-├── telemetry/          # transport.ts, polling-transport.ts (Tag 11)
+├── telemetry/          # transport.ts, polling-transport.ts
 ├── repository.ts        # einziger Ort, der weiß, dass die Daten hinter /api/stations liegen
 ├── types.ts
 └── index.ts             # Barrel: was das Modul nach außen bereitstellt

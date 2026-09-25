@@ -4,8 +4,7 @@ import { useAuthUser } from '~/modules/auth/composables/useAuthUser'
 /**
  * Populates the session state **before** any route middleware runs (Nuxt
  * plugins run before the initial navigation) — that is what makes a
- * server-side redirect possible, with no flash of protected content (the
- * day-16 "Done when" criterion).
+ * server-side redirect possible, with no flash of protected content.
  *
  * `useRequestFetch()`, not `$fetch` directly: server-side we need to
  * forward the original request's Cookie header to the internal call to

@@ -14,8 +14,8 @@ const { formatDate: formatLocaleDate } = useLocaleFormatters()
 const { telemetry, status: connectionStatus } = useLiveTelemetry(() => [props.station.id])
 
 /**
- * Screen-reader announcement (day 18) only on the transitions that matter
- * (connected ↔ not connected), not on every 5s poll (day 11) — otherwise
+ * Screen-reader announcement only on the transitions that matter
+ * (connected ↔ not connected), not on every 5s poll — otherwise
  * `aria-live="polite"` would keep interrupting the reading for a value that
  * in most cases has not changed in any relevant way.
  */
@@ -101,7 +101,7 @@ function formatDate(value: string | null): string {
             Not "Öffnungszeiten": OCM has no structured opening-hours field,
             only the access type (UsageType) and free-form notes from
             whoever recorded the station (AccessComments, often — not always
-            — hours information). See docs/PROGRESS.md, day 9.
+            — hours information).
           -->
           <h2 class="text-subtitle-1 font-weight-medium mb-1">{{ t('stations.detail.access') }}</h2>
           <p class="text-body-2 mb-0">{{ station.usageType ?? t('common.unknown') }}</p>

@@ -45,9 +45,8 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
-      # Coverage threshold (Day 19: 91.82% statements / 93.19% lines reached)
-      # enforced by vitest.config.ts, not just a number reported here — a real
-      # drop below the plan's 80% fails this step, not just a glance at the
+      # Coverage threshold enforced by vitest.config.ts, not just a number
+      # reported here — a real drop below 80% fails this step, not just a glance at the
       # report.
       - name: Unit test + coverage gate
         run: pnpm test:coverage
@@ -93,7 +92,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: E2E (Chromium, WebKit, mobile Chrome/Safari — Day 20)
+      - name: E2E (Chromium, WebKit, mobile Chrome/Safari)
         run: pnpm test:e2e
         env:
           CI: true
@@ -131,10 +130,10 @@ jobs:
 
       - run: pnpm build
 
-      # `node .output/server/index.mjs` (not `pnpm dev`, Day 21): the plan's
-      # targets must be verified against the real production build, not the
-      # dev server. Clean GitHub runner, not tonight's local machine: the
-      # Performance score is finally reliable here.
+      # `node .output/server/index.mjs` (not `pnpm dev`): the targets must
+      # be verified against the real production build, not the dev server.
+      # Clean GitHub runner, not a loaded local machine: the Performance
+      # score is reliable here.
       #
       # Start, wait and scan in the same step (not separate steps): a process
       # started in the background with `&` in one step is not guaranteed to
@@ -144,14 +143,12 @@ jobs:
       # logs "Listening on http://[::]:PORT" (IPv6 wildcard) and "localhost"
       # resolution is not guaranteed to prefer IPv4/IPv6 the same way on every
       # runner.
-      # 4 pages, not just the station detail (the "what would a senior do"
-      # backlog from 21/08, item 4): dashboard/analytics/sessions were only
-      # spot-checked by hand on 21/08, with no protection against a future
-      # regression in CI. Tariffs deliberately excluded — it requires
-      # login, and this same session already found that a cookie injected
-      # via header doesn't behave like a real browser cookie jar for the
-      # client-side auth-session re-check (a false hydration-mismatch
-      # positive on 25/08): scanning it this way would produce unreliable
+      # 4 pages, not just the station detail: dashboard/analytics/sessions
+      # were previously only spot-checked by hand, with no protection
+      # against a future regression in CI. Tariffs deliberately excluded —
+      # it requires login, and a cookie injected via header doesn't behave
+      # like a real browser cookie jar for the client-side auth-session
+      # re-check (it produced a false hydration-mismatch positive): scanning it this way would produce unreliable
       # readings, not a real gate. `PAGES` here is the single source of
       # truth for which slugs get scanned — the verify step below checks
       # its output against `performanceThresholds`' keys and fails loudly
@@ -172,7 +169,7 @@ jobs:
           )
           for slug in "${!PAGES[@]}"; do
             path="${PAGES[$slug]}"
-            # 3 warm-up requests, not just `wait-on` (Day 25, measured
+            # 3 warm-up requests, not just `wait-on` (measured
             # locally on the same build): the very first request after the
             # server starts is systematically slower (JIT/V8 still cold) and
             # on its own dropped Performance by several points compared to
@@ -183,7 +180,7 @@ jobs:
             curl -sf -o /dev/null "http://127.0.0.1:3010$path"
             curl -sf -o /dev/null "http://127.0.0.1:3010$path"
             curl -sf -o /dev/null "http://127.0.0.1:3010$path"
-            # 3 scans, not 1 (Day 25): even with a "warm" server, measured
+            # 3 scans, not 1: even with a "warm" server, measured
             # repeatedly locally on the exact same build, a single Lighthouse
             # run swings by a couple of Performance points from one execution
             # to the next (real measurement noise, not an app problem — the
@@ -202,25 +199,24 @@ jobs:
         env:
           PORT: 3010
 
-      # Per-page Performance thresholds, not a flat 90 (Day 25, second
-      # continuation): the first real median-of-3 measurement on a clean CI
+      # Per-page Performance thresholds, not a flat 90: the first real median-of-3 measurement on a clean CI
       # runner (not local, not noisy) came back stations 91, dashboard 86,
-      # analytics 84, sessions 76 — three of four pages below the plan's
-      # target. Investigated before discounting the threshold (same method
-      # that found the real bug on sessions on 21/08): API response already
+      # analytics 84, sessions 76 — three of four pages below the
+      # original target. Investigated before discounting the threshold (same method
+      # that found the real bug on sessions): API response already
       # compressed correctly, document TTFB 30ms, the cost is genuine
       # client-side Script Evaluation/Total Blocking Time — Vue/Vuetify
       # hydration under Lighthouse's CPU throttling, not an isolable
-      # defect. `stations` originally kept the plan's 90 since it met it
+      # defect. `stations` originally kept the original 90 since it met it
       # first try — revised down after two more real CI runs (medians 87,
       # then 89) showed the "couple of points" noise assumption was wrong
       # for this specific runner/page: individual scores across 4 runs
       # ranged 59-93, a much wider band than assumed. All four thresholds
-      # now follow the same rule: today's real observed baseline with
-      # margin for that actual noise, not the plan's 90 — an honest
+      # now follow the same rule: the real observed baseline with
+      # margin for that actual noise, not the original 90 — an honest
       # regression floor. Pushing any of them back up is separate
-      # optimization work, not part of this backlog item.
-      - name: Verify the plan's targets per page, median of 3 runs (per-page Performance thresholds, Accessibility/Best Practices/SEO >= 95, CLS <= 0.1)
+      # optimization work.
+      - name: Verify the targets per page, median of 3 runs (per-page Performance thresholds, Accessibility/Best Practices/SEO >= 95, CLS <= 0.1)
         run: |
           node -e "
             const fs = require('fs');

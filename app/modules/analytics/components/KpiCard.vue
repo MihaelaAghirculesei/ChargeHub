@@ -1,7 +1,6 @@
 <script setup lang="ts">
 /**
- * A design-system component (not copy-paste for each KPI, as the plan
- * requires): generic value, trend and sparkline, driven by `higherIsBetter`
+ * A design-system component (not copy-paste for each KPI): generic value, trend and sparkline, driven by `higherIsBetter`
  * to know whether a positive trend is good news (it is not for "faulted") —
  * the card does not know the meaning of the specific KPI, only how to show
  * it consistently with the design system (ADR-0001 semantic roles:
@@ -26,7 +25,7 @@ const trendColor = computed<'success' | 'error' | 'grey'>(() => {
 })
 
 /**
- * A direct CSS value, not the class name `grey` (day 25, Lighthouse
+ * A direct CSS value, not the class name `grey` (Lighthouse
  * Performance gate on /de/stations/47109): `$color-pack: false` in
  * app/assets/vuetify-settings.scss removes from the global CSS the
  * thousands of `.bg-*`/`.text-*` classes generated for every Material
@@ -71,7 +70,7 @@ const formattedValue = computed(() => {
         <!--
           `text-grey` (fixed Vuetify grey, ~#9e9e9e) is not enough for 12px
           text on a light card background (contrast 2.67, found with
-          axe-core, Day 18): for the "unchanged" case we use
+          axe-core): for the "unchanged" case we use
           `text-medium-emphasis`, which inherits the opacity already raised
           for accessibility (see accessibility.css) instead of a
           theme-independent grey.

@@ -1,5 +1,5 @@
 /*
- * Subset of @mdi/font (Day 24): only the icons actually used in this app
+ * Subset of @mdi/font: only the icons actually used in this app
  * (30) + the ones Vuetify itself requires internally (checkbox, arrows,
  * close, etc. — 76 total, verified by reading vuetify/iconsets/mdi.js), not
  * the whole set (~7000 rules, ~570 kB uncompressed). Generated once by hand
@@ -11,7 +11,7 @@
  * bundle gave FCP 11.5s, LCP 16.9s, Performance 46/100 on
  * /de/stations/47109.
  *
- * `public/fonts/mdi-subset.woff2` (Day 25): no longer the full @mdi/font
+ * `public/fonts/mdi-subset.woff2`: no longer the full @mdi/font
  * font renamed (403 kB, all ~7000 glyphs) but a real subset of the BINARY,
  * generated with `fonttools` (Python) over the same 76 codepoints
  * referenced below:
@@ -25,7 +25,7 @@
  * 403 kB -> 3.7 kB (99%): the CSS above already kept only the RULES for 76
  * icons, but the .woff2 file still contained all the glyphs of the full set
  * — discovered by re-reading Lighthouse's "network-requests" audit after
- * resolving the maplibre-gl bottleneck (Day 25): with that off the critical
+ * resolving the maplibre-gl bottleneck: with that off the critical
  * path, the font went back to being the single heaviest asset on the page
  * (394 kB, VeryHigh priority).
  */

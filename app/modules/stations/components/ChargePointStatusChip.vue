@@ -4,7 +4,7 @@ import type { ChargePointStatus } from '#shared/schemas/telemetry'
 /**
  * Reuses the same 4 semantic Vuetify roles as the domain palette
  * (docs/adr/0001-design-system.md) — not by chance: the simulated OCPP
- * statuses (day 10) are exactly the case that palette was designed for.
+ * statuses are exactly the case that palette was designed for.
  */
 const props = defineProps<{ status: ChargePointStatus }>()
 

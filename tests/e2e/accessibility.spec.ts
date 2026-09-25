@@ -3,8 +3,8 @@ import { expect, type Page, test } from '@playwright/test'
 import { LoginPage } from './pages/LoginPage'
 
 /**
- * axe-core scan (day 18, "Done when: axe reports no violations") on the
- * main public pages. `/tariffs` is protected (day 16): logged in
+ * axe-core scan (must report no violations) on the
+ * main public pages. `/tariffs` is protected: logged in
  * separately below, not here — the public pages must not require a session
  * to be verified.
  */
@@ -43,7 +43,7 @@ for (const path of PUBLIC_PAGES) {
     // Pages with `useLiveTelemetry` / virtualised lists finish
     // stabilising shortly after load — a small margin avoids false
     // positives on content still in transition. Real text inside `<main>`
-    // (not just `networkidle`) also covers `/de` (client-side, day 21: the
+    // (not just `networkidle`) also covers `/de` (client-side: the
     // first response is an empty shell, the content arrives after
     // hydration) and the first "cold" hit of a route with `swr` in `pnpm
     // dev`.

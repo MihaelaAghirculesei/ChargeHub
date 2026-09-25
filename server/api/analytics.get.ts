@@ -17,7 +17,7 @@ const querySchema = z.object({
 })
 
 /**
- * Data for the dashboard charts (day 14): same geographic params as
+ * Data for the dashboard charts: same geographic params as
  * `GET /api/stations` / `GET /api/sessions` / `GET /api/kpi` (same pool,
  * same synthetic "reality"), plus `period` (7/30/90 days). Generates the
  * sessions with the same defaults as `GET /api/sessions` — not a lookback

@@ -7,7 +7,7 @@ import { useAppTheme } from '~/shared/composables/useAppTheme'
  * `useTheme()` (Vuetify) needs the plugin registered on a real app. Cookie
  * persistence is not tested here: `useCookie` is the same mechanism
  * already used (and tested where it matters most) for the station filters
- * since day 4 — it is not this composable's logic, only a detail of Nuxt's
+ * — it is not this composable's logic, only a detail of Nuxt's
  * own `useCookie`.
  */
 const ThemeHost = defineComponent({

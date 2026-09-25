@@ -4,7 +4,7 @@ import { brotliCompressSync, constants, gzipSync } from 'node:zlib'
  * `nitro.compressPublicAssets` (nuxt.config.ts) only compresses the
  * pre-built STATIC assets (JS/CSS/font in .output/public) — the HTML
  * rendered per request goes through a different path (Nitro's render
- * handler, not static files) and stays uncovered (day 25, Lighthouse
+ * handler, not static files) and stays uncovered (Lighthouse
  * Performance gate on /de/stations/47109): verified with
  * `curl -H "Accept-Encoding: gzip, br"`, no `Content-Encoding` on the
  * document HTML. With the rest of the page already compressed, the

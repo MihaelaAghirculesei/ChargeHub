@@ -8,7 +8,7 @@ Angenommen — 2026-08-18.
 
 Open Charge Map ist ein **Register**: Stammdaten von Stationen und
 Anschlüssen, gepflegt von denen, die sie erfassen, kein Live-Feed. Es liefert
-nicht "lädt gerade, mit wie viel kW". Der Plan (Tag 10) verlangt jedoch ein
+nicht "lädt gerade, mit wie viel kW". Gebraucht wird jedoch ein
 Dashboard, das den dynamischen Status eines Ladepunkts im OCPP-Stil zeigt
 (`Available`/`Charging`/`Faulted`/`Offline`), mit einer Leistung, die einer
 plausiblen Ladekurve folgt — da kein echter Feed dieser Art ohne Hardware

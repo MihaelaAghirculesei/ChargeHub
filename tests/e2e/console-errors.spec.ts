@@ -2,9 +2,8 @@ import { expect, type Page, test } from '@playwright/test'
 import { LoginPage } from './pages/LoginPage'
 
 /**
- * Backlog item #1 (docs/PROGRESS.md, agreed 21/08): no test checked the
- * console before this, which is exactly what let the sessions hydration
- * mismatch (PR #5) slip through 24 days and the whole CI. This asserts zero
+ * No test checked the console before this, which is exactly what let the
+ * sessions hydration mismatch (PR #5) slip through the whole CI. This asserts zero
  * `console.error`/`console.warn`/uncaught page errors on every main route,
  * both public and authenticated.
  */

@@ -20,8 +20,7 @@ function toQuery(pool: SessionsPool) {
 
 /**
  * The only place in the client code that knows sessions live behind
- * `/api/sessions` — the same role as `stationRepository` for stations
- * (day 4).
+ * `/api/sessions` — the same role as `stationRepository` for stations.
  */
 export const sessionRepository = {
   list(pool: SessionsPool): Promise<ChargingSession[]> {

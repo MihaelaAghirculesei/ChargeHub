@@ -6,12 +6,10 @@ Angenommen — 2026-08-18.
 
 ## Kontext
 
-Die Cubos-Stellenausschreibung verlangt explizit "sehr gute Kenntnisse in SCSS"
-und dass der/die Kandidat/in aktiv an der "Designsprache" des Produkts
-mitwirkt. Vuetify 3 deckt die Komponenten bereits ab; was hier zu bauen ist,
+Das Produkt braucht eine eigene, konsistente Designsprache, umgesetzt in
+SCSS. Vuetify 3 deckt die Komponenten bereits ab; was hier zu bauen ist,
 ist die Entscheidungsschicht, die sie mit der Domäne (Ladestationen) kohärent
-und barrierefrei macht — kein Design System von Grund auf (siehe "Was NICHT
-zu tun ist" im Plan).
+und barrierefrei macht — bewusst kein Design System von Grund auf.
 
 Außerdem wird ein grundlegendes Anwendungslayout (Leiste, Navigation, Inhalt)
 benötigt, bevor die echten Seiten (Stationen, Sitzungen usw.) in den
@@ -34,9 +32,9 @@ Rollen von Vuetify gemappt, statt eigene Ad-hoc-Farben einzuführen:
 Praktischer Vorteil: Jede Vuetify-Komponente, die eine `color`-Prop akzeptiert
 (`v-chip`, `v-icon`, `v-alert`, …), erbt diese Semantik automatisch, ohne dass
 die Anwendungskomponenten Hex-Werte kennen müssen — konsistent mit der
-Planregel "keine hartkodierten Farben in Komponenten". `app/pages/index.vue`
+Regel "keine hartkodierten Farben in Komponenten". `app/pages/index.vue`
 zeigt die vorgesehene Verwendung (Icon + Text, nie Farbe allein: bereits die
-Grundlage für die Barrierefreiheits-Arbeit von Tag 18).
+Grundlage für die spätere Barrierefreiheits-Arbeit).
 
 ### 2. Kontrast geprüft, nicht angenommen
 
@@ -79,10 +77,9 @@ von Vuetify (`@use 'vuetify/settings' with (...)`), nicht nur das JS-Theme:
 ### 4. Dark Mode über `useCookie` persistiert, nicht `ssrClientHints`
 
 `vuetify-nuxt-module` bietet einen eingebauten `ssrClientHints`-Mechanismus
-für das Farbschema. Ich habe ihn nicht verwendet: Ausschreibung und Plan
-verlangen explizit, die Persistenz mit `useCookie` "von Hand" zu
-implementieren — die fertige Modul-Funktion zu nutzen hätte genau die
-Kompetenz verdeckt, die dieser Tag zeigen soll. Außerdem ist ein Cookie für
+für das Farbschema. Ich habe ihn nicht verwendet, sondern die Persistenz mit `useCookie`
+explizit selbst implementiert — dasselbe Muster wie bei den Stationsfiltern
+und Tarifen, statt einer Sonderlösung nur für das Theme. Außerdem ist ein Cookie für
 eine explizite Nutzerwahl (soll das auch bleiben) semantisch etwas anderes
 als ein Client Hint, der die Systempräferenz widerspiegelt.
 

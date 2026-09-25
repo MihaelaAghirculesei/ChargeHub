@@ -170,7 +170,7 @@ async function initMap() {
 
   mapInstance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
 
-  // Deliberately debounced ("Done when: no request fires per pixel moved"):
+  // Deliberately debounced (no request may fire per pixel moved):
   // `moveend` alone already only fires once a gesture settles, but a quick
   // sequence of small pans/zooms still produces several close-together
   // `moveend` events — this collapses them into a single update.
@@ -273,8 +273,8 @@ watch(stations, (value) => {
   source?.setData(toGeoJson(value))
 })
 
-// Table hover → map marker (the other direction of the sync required by
-// the plan): `feature-state` instead of rebuilding the style, is
+// Table hover → map marker (the other direction of the table ↔ map
+// sync): `feature-state` instead of rebuilding the style, is
 // MapLibre's intended way to handle a highlight that changes often.
 watch(
   () => filtersStore.hoveredStationId,

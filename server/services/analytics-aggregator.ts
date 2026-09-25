@@ -10,15 +10,15 @@ import { countByStatus, dayKey, lastNDays } from '~~/server/utils/telemetry-aggr
 import { round } from '~~/server/utils/number'
 
 /**
- * Data for the 3 day-14 charts, composed from data that already exists
- * (synthetic sessions, day 12; simulated telemetry, day 10) — no new
- * simulator, same principle as the KPI aggregator (day 13).
+ * Data for the 3 charts, composed from data that already exists
+ * (synthetic sessions; simulated telemetry) — no new
+ * simulator, same principle as the KPI aggregator.
  */
 
 /**
  * kWh/day for the last `periodDays`. Our synthetic session history only
  * exists for the last 30 days (`generateSessions`, default `lookbackDays:
- * 30`, day 12): selecting 90 days correctly shows zero before that window,
+ * 30`): selecting 90 days correctly shows zero before that window,
  * we do not fabricate it.
  */
 function computeEnergyByDay(sessions: ChargingSession[], days: Date[]): DailyEnergyPoint[] {

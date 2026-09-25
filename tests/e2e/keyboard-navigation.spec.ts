@@ -5,12 +5,12 @@ test('the skip link is the first reachable element and leads to the main content
   page
 }) => {
   await page.goto('/de')
-  // `/de` is client-side (day 21): the first response is an empty shell,
+  // `/de` is client-side: the first response is an empty shell,
   // the layout (skip link included) exists only after hydration.
   const skipLink = page.locator('.skip-link')
   await skipLink.waitFor({ state: 'attached' })
 
-  // No click: keyboard only, as the plan's "Done when" requires.
+  // No click: keyboard only.
   await page.keyboard.press('Tab')
   await expect(skipLink).toBeFocused()
 

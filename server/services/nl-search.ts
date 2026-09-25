@@ -100,7 +100,7 @@ function formatReferenceList(entries: { id: number; title: string }[]): string {
 
 /**
  * Position (lat/lon/radius) is deliberately not among the extracted fields:
- * it is already the current map / filter-store state (days 6-8), and the
+ * it is already the current map / filter-store state, and the
  * natural-language search adds criteria on top, it does not replace them —
  * see ADR-0007. Geocoding city names from free text is a different problem
  * (needs a separate geocoding service), explicitly out of scope here.

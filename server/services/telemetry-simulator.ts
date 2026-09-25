@@ -14,7 +14,7 @@ import { hashString, mulberry32 } from '~~/server/utils/random'
  * passing. See docs/adr/0002-telemetry-simulation.md.
  *
  * Hash/PRNG and the power curve live in `server/utils/` because the
- * historical session simulator (day 12, `session-simulator.ts`) reuses
+ * historical session simulator (`session-simulator.ts`) reuses
  * them: the same plausible charging "shape", not two curves invented
  * separately.
  */

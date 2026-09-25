@@ -22,7 +22,7 @@ function sessionToRow(session: ChargingSession): (string | number)[] {
 /**
  * Only the pure part (testable without a DOM): the CSV string, not the
  * download. `headers` is a parameter (not a fixed constant) on purpose: the
- * headers are translated text (day 17) and this function has no Nuxt
+ * headers are translated text and this function has no Nuxt
  * context to call `useI18n()` itself — it stays a pure function, the caller
  * (the page) passes the strings already translated for the active language.
  */

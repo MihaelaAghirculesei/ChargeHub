@@ -1,6 +1,6 @@
 /**
- * Power curve shared by live telemetry (day 10) and synthetic historical
- * sessions (day 12): the same plausible charging "shape" in both cases, not
+ * Power curve shared by live telemetry and synthetic historical
+ * sessions: the same plausible charging "shape" in both cases, not
  * two curves invented separately.
  */
 

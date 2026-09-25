@@ -1,6 +1,6 @@
 /*
  * Reserve the `v-app-bar` height BEFORE Vuetify's layout system applies it
- * via JS (Day 25, Lighthouse CLS gate on /de/stations/47109): measured with
+ * via JS (Lighthouse CLS gate on /de/stations/47109): measured with
  * a real `PerformanceObserver` in Playwright (not just the Lighthouse
  * audit), the page's first layout shift is `.v-container` jumping from
  * `y:0, height:100%viewport` to `y:56px` — Vuetify applies

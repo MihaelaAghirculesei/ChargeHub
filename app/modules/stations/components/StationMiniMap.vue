@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
- * A lightweight wrapper, rendered in SSR too (day 9) — not a simplified
+ * A lightweight wrapper, rendered in SSR too — not a simplified
  * `StationsMap.vue`: no clustering, no hover sync with a table, no viewport
  * writing to the search filters. Those are concepts that make no sense
  * here; mixing them in would have made `StationsMap` more complicated for a
  * use case that is not its own.
  *
  * The real map lives in `StationMiniMapCanvas.vue`, loaded with
- * `defineAsyncComponent` only on the click on "Show map" (day 24) — not a
+ * `defineAsyncComponent` only on the click on "Show map" — not a
  * direct `import('maplibre-gl')` in here, not even behind
  * `IntersectionObserver`/`requestIdleCallback` (earlier attempts the same
  * day, measured with Lighthouse locally on the same build as CI:
@@ -30,7 +30,7 @@ const props = defineProps<{ latitude: number; longitude: number }>()
 const { t } = useI18n()
 const mapLoaded = ref(false)
 
-// No `loadingComponent` (day 24): this component's chunk is a few kB, it
+// No `loadingComponent`: this component's chunk is a few kB, it
 // resolves practically instantly — the empty container still stays during
 // the real fetch of maplibre-gl inside `initMap()`, as it did before this
 // change.

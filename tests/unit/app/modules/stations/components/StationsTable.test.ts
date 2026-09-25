@@ -22,7 +22,7 @@ describe('StationsTable', () => {
    * geocodes free text and never moves the map (ADR-0007), and neither
    * does the classic text filter, so the client cannot tell the two cases
    * apart. Naming a fixed region here would be wrong the moment someone
-   * pans the map elsewhere (a real regression this session: the hint used
+   * pans the map elsewhere (a real regression during development: the hint used
    * to name "Wolfsburg/Braunschweig/Gifhorn", which broke as soon as the
    * map was panned to Dresden) — the empty state explains the actual
    * mechanism instead, which stays true regardless of where the map is.
