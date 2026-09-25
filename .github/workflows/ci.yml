@@ -105,6 +105,35 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  smoke:
+    name: Production build smoke
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Same official Playwright image as the e2e job (keep the two tags in
+    # sync with @playwright/test). Runs against `node .output/server/index.mjs`,
+    # not `pnpm dev`: see playwright.smoke.config.ts for why.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - name: Smoke test the production build
+        run: pnpm exec playwright test --config playwright.smoke.config.ts
+        env:
+          CI: true
+
   lighthouse:
     name: Lighthouse CI
     needs: quality

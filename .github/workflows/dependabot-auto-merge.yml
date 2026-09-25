@@ -1,0 +1,28 @@
+name: Dependabot auto-merge
+
+# Turns on GitHub's native auto-merge for Dependabot PRs that only bump
+# minor/patch versions. It does not merge anything by itself: GitHub merges
+# the PR only once every required check (lint/typecheck/unit, E2E,
+# production smoke, Lighthouse) is green. A red check leaves the PR open for
+# a human — typically the Playwright Docker tag in ci.yml lagging behind a
+# @playwright/test bump. Major updates are left for manual review.
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - id: metadata
+        uses: dependabot/fetch-metadata@v3
+
+      - name: Enable auto-merge for minor/patch updates
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,20 +1,24 @@
 version: 2
 
 updates:
+  # One grouped PR per week for all minor/patch npm updates (dev and
+  # production together): with `strict` branch protection, two PRs opened at
+  # the same time cannot both auto-merge — the second falls behind `main`
+  # after the first lands. Major updates still arrive as separate PRs and
+  # are never auto-merged (see workflows/dependabot-auto-merge.yml).
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
       interval: 'weekly'
     open-pull-requests-limit: 10
     groups:
-      dev-dependencies:
-        dependency-type: 'development'
-        update-types: ['minor', 'patch']
-      production-dependencies:
-        dependency-type: 'production'
+      npm-minor-and-patch:
         update-types: ['minor', 'patch']
 
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      interval: 'weekly'
+      interval: 'monthly'
+    groups:
+      github-actions:
+        patterns: ['*']
