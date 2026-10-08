@@ -26,7 +26,16 @@ jobs:
 
       - name: Enable auto-merge for minor/patch updates
         if: steps.metadata.outputs.update-type != 'version-update:semver-major'
-        run: gh pr merge --auto --merge "$PR_URL"
+        # Retried because the GitHub API occasionally fails with a transient
+        # "Something went wrong while executing your query", which would
+        # otherwise leave a red run on an otherwise green PR.
+        run: |
+          for attempt in 1 2 3; do
+            gh pr merge --auto --merge "$PR_URL" && exit 0
+            echo "Attempt $attempt failed, retrying in 15s"
+            sleep 15
+          done
+          exit 1
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
