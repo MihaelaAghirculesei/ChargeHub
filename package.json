@@ -23,38 +23,38 @@
     "eval:nl-search": "vitest run --config vitest.eval.config.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.131.0",
+    "@anthropic-ai/sdk": "^0.133.0",
     "@nuxtjs/i18n": "^10.6.0",
     "@pinia/nuxt": "^1.0.2",
     "@vueuse/nuxt": "^15.0.0",
     "chart.js": "^4.5.1",
-    "maplibre-gl": "^6.12.0",
-    "nuxt": "^4.5.2",
+    "maplibre-gl": "^6.14.0",
+    "nuxt": "^4.6.1",
     "ofetch": "^1.5.1",
     "pinia": "^4.0.3",
     "vue": "^3.5.43",
     "vue-chartjs": "^5.3.4",
-    "vue-router": "^5.3.1",
-    "vuetify": "^3.13.5",
+    "vue-router": "^5.4.0",
+    "vuetify": "^3.13.6",
     "vuetify-nuxt-module": "1.0.0-rc.6",
-    "zod": "^4.6.5"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@nuxt/eslint": "^1.17.0",
     "@nuxt/test-utils": "^4.3.3",
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.0",
     "@types/geojson": "^7946.0.16",
     "@vitest/coverage-v8": "^4.1.11",
     "@vitest/eslint-plugin": "^1.6.27",
     "@vue/test-utils": "^2.5.1",
     "eslint": "^10.12.0",
     "eslint-config-prettier": "^10.1.8",
-    "happy-dom": "^20.14.5",
+    "happy-dom": "^20.14.6",
     "lighthouse": "^13.5.0",
-    "prettier": "^3.9.9",
+    "prettier": "^3.9.10",
     "sass": "^1.105.1",
     "vitest": "^4.1.11",
-    "vue-tsc": "^3.3.12"
+    "vue-tsc": "^3.3.13"
   }
 }
