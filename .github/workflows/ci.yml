@@ -79,7 +79,7 @@ jobs:
     # attempt, got stuck again identically). The official image removes the
     # install step altogether, it does not just make it quieter.
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: mcr.microsoft.com/playwright:v1.64.0-noble
     steps:
       - uses: actions/checkout@v7
 
@@ -114,7 +114,7 @@ jobs:
     # sync with @playwright/test). Runs against `node .output/server/index.mjs`,
     # not `pnpm dev`: see playwright.smoke.config.ts for why.
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: mcr.microsoft.com/playwright:v1.64.0-noble
     steps:
       - uses: actions/checkout@v7
 
