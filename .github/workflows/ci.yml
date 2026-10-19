@@ -24,6 +24,8 @@ jobs:
     name: Lint, typecheck, unit test, build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      playwright-version: ${{ steps.playwright.outputs.version }}
     steps:
       - uses: actions/checkout@v7
 
@@ -35,6 +37,18 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      # The e2e and smoke jobs run in the official Playwright image, whose
+      # browsers only work with the exact @playwright/test version that
+      # built them. Dependabot bumps the package but cannot bump an image tag
+      # inside `container:`, so the tag comes from the version the frozen
+      # lockfile installed instead of being pinned by hand in two places.
+      - name: Resolve the Playwright version
+        id: playwright
+        run: |
+          version=$(node -p "require('@playwright/test/package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Playwright $version"
 
       - name: Format
         run: pnpm format:check
@@ -69,8 +83,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # Official Playwright image (browsers + system libraries already
-    # installed, version pinned to the one of @playwright/test in
-    # package.json), not `playwright install --with-deps` on a generic Ubuntu
+    # installed, tag resolved from @playwright/test by the quality job),
+    # not `playwright install --with-deps` on a generic Ubuntu
     # runner. A necessary change, not just a cautious one: two consecutive
     # runs got stuck for >1h30 exactly on that installation — a documented,
     # known problem of microsoft/playwright on ubuntu-latest runners
@@ -79,7 +93,7 @@ jobs:
     # attempt, got stuck again identically). The official image removes the
     # install step altogether, it does not just make it quieter.
     container:
-      image: mcr.microsoft.com/playwright:v1.64.0-noble
+      image: mcr.microsoft.com/playwright:v${{ needs.quality.outputs.playwright-version }}-noble
     steps:
       - uses: actions/checkout@v7
 
@@ -110,11 +124,11 @@ jobs:
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Same official Playwright image as the e2e job (keep the two tags in
-    # sync with @playwright/test). Runs against `node .output/server/index.mjs`,
-    # not `pnpm dev`: see playwright.smoke.config.ts for why.
+    # Same official Playwright image as the e2e job, same resolved tag.
+    # Runs against `node .output/server/index.mjs`, not `pnpm dev`: see
+    # playwright.smoke.config.ts for why.
     container:
-      image: mcr.microsoft.com/playwright:v1.64.0-noble
+      image: mcr.microsoft.com/playwright:v${{ needs.quality.outputs.playwright-version }}-noble
     steps:
       - uses: actions/checkout@v7
 
