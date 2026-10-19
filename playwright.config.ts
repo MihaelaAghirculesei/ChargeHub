@@ -70,6 +70,8 @@ export default defineConfig({
   webServer: {
     command: 'pnpm dev --port 3011',
     url: 'http://localhost:3011',
+    // Read by nuxt.config.ts to switch DevTools off for the test run.
+    env: { E2E: '1' },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000
   }
