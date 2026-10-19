@@ -145,6 +145,10 @@ function updateFiltersFromViewport(mapInstance: MapLibreMap) {
 async function initMap() {
   if (!mapContainer.value) return
   const maplibregl = await loadMaplibreGl()
+  // The load can outlive the component: switching to the list view while
+  // maplibre-gl is still downloading unmounts it and nulls the ref, and
+  // `new Map()` would then throw on a null container.
+  if (!mapContainer.value) return
 
   const mapInstance = new maplibregl.Map({
     container: mapContainer.value,
