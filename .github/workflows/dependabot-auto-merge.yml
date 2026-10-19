@@ -4,11 +4,11 @@ name: Dependabot auto-merge
 # minor/patch versions. It does not merge anything by itself: GitHub merges
 # the PR only once every required check (lint/typecheck/unit, E2E,
 # production smoke, Lighthouse) is green. A red check leaves the PR open for
-# a human — typically the Playwright Docker tag in ci.yml lagging behind a
-# @playwright/test bump. Major updates are left for manual review: for
-# those, an issue assigned to the repo owner is opened instead, so the
-# notification email stands out ("❗" in the subject) from routine
-# Dependabot traffic.
+# a human — for example a regression in a framework release that the next
+# patch fixes, so try the latest patch before holding a package back.
+# Major updates are left for manual review: for those, an issue assigned
+# to the repo owner is opened instead, so the notification email stands
+# out ("❗" in the subject) from routine Dependabot traffic.
 on: pull_request
 
 permissions:
