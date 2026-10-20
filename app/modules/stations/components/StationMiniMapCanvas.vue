@@ -25,6 +25,9 @@ async function initMap() {
     loadMaplibreGl(),
     import('maplibre-gl/dist/maplibre-gl.css')
   ])
+  // Same guard as `StationsMapCanvas.vue`: the component may have unmounted
+  // while maplibre-gl was loading.
+  if (!mapContainer.value) return
 
   const mapInstance = new maplibregl.Map({
     container: mapContainer.value,

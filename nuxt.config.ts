@@ -83,7 +83,9 @@ const windowsSassImporter = {
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  // Off when Playwright starts the dev server: on a mobile viewport the
+  // DevTools frame sits over the page and intercepts the tests' clicks.
+  devtools: { enabled: !process.env.E2E },
   modules: ['vuetify-nuxt-module', '@pinia/nuxt', '@vueuse/nuxt', '@nuxtjs/i18n', '@nuxt/eslint'],
   // Skip link + prefers-reduced-motion: global styles not tied to
   // Vuetify's Sass variables, so a CSS file separate from the one in

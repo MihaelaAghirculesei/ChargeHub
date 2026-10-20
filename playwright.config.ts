@@ -18,7 +18,10 @@ export default defineConfig({
   // (a genuine failure still fails all 3 attempts and is not hidden); local
   // keeps 1 so the signal stays sharp while iterating.
   retries: process.env.CI ? 2 : 1,
-  reporter: 'list',
+  // CI also writes the HTML report (traces from the first retry included):
+  // the `list` reporter alone leaves no playwright-report/ for the
+  // workflow's on-failure upload step.
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   // A single dev server shared by 4 parallel projects: the default
   // of 30s per test became marginal under load (an axe scan went over it
   // once), especially for pages with virtualized lists / live telemetry.
@@ -67,6 +70,8 @@ export default defineConfig({
   webServer: {
     command: 'pnpm dev --port 3011',
     url: 'http://localhost:3011',
+    // Read by nuxt.config.ts to switch DevTools off for the test run.
+    env: { E2E: '1' },
     reuseExistingServer: !process.env.CI,
     timeout: 120_000
   }
