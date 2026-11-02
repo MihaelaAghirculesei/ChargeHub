@@ -19,6 +19,9 @@ env:
   NUXT_SESSION_PASSWORD: 'ci-only-session-password-not-a-real-secret-32chars'
   NUXT_OCM_API_KEY: ${{ secrets.NUXT_OCM_API_KEY || 'ci-placeholder-key' }}
 
+permissions:
+  contents: read
+
 jobs:
   quality:
     name: Lint, typecheck, unit test, build
