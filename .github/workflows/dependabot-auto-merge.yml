@@ -45,15 +45,13 @@ jobs:
           steps.metadata.outputs.update-type == 'version-update:semver-major' &&
           github.event.action == 'opened'
         run: |
-          body="@$OWNER Dependabot opened $PR_URL with a **major** version bump of \`$DEPS\` ($PREV → $NEW). It is not auto-merged: check the changelog for breaking changes and the CI result, then merge or close the PR by hand. Close this issue once done."
+          body="@$OWNER Dependabot opened $PR_URL with a **major** version bump. It is not auto-merged: check the changelog for breaking changes and the CI result, then merge or close the PR by hand. Close this issue once done."
           gh issue create --repo "$REPO" --assignee "$OWNER" \
-            --title "❗ Major update needs review: $DEPS $PREV → $NEW" \
+            --title "❗ Major update needs review: PR #$PR_NUMBER" \
             --body "$body"
         env:
           REPO: ${{ github.repository }}
           OWNER: ${{ github.repository_owner }}
-          DEPS: ${{ steps.metadata.outputs.dependency-names }}
-          PREV: ${{ steps.metadata.outputs.previous-version }}
-          NEW: ${{ steps.metadata.outputs.new-version }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
