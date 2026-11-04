@@ -45,7 +45,7 @@
     "@nuxt/test-utils": "^4.3.4",
     "@playwright/test": "^1.64.1",
     "@types/geojson": "^7946.0.16",
-    "@vitest/coverage-v8": "^4.1.12",
+    "@vitest/coverage-v8": "^5.0.5",
     "@vitest/eslint-plugin": "^1.6.28",
     "@vue/test-utils": "^2.5.1",
     "eslint": "^10.14.0",
@@ -54,7 +54,7 @@
     "lighthouse": "^13.6.0",
     "prettier": "^3.9.10",
     "sass": "^1.107.1",
-    "vitest": "^4.1.12",
+    "vitest": "^5.0.5",
     "vue-tsc": "^3.3.14"
   }
 }
