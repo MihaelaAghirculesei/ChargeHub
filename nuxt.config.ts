@@ -431,7 +431,7 @@ export default defineNuxtConfig({
         // Nothing in this app uses any of these — deny them all outright
         // rather than leaving them at the (permissive) browser default.
         'permissions-policy':
-          'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()'
+          'camera=(), microphone=(), geolocation=(), payment=(), usb=()'
       }
     }
   },
